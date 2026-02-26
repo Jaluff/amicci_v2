@@ -1,0 +1,498 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tamaño de fuente global: text-xs en todo el sitio */
+@layer base {
+    html {
+        font-size: .9rem;
+        /* 14px — equivalente a text-sm */
+    }
+}
+
+/* ============================================
+   Dark Mode Styles for Toastr
+   ============================================ */
+.dark .toast {
+    background-color: #1f2937 !important;
+    border: 1px solid #374151;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+}
+
+.dark .toast-error {
+    background-color: theme('colors.danger / 30%') !important;
+    border-left: 4px solid theme('colors.danger');
+}
+
+.dark .toast-success {
+    background-color: theme('colors.success / 30%') !important;
+    border-left: 4px solid theme('colors.success');
+}
+
+.dark .toast-warning {
+    background-color: theme('colors.warning / 30%') !important;
+    border-left: 4px solid theme('colors.warning');
+}
+
+.dark .toast-info {
+    background-color: theme('colors.info / 30%') !important;
+    border-left: 4px solid theme('colors.info');
+}
+
+.dark .toast-message,
+.dark .toast-title {
+    color: #f3f4f6 !important;
+}
+
+.dark .toast-close-button {
+    color: #d1d5db !important;
+}
+
+.dark .toast-close-button:hover {
+    color: #f3f4f6 !important;
+}
+
+.dark .toast .progress {
+    background: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* ============================================
+   DataTables: Light Mode
+   ============================================ */
+
+/* Cabecera */
+table.dataTable thead th,
+table.dataTable thead td {
+    background-color: #f9fafb;
+    color: #111827;
+    border-bottom: 2px solid #e5e7eb;
+    padding: 0.6rem 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+/* Celdas */
+table.dataTable tbody td {
+    padding: 0.5rem 0.75rem;
+    color: #374151;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* Filas alternadas */
+table.dataTable tbody tr {
+    background-color: #ffffff;
+}
+
+table.dataTable.stripe tbody tr.odd,
+table.dataTable tbody tr.odd {
+    background-color: #f9fafb;
+}
+
+/* Hover */
+table.dataTable.hover tbody tr:hover,
+table.dataTable tbody tr:hover {
+    background-color: #eff6ff !important;
+    /* blue-50 */
+}
+
+/* Borde exterior */
+table.dataTable.no-footer {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Controles: étiquetas y texto */
+.dt-container .dt-length label,
+.dt-container .dt-search label,
+.dt-container .dt-info {
+    color: #6b7280;
+}
+
+/* Input de búsqueda y select de longitud */
+.dt-container .dt-search input,
+.dt-container .dt-length select {
+    color: #111827;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.dt-container .dt-search input:focus {
+    outline: none;
+    border-color: theme('colors.primary');
+    box-shadow: 0 0 0 2px theme('colors.primary / 20%');
+}
+
+/* Botones de paginación */
+html body .dt-container .dt-paging .dt-paging-button {
+    color: #374151 !important;
+    border-radius: 0.375rem;
+}
+
+html body .dt-container .dt-paging .dt-paging-button:hover {
+    background: #f3f4f6 !important;
+    border-color: #d1d5db !important;
+    color: #111827 !important;
+}
+
+html body .dt-container .dt-paging .dt-paging-button.current,
+html body .dt-container .dt-paging .dt-paging-button.current:hover {
+    background: theme('colors.primary') !important;
+    border-color: theme('colors.primary') !important;
+    color: #ffffff !important;
+}
+
+/* Botón ColVis */
+.dt-colvis-btn {
+    background-color: #f3f4f6 !important;
+    border: 1px solid #d1d5db !important;
+    color: #374151 !important;
+    border-radius: 0.375rem !important;
+    padding: 0.3rem 0.75rem !important;
+    font-size: 0.8rem !important;
+}
+
+.dt-colvis-btn:hover {
+    background-color: #e5e7eb !important;
+    color: #111827 !important;
+}
+
+/* ============================================
+   DataTables: Fix select + Dark Mode
+
+   Wrapped in @layer utilities to guarantee
+   these run AFTER @tailwindcss/forms resets
+   ============================================ */
+@layer utilities {
+
+    /* Fix select "Mostrar N registros": el plugin forms resetea appearance */
+    .dataTables_length select {
+        appearance: auto;
+        -webkit-appearance: auto;
+        background-image: none;
+        padding-right: 0.5rem;
+        width: auto;
+        display: inline-block;
+    }
+
+    /* ---- Dark Mode ---- */
+
+    /* El CSS de datatables.net-dt setea background oscuro en dark mode
+       pero OLVIDA poner color de texto → hereda negro. Lo forzamos aquí. */
+    html.dark .dt-container .dt-search input,
+    html.dark .dt-container .dt-length select {
+        color: #f3f4f6 !important;
+        background-color: #374151 !important;
+        border-color: #4b5563 !important;
+    }
+
+    html.dark .dt-container .dt-search input:focus {
+        outline: none;
+        border-color: theme('colors.primary') !important;
+        box-shadow: 0 0 0 2px theme('colors.primary / 30%') !important;
+    }
+
+    /* Labels: "Mostrar", "registros", "Buscar:" */
+    html.dark .dt-container .dt-length label,
+    html.dark .dt-container .dt-search label,
+    html.dark .dt-container label {
+        color: #e5e7eb !important;
+    }
+
+    /* Info: "Mostrando 1 a 1 de 1 registros" */
+    html.dark .dt-container .dt-info {
+        color: #9ca3af !important;
+    }
+
+    /* Botones de paginación: Primero, Anterior, Siguiente, Último */
+    html.dark body .dt-container .dt-paging .dt-paging-button {
+        color: #d1d5db !important;
+    }
+
+    html.dark body .dt-container .dt-paging .dt-paging-button:hover {
+        color: #f9fafb !important;
+        background: #374151 !important;
+        border-color: #4b5563 !important;
+    }
+
+    html.dark body .dt-container .dt-paging .dt-paging-button.current,
+    html.dark body .dt-container .dt-paging .dt-paging-button.current:hover {
+        color: #fff !important;
+    }
+
+    /* Tabla cabecera */
+    .dark table.dataTable thead th,
+    .dark table.dataTable thead td {
+        background-color: #111827;
+        color: #f9fafb;
+        border-bottom: 2px solid #374151;
+    }
+
+    /* Flechas de ordenamiento */
+    .dark table.dataTable thead .sorting:before,
+    .dark table.dataTable thead .sorting:after,
+    .dark table.dataTable thead .sorting_asc:before,
+    .dark table.dataTable thead .sorting_asc:after,
+    .dark table.dataTable thead .sorting_desc:before,
+    .dark table.dataTable thead .sorting_desc:after {
+        color: #6b7280;
+    }
+
+    .dark table.dataTable thead .sorting_asc:before,
+    .dark table.dataTable thead .sorting_desc:after {
+        color: #e5e7eb;
+    }
+
+    /* Filas */
+    .dark table.dataTable tbody tr {
+        background-color: #1f2937;
+    }
+
+    .dark table.dataTable tbody tr.odd {
+        background-color: #1a2535;
+    }
+
+    .dark table.dataTable.hover tbody tr:hover,
+    .dark table.dataTable tbody tr:hover {
+        background-color: #2d3748;
+    }
+
+    .dark table.dataTable tbody td {
+        color: #d1d5db;
+        border-top: 1px solid #374151;
+    }
+
+    /* Borde exterior */
+    .dark table.dataTable.no-footer {
+        border-bottom: 1px solid #374151;
+    }
+
+    /* Paginación */
+    .dark .dataTables_wrapper .dataTables_paginate .paginate_button {
+        color: #d1d5db !important;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.375rem;
+    }
+
+    .dark .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        color: #f9fafb !important;
+        background: #374151 !important;
+        border-color: #4b5563 !important;
+    }
+
+    .dark .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+    .dark .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+        color: #fff !important;
+        background: theme('colors.primary') !important;
+        border-color: theme('colors.primary') !important;
+    }
+
+    .dark .dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+    .dark .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover {
+        color: #4b5563 !important;
+        background: transparent !important;
+    }
+
+    /* Info */
+    .dark .dataTables_wrapper .dataTables_info {
+        color: #9ca3af;
+    }
+}
+
+/* ============================================
+   DataTables - Dark Mode
+   ============================================ */
+
+/* Contenedor general */
+.dark .dataTables_wrapper {
+    color: #e5e7eb;
+}
+
+/* Etiquetas y texto */
+.dark .dataTables_wrapper .dataTables_length,
+.dark .dataTables_wrapper .dataTables_filter,
+.dark .dataTables_wrapper .dataTables_info,
+.dark .dataTables_wrapper .dataTables_paginate {
+    color: #e5e7eb;
+}
+
+/* Select "Mostrar X registros" */
+.dark .dataTables_wrapper .dataTables_length select {
+    background-color: #374151;
+    color: #f3f4f6;
+    border: 1px solid #4b5563;
+    border-radius: 0.375rem;
+}
+
+/* Campo de búsqueda */
+.dark .dataTables_wrapper .dataTables_filter input {
+    background-color: #374151;
+    color: #f3f4f6;
+    border: 1px solid #4b5563;
+    border-radius: 0.375rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.dark .dataTables_wrapper .dataTables_filter input:focus {
+    outline: none;
+    border-color: theme('colors.primary');
+    box-shadow: 0 0 0 2px theme('colors.primary / 30%');
+}
+
+/* Tabla */
+.dark table.dataTable thead th,
+.dark table.dataTable thead td {
+    background-color: #111827;
+    color: #f9fafb;
+    border-bottom: 2px solid #374151;
+}
+
+/* Ordenamiento: flechas en oscuro */
+.dark table.dataTable thead .sorting:before,
+.dark table.dataTable thead .sorting:after,
+.dark table.dataTable thead .sorting_asc:before,
+.dark table.dataTable thead .sorting_asc:after,
+.dark table.dataTable thead .sorting_desc:before,
+.dark table.dataTable thead .sorting_desc:after {
+    color: #9ca3af;
+}
+
+.dark table.dataTable thead .sorting_asc:before,
+.dark table.dataTable thead .sorting_desc:after {
+    color: #e5e7eb;
+}
+
+/* Filas */
+.dark table.dataTable tbody tr {
+    background-color: #1f2937;
+}
+
+.dark table.dataTable.stripe tbody tr.odd,
+.dark table.dataTable tbody tr.odd {
+    background-color: #1a2535;
+}
+
+.dark table.dataTable.hover tbody tr:hover,
+.dark table.dataTable tbody tr:hover {
+    background-color: #2d3748 !important;
+}
+
+.dark table.dataTable tbody td {
+    color: #d1d5db;
+    border-top: 1px solid #374151;
+}
+
+/* Paginación */
+html body.dark .dataTables_wrapper .dataTables_paginate .paginate_button {
+    color: #d1d5db !important;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 0.375rem;
+}
+
+html body.dark .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    color: #f9fafb !important;
+    background: #374151 !important;
+    border-color: #4b5563 !important;
+}
+
+html body.dark .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+html body.dark .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    color: #fff !important;
+    background: theme('colors.primary') !important;
+    border-color: theme('colors.primary') !important;
+}
+
+html body.dark .dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+html body.dark .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover {
+    color: #4b5563 !important;
+    cursor: default;
+    background: transparent !important;
+}
+
+/* Info (Mostrando N a M de X registros) */
+.dark .dataTables_wrapper .dataTables_info {
+    color: #9ca3af;
+}
+
+/* Borde exterior de la tabla */
+.dark table.dataTable.no-footer {
+    border-bottom: 1px solid #374151;
+}
+
+/* ============================================
+   Badges para DataTables render functions
+   (Tailwind no detecta clases en strings JS)
+   ============================================ */
+.dt-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 0.375rem;
+    padding: 0.1rem 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+}
+
+.dt-badge-blue {
+    background-color: theme('colors.info / 15%');
+    color: theme('colors.info');
+}
+
+.dt-badge-green {
+    background-color: theme('colors.success / 15%');
+    color: theme('colors.success');
+}
+
+.dt-badge-yellow {
+    background-color: theme('colors.warning / 20%');
+    color: #92400e;
+    /* Custom dark yellow text for contrast */
+}
+
+.dt-badge-red {
+    background-color: theme('colors.danger / 15%');
+    color: theme('colors.danger');
+}
+
+.dt-badge-gray {
+    background-color: theme('colors.secondary / 15%');
+    color: theme('colors.secondary');
+}
+
+.dt-badge-indigo {
+    background-color: theme('colors.primary / 15%');
+    color: theme('colors.primary');
+}
+
+/* Dark mode */
+.dark .dt-badge-blue {
+    background-color: theme('colors.info / 25%');
+    color: theme('colors.info');
+}
+
+.dark .dt-badge-green {
+    background-color: theme('colors.success / 25%');
+    color: theme('colors.success');
+}
+
+.dark .dt-badge-yellow {
+    background-color: theme('colors.warning / 25%');
+    color: theme('colors.warning');
+}
+
+.dark .dt-badge-red {
+    background-color: theme('colors.danger / 25%');
+    color: theme('colors.danger');
+}
+
+.dark .dt-badge-gray {
+    background-color: theme('colors.secondary / 25%');
+    color: #cbd5e1;
+}
+
+.dark .dt-badge-indigo {
+    background-color: theme('colors.primary / 25%');
+    color: theme('colors.primary');
+}
