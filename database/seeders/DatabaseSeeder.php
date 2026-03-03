@@ -18,20 +18,12 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            UbicacionSeeder::class,
-            CompanySeeder::class,
-            PartySeeder::class,
-            RolesAndAdminSeeder::class,
+            UbicacionSeeder::class ,
+            CompanySeeder::class ,
+            PartySeeder::class ,
+            RolesAndAdminSeeder::class ,
+            DriverSeeder::class ,
         ]);
 
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Emilio Jaluff',
-            'email' => 'jaluff@email.com',
-            'password' => Hash::make('12312312'),
-            'email_verified_at' => now(),
-            'remember_token' => Str::random(10),
-        ]);
     }
 }

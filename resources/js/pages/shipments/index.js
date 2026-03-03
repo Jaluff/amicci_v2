@@ -2,6 +2,8 @@
  * Listado de guías — shipments/index.blade.php
  * Depende de jQuery y DataTables cargados en app.js.
  */
+import $ from 'jquery';
+
 $(function () {
     if (!$('#shipmentsTable').length) return;
 
@@ -21,19 +23,12 @@ $(function () {
             { data: 'valor_declarado', name: 'valor_declarado', orderable: false, searchable: false, responsivePriority: 8, visible: false },
             { data: 'total', name: 'shipments.total', responsivePriority: 3 },
             {
-                data: 'ubicacion_actual', name: 'shipments.ubicacion_actual', defaultContent: '-', responsivePriority: 5,
-                render: function (data) {
-                    if (!data || data === '-') return '<span class="dt-badge dt-badge-gray">—</span>';
-                    const colores = {
-                        'Dto origen': 'dt-badge-indigo',
-                        'En transito': 'dt-badge-yellow',
-                        'Dto destino': 'dt-badge-blue',
-                        'En reparto': 'dt-badge-green',
-                        'Entregado': 'dt-badge-green',
-                    };
-                    const color = colores[data] || 'dt-badge-gray';
-                    return '<span class="dt-badge ' + color + '">' + data + '</span>';
-                }
+                data: 'ubicacion_actual',
+                name: 'shipments.ubicacion_actual',
+                defaultContent: '-',
+                responsivePriority: 5,
+                orderable: true,
+                searchable: true,
             },
             {
                 data: 'estado_facturacion', name: 'shipments.estado_facturacion', defaultContent: '-', responsivePriority: 8, visible: false,

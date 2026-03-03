@@ -1,4 +1,7 @@
 import './bootstrap';
+import './stateMachine';
+import './problemWidget';
+import './problemModals';
 
 import $ from 'jquery';
 window.$ = window.jQuery = $;

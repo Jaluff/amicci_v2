@@ -26,7 +26,7 @@
 <body class="font-sans antialiased">
     <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
         @include('layouts.navigation')
-        
+
         <!-- Toast Notifications -->
         @include('components.toast-notifications')
 
@@ -42,8 +42,11 @@
         <!-- Page Content -->
         <main>
             @yield('content')
+            {{ $slot ?? '' }}
         </main>
     </div>
+
+    @include('partials._global_problem_modals')
     @yield('scripts')
 </body>
 

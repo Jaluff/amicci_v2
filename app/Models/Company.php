@@ -10,6 +10,8 @@ class Company extends Model
         'name',
         'prefix',
         'last_shipment_number',
+        'last_route_number',
+        'last_dispatch_number',
     ];
 
     public function users()

@@ -157,6 +157,24 @@ html body .dt-container .dt-paging .dt-paging-button.current:hover {
     color: #111827 !important;
 }
 
+/* ColVis Dropdown Dark Mode Fix */
+html.dark .dt-button-collection {
+    background-color: #1f2937 !important;
+    border: 1px solid #374151 !important;
+}
+
+html.dark .dt-button-collection .dt-button {
+    color: #d1d5db !important;
+    background-color: transparent !important;
+    border: none !important;
+}
+
+html.dark .dt-button-collection .dt-button:hover,
+html.dark .dt-button-collection .dt-button.active {
+    background-color: #374151 !important;
+    color: #f9fafb !important;
+}
+
 /* ============================================
    DataTables: Fix select + Dark Mode
 
@@ -425,74 +443,66 @@ html body.dark .dataTables_wrapper .dataTables_paginate .paginate_button.disable
    Badges para DataTables render functions
    (Tailwind no detecta clases en strings JS)
    ============================================ */
-.dt-badge {
-    display: inline-flex;
-    align-items: center;
-    border-radius: 0.375rem;
-    padding: 0.1rem 0.5rem;
-    font-size: 1rem;
-    font-weight: 500;
-    line-height: 1.25rem;
-}
+@layer components {
+    .dt-badge {
+        @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold;
+    }
 
-.dt-badge-blue {
-    background-color: theme('colors.info / 15%');
-    color: theme('colors.info');
-}
+    /* Light mode variants */
+    .dt-badge-blue {
+        @apply bg-blue-100 text-blue-800;
+    }
 
-.dt-badge-green {
-    background-color: theme('colors.success / 15%');
-    color: theme('colors.success');
-}
+    .dt-badge-green {
+        @apply bg-green-100 text-green-800;
+    }
 
-.dt-badge-yellow {
-    background-color: theme('colors.warning / 20%');
-    color: #92400e;
-    /* Custom dark yellow text for contrast */
-}
+    .dt-badge-yellow {
+        @apply bg-yellow-100 text-yellow-800;
+    }
 
-.dt-badge-red {
-    background-color: theme('colors.danger / 15%');
-    color: theme('colors.danger');
-}
+    .dt-badge-red {
+        @apply bg-red-100 text-red-800;
+    }
 
-.dt-badge-gray {
-    background-color: theme('colors.secondary / 15%');
-    color: theme('colors.secondary');
-}
+    .dt-badge-gray {
+        @apply bg-gray-100 text-gray-800;
+    }
 
-.dt-badge-indigo {
-    background-color: theme('colors.primary / 15%');
-    color: theme('colors.primary');
-}
+    .dt-badge-orange {
+        @apply bg-orange-100 text-orange-800;
+    }
 
-/* Dark mode */
-.dark .dt-badge-blue {
-    background-color: theme('colors.info / 25%');
-    color: theme('colors.info');
-}
+    .dt-badge-indigo {
+        @apply bg-indigo-100 text-indigo-800;
+    }
 
-.dark .dt-badge-green {
-    background-color: theme('colors.success / 25%');
-    color: theme('colors.success');
-}
+    /* Dark mode variants (Fondo gris, texto del color) */
+    .dark .dt-badge-blue {
+        @apply bg-gray-700 text-blue-400;
+    }
 
-.dark .dt-badge-yellow {
-    background-color: theme('colors.warning / 25%');
-    color: theme('colors.warning');
-}
+    .dark .dt-badge-green {
+        @apply bg-gray-700 text-green-400;
+    }
 
-.dark .dt-badge-red {
-    background-color: theme('colors.danger / 25%');
-    color: theme('colors.danger');
-}
+    .dark .dt-badge-yellow {
+        @apply bg-gray-700 text-yellow-400;
+    }
 
-.dark .dt-badge-gray {
-    background-color: theme('colors.secondary / 25%');
-    color: #cbd5e1;
-}
+    .dark .dt-badge-red {
+        @apply bg-gray-700 text-red-400;
+    }
 
-.dark .dt-badge-indigo {
-    background-color: theme('colors.primary / 25%');
-    color: theme('colors.primary');
+    .dark .dt-badge-gray {
+        @apply bg-gray-700 text-gray-300;
+    }
+
+    .dark .dt-badge-orange {
+        @apply bg-gray-700 text-orange-400;
+    }
+
+    .dark .dt-badge-indigo {
+        @apply bg-gray-700 text-indigo-400;
+    }
 }

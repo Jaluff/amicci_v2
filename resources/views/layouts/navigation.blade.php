@@ -17,8 +17,23 @@
                     </x-nav-link>
                 </div>
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('shipments.index')" :active="request()->routeIs('shipments.index')">
+                    <x-nav-link :href="route('shipments.index')" :active="request()->routeIs('shipments.*')">
                         {{ __('Guias') }}
+                    </x-nav-link>
+                </div>
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link :href="route('routes.index')" :active="request()->routeIs('routes.*')">
+                        {{ __('Rutas') }}
+                    </x-nav-link>
+                </div>
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link :href="route('dispatches.index')" :active="request()->routeIs('dispatches.*')">
+                        {{ __('Despachos') }}
+                    </x-nav-link>
+                </div>
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link :href="route('deliveries.index')" :active="request()->routeIs('deliveries.*')">
+                        {{ __('Repartos') }}
                     </x-nav-link>
                 </div>
                 @if(auth()->user()->hasRole('admin'))
@@ -168,6 +183,15 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('shipments.index')" :active="request()->routeIs('shipments.index')">
                 {{ __('Guias') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('routes.index')" :active="request()->routeIs('routes.*')">
+                {{ __('Rutas') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('dispatches.index')" :active="request()->routeIs('dispatches.*')">
+                {{ __('Despachos') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('deliveries.index')" :active="request()->routeIs('deliveries.*')">
+                {{ __('Repartos') }}
             </x-responsive-nav-link>
             @if(auth()->user()->hasRole('admin'))
             <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">

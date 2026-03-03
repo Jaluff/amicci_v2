@@ -47,41 +47,44 @@ $items = $isEdit ? $shipment->items : [ (object)[ 'tipo_paquete' => 'bultos', 'c
         <div class="flex items-center justify-between mb-3">
             <h3 class=" font-bold text-gray-800 dark:text-white">📋 INFORMACIÓN GENERAL</h3>
             <div class="flex items-center gap-3">
+                @if(!$isEdit)
                 <div class="w-48">
                     <label class=" font-medium text-gray-700 dark:text-yellow-300 block">N° Guía *</label>
-                    @if($isEdit)
-                    <x-text-input id="numero" name="numero" type="text" value="{{ $shipment->numero }}"
-                        class="w-full py-2 px-2  mt-0.5 rounded border-gray-300 dark:border-gray-700"
-                        placeholder="GU-001" readonly />
-                    @else
                     <x-text-input id="numero" name="numero" type="text" value="{{ old('numero', '') }}"
                         class="w-full py-2 px-2  mt-0.5 rounded border-gray-300 dark:border-gray-700"
                         placeholder="GU-001" readonly />
-                    @endif
                 </div>
+                @endif
                 <div class="w-48        ">
                     <label class=" font-medium text-gray-700 dark:text-gray-300 block">Fecha</label>
                     <x-text-input id="fecha" name="fecha" type="date"
                         value="{{ old('fecha', $isEdit ? ($shipment->fecha ? $shipment->fecha->format('Y-m-d') : '') : date('Y-m-d')) }}"
                         class="w-full py-2 px-2  mt-0.5 rounded border-gray-300 dark:border-gray-700" />
                 </div>
+                @if(!$isEdit)
                 <div class="w-48">
                     <label class="font-medium text-gray-700 dark:text-gray-300 block">Ubicación</label>
-                    <select id="ubicacion_actual" name="ubicacion_actual"
-                        class="w-full py-2 px-2  mt-0.5 rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900"
-                        required>
-                        <option value="Dto origen" @selected(old('ubicacion_actual', $isEdit ? ($shipment->
-                            ubicacion_actual ?? '') : '') === 'Dto origen')>Dto origen</option>
-                        <option value="En tránsito" @selected(old('ubicacion_actual', $isEdit ? ($shipment->
-                            ubicacion_actual ?? '') : '') === 'En tránsito')>En tránsito</option>
-                        <option value="Dto destino" @selected(old('ubicacion_actual', $isEdit ? ($shipment->
-                            ubicacion_actual ?? '') : '') === 'Dto destino')>Dto destino</option>
-                        <option value="En reparto" @selected(old('ubicacion_actual', $isEdit ? ($shipment->
-                            ubicacion_actual ?? '') : '') === 'En reparto')>En reparto</option>
-                        <option value="Entregado" @selected(old('ubicacion_actual', $isEdit ? ($shipment->
-                            ubicacion_actual ?? '') : '') === 'Entregado')>Entregado</option>
-                    </select>
+                    @php
+                    $shipUbicActual = $isEdit ? ($shipment->ubicacion_actual ?? 'Dto origen') : 'Dto origen';
+                    $shipUbicColors = [
+                    'Dto origen' => 'dt-badge-indigo',
+                    'En transito' => 'dt-badge-yellow',
+                    'Dto destino' => 'dt-badge-blue',
+                    'En reparto' => 'dt-badge-orange',
+                    'Entregado' => 'dt-badge-green',
+                    ];
+                    $shipUbicColor = $shipUbicColors[$shipUbicActual] ?? 'dt-badge-gray';
+                    @endphp
+                    <div class="mt-1">
+                        <span class="dt-badge {{ $shipUbicColor }}">
+                            {{ $shipUbicActual }}
+                        </span>
+                    </div>
                 </div>
+                @endif
+                <input type="hidden" name="ubicacion_actual"
+                    value="{{ $isEdit ? ($shipment->ubicacion_actual ?? 'Dto origen') : 'Dto origen' }}">
+
             </div>
         </div>
 
@@ -360,19 +363,33 @@ $items = $isEdit ? $shipment->items : [ (object)[ 'tipo_paquete' => 'bultos', 'c
             class="w-full mt-2  px-2 py-2 rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white">{{ old('notas', $isEdit ? ($shipment->notas ?? $shipment->notes ?? '') : '') }}</textarea>
     </div>
 
-    <div
-        class="flex justify-between gap-2 sticky bottom-0 bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-lg">
+    <div class="flex justify-end gap-3 pt-4 mt-6 border-t border-gray-200 dark:border-gray-700">
         <a href="{{ route('shipments.index') }}"
-            class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded font-medium  hover:bg-gray-300 dark:hover:bg-gray-600">
-            ← Volver
+            class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
+                </path>
+            </svg>
+            Cancelar
         </a>
-        <x-primary-button type="submit" class="px-6 py-2  font-medium">
+        <button type="submit"
+            class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
             @if($isEdit)
-            ✅ Actualizar
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                </path>
+            </svg>
+            Actualizar
             @else
-            💾 Guardar
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4">
+                </path>
+            </svg>
+            Guardar
             @endif
-        </x-primary-button>
+        </button>
     </div>
 </form>
 
