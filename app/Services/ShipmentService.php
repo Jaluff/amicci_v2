@@ -36,6 +36,8 @@ class ShipmentService
 
             $this->recalculateTotals($shipment);
 
+            $shipment->logActivity('Guía creada', 'created', ['numero' => $number]);
+
             return $shipment;
         });
     }
@@ -53,6 +55,8 @@ class ShipmentService
             }
 
             $this->recalculateTotals($shipment);
+
+            $shipment->logActivity('Guía actualizada', 'updated');
 
             return $shipment;
         });

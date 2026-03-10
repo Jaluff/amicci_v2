@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Scopes\CompanyScope;
 use App\Models\Traits\HasProblems;
 use App\Models\Traits\HasStateMachine;
+use App\Models\Traits\HasActivityLogs;
 use App\StateMachines\ShipmentStateMachine;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Shipment extends Model
 {
-    use SoftDeletes, HasFactory, HasStateMachine, HasProblems;
+    use SoftDeletes, HasFactory, HasStateMachine, HasProblems, HasActivityLogs;
 
     protected string $stateMachineClass = ShipmentStateMachine::class;
 

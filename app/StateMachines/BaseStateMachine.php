@@ -62,6 +62,15 @@ abstract class BaseStateMachine implements StateMachineInterface
                 'transitioned_at' => now(),
             ]);
 
+            // 2b. Opcional: Escribir también en el log de actividades si el modelo lo permite
+            if (method_exists($this->model, 'logActivity')) {
+                $this->model->logActivity(
+                    "Cambio de estado: {$from} ➔ {$targetStatus}" . ($comment ? " ({$comment})" : ""),
+                    'status_changed',
+                    ['from' => $from, 'to' => $targetStatus]
+                );
+            }
+
             // 3. Hook de cascada (override en subclases si es necesario)
             $this->afterTransition($from, $targetStatus);
 

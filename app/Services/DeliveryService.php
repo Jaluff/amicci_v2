@@ -39,6 +39,10 @@ class DeliveryService
                     ->update([
                     'delivery_id' => $delivery->id,
                 ]);
+                
+                foreach ($shipments as $s) {
+                    $s->logActivity("Asignada al reparto {$delivery->delivery_number}", 'assigned_delivery');
+                }
             }
 
             return $delivery;
@@ -50,14 +54,19 @@ class DeliveryService
         return DB::transaction(function () use ($delivery, $data) {
             $shipmentIds = $data['shipments'] ?? [];
 
-            // Disconnect old shipments not in new list
-            Shipment::where('delivery_id', $delivery->id)
+            // Desconectar las guías viejas que no están en la lista
+            $removedShipments = Shipment::where('delivery_id', $delivery->id)
                 ->whereNotIn('id', $shipmentIds)
                 ->where('ubicacion_actual', '!=', 'Entregado') // don't detach delivered ones
-                ->update([
-                'delivery_id' => null,
-                'ubicacion_actual' => 'Dto destino'
-            ]);
+                ->get();
+                
+            foreach($removedShipments as $s) {
+                $s->update([
+                    'delivery_id' => null,
+                    'ubicacion_actual' => 'Dto destino'
+                ]);
+                $s->logActivity("Desvinculada del reparto {$delivery->delivery_number}", 'unassigned_delivery');
+            }
 
             // Connect new ones
             if (!empty($shipmentIds)) {
@@ -72,6 +81,13 @@ class DeliveryService
                 Shipment::whereIn('id', $shipmentIds)->update([
                     'delivery_id' => $delivery->id,
                 ]);
+                
+                foreach ($shipments as $s) {
+                    // Si no estaban asignadas antes a este delivery, lo logueamos
+                    if ($s->getOriginal('delivery_id') != $delivery->id) {
+                        $s->logActivity("Asignada al reparto {$delivery->delivery_number}", 'assigned_delivery');
+                    }
+                }
 
                 $data['guide_count'] = count($shipments);
                 $data['package_count'] = collect($shipments)->sum(fn($s) => $s->items->sum('cantidad'));

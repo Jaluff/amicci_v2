@@ -43,13 +43,28 @@ class TransportRouteService
     private function assignShipments(TransportRoute $route, array $shipmentIds): void
     {
         // Limpiamos los anteriores relacionados a esta ruta que no están en la lista
-        Shipment::where('transport_route_id', $route->id)
+        $removedShipments = Shipment::where('transport_route_id', $route->id)
             ->whereNotIn('id', $shipmentIds)
-            ->update(['transport_route_id' => null]);
+            ->get();
+            
+        foreach($removedShipments as $s) {
+            $s->update(['transport_route_id' => null]);
+            $s->logActivity("Desvinculada de la ruta {$route->route_number}", 'unassigned_route');
+        }
 
         // Si hay algun ID seteamos para esta ruta
         if (!empty($shipmentIds)) {
+            $addedShipments = Shipment::whereIn('id', $shipmentIds)
+                                ->where('transport_route_id', '!=', $route->id)->orWhereNull('transport_route_id')
+                                ->get();
+                                
+            // Mass update para asegurar que todos queden referenciados
             Shipment::whereIn('id', $shipmentIds)->update(['transport_route_id' => $route->id]);
+            
+            foreach($addedShipments as $s) {
+                // Solo registramos el log a los nuevos vinculados
+                $s->logActivity("Asignada a la ruta {$route->route_number}", 'assigned_route');
+            }
         }
     }
     private function validateDeliveryStatus(TransportRoute $route): void

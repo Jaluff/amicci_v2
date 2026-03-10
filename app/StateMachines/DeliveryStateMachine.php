@@ -52,6 +52,14 @@ class DeliveryStateMachine extends BaseStateMachine
                     'user_id' => \Illuminate\Support\Facades\Auth::id(),
                     'transitioned_at' => now(),
                 ]);
+                
+                if (method_exists($shipment, 'logActivity')) {
+                    $shipment->logActivity(
+                        "Cambio de estado: En reparto ➔ Entregado (Entregado desde Reparto {$this->model->delivery_number})",
+                        'status_changed',
+                        ['from' => 'En reparto', 'to' => 'Entregado']
+                    );
+                }
 
                 // Resolver problemas activos
                 if ($shipment->hasActiveProblem()) {
