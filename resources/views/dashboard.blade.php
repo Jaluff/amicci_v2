@@ -2,276 +2,285 @@
 
 @section('content')
 <div class="py-6">
-    <div class="max-w-full mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
 
-        {{-- ══ HEADER ══════════════════════════════════════════════════════ --}}
-        <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-xl px-6 py-4">
-            <div class="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-                        🖥 Tablero de Control
-                    </h1>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                        Estado operacional en tiempo real · <span id="last-refresh" class="italic"></span>
-                    </p>
-                </div>
-                <div class="flex items-center gap-3 flex-wrap">
-                    <div class="flex items-center gap-2">
-                        <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Desde</label>
-                        <input type="date" id="filter-from"
-                            class="text-sm rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white px-3 py-1.5">
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Hasta</label>
-                        <input type="date" id="filter-to"
-                            class="text-sm rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white px-3 py-1.5">
-                    </div>
-                    <button id="btn-apply-filter"
-                        class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg transition">
-                        🔍 Filtrar
-                    </button>
-                    <button id="btn-clear-filter"
-                        class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition">
-                        ✕ Todo
-                    </button>
-                    <span id="filter-label"
-                        class="hidden text-xs text-indigo-500 italic bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded-full">
-                        Filtrando por rango
-                    </span>
-                </div>
+        {{-- HEADER --}}
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <h1 class="text-base font-bold text-gray-800 dark:text-gray-100 tracking-tight flex items-center gap-2">
+                    <span class="inline-block w-1 h-4 rounded-full bg-indigo-500"></span>
+                    Tablero de Control
+                </h1>
+                <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5 ml-3">
+                    Operaciones en tiempo real &middot;
+                    <span id="last-refresh" class="text-indigo-400 font-medium"></span>
+                </p>
             </div>
-        </div>
-
-        {{-- ══ SECCIÓN 1: FLUJO DE GUÍAS ════════════════════════════════════ --}}
-        <div>
-            <h2 class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3 px-1">
-                📦 Flujo de Guías en el Sistema
-            </h2>
-            <div class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-3">
-                @foreach([
-                ['id' => 'k-total', 'label' => 'Guías en Sistema', 'icon' => '📦', 'ring' => 'ring-gray-300
-                dark:ring-gray-600', 'text' => 'text-gray-700 dark:text-gray-200'],
-                ['id' => 'k-origen', 'label' => 'Guías en Depósito Origen', 'icon' => '🏭', 'ring' => 'ring-indigo-300
-                dark:ring-indigo-700', 'text' => 'text-indigo-700 dark:text-indigo-300'],
-                ['id' => 'k-transito', 'label' => 'Guías en Tránsito', 'icon' => '🚛', 'ring' => 'ring-yellow-300
-                dark:ring-yellow-700', 'text' => 'text-yellow-700 dark:text-yellow-300'],
-                ['id' => 'k-destino', 'label' => 'Guías en Depósito Destino', 'icon' => '🏬', 'ring' => 'ring-blue-300
-                dark:ring-blue-700', 'text' => 'text-blue-700 dark:text-blue-300'],
-                ['id' => 'k-reparto', 'label' => 'Guías en Reparto', 'icon' => '🛵', 'ring' => 'ring-orange-300
-                dark:ring-orange-700', 'text' => 'text-orange-600 dark:text-orange-300'],
-                ['id' => 'k-entregadas','label' => 'Guías Entregadas', 'icon' => '✅', 'ring' => 'ring-green-300
-                dark:ring-green-700', 'text' => 'text-green-700 dark:text-green-300'],
-                ['id' => 'k-hoy', 'label' => 'Entregas de Hoy', 'icon' => '📅', 'ring' => 'ring-teal-300
-                dark:ring-teal-700', 'text' => 'text-teal-700 dark:text-teal-300'],
-                ['id' => 'k-problemas', 'label' => 'Guías con Problemas Activos', 'icon' => '⚠️', 'ring' =>
-                'ring-red-300 dark:ring-red-700', 'text' => 'text-red-600 dark:text-red-400'],
-                ] as $c)
+            <div class="flex items-center gap-2 flex-wrap">
                 <div
-                    class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 {{ $c['ring'] }} p-4 flex flex-col gap-2 hover:shadow-md transition group">
-                    <div class="flex justify-between items-start">
-                        <span class="text-xl">{{ $c['icon'] }}</span>
-                        <span id="{{ $c['id'] }}"
-                            class="text-2xl font-extrabold {{ $c['text'] }} tabular-nums animate-pulse">—</span>
-                    </div>
-                    <p
-                        class="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 leading-tight mt-auto">
-                        {{ $c['label'] }}
-                    </p>
+                    class="flex items-center gap-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5">
+                    <span class="text-[11px] text-gray-500 dark:text-gray-400">Desde</span>
+                    <input type="date" id="filter-from"
+                        class="text-[11px] bg-transparent text-gray-700 dark:text-white outline-none w-28">
+                    <span class="text-gray-300 dark:text-gray-600 mx-1">|</span>
+                    <span class="text-[11px] text-gray-500 dark:text-gray-400">Hasta</span>
+                    <input type="date" id="filter-to"
+                        class="text-[11px] bg-transparent text-gray-700 dark:text-white outline-none w-28">
                 </div>
-                @endforeach
+                <button id="btn-apply-filter"
+                    class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-semibold rounded-lg transition">Filtrar</button>
+                <button id="btn-clear-filter"
+                    class="px-3 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 text-[11px] font-medium rounded-lg transition hover:bg-gray-50 dark:hover:bg-gray-600">Limpiar</button>
+                <span id="filter-label"
+                    class="hidden text-[10px] text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/40 px-2 py-1 rounded-full">Filtrando</span>
             </div>
         </div>
 
-        {{-- ══ SECCIÓN 2: OPERACIONES ACTIVAS ══════════════════════════════ --}}
-        <div>
-            <h2 class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3 px-1">
-                ⚡ Operaciones Activas Ahora
-            </h2>
-            <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
-                @foreach([
-                ['id' => 'k-rutas-viaje', 'label' => 'Rutas en Viaje', 'icon' => '🚛', 'bg' => 'from-yellow-500
-                to-amber-400'],
-                ['id' => 'k-rutas-listas', 'label' => 'Rutas Listas para Despachar', 'icon' => '📋', 'bg' =>
-                'from-blue-500 to-cyan-400'],
-                ['id' => 'k-desp-viaje', 'label' => 'Despachos en Tránsito', 'icon' => '📦', 'bg' => 'from-purple-500
-                to-violet-400'],
-                ['id' => 'k-repartos', 'label' => 'Repartos en Curso', 'icon' => '🛵', 'bg' => 'from-orange-500
-                to-red-400'],
-                ['id' => 'k-conductores', 'label' => 'Conductores Registrados', 'icon' => '🧑‍✈️', 'bg' =>
-                'from-gray-500 to-slate-400'],
-                ['id' => 'k-repartidores', 'label' => 'Repartidores Registrados', 'icon' => '🧑‍🦯', 'bg' =>
-                'from-teal-500 to-emerald-400'],
-                ] as $c)
-                <div class="rounded-xl shadow-sm p-4 flex flex-col gap-2 bg-gradient-to-br {{ $c['bg'] }} text-white">
-                    <div class="flex justify-between items-start">
-                        <span class="text-2xl">{{ $c['icon'] }}</span>
-                        <span id="{{ $c['id'] }}" class="text-3xl font-extrabold tabular-nums animate-pulse">—</span>
-                    </div>
-                    <p class="text-[10px] font-bold uppercase tracking-wider opacity-90 leading-tight mt-auto">{{
-                        $c['label'] }}</p>
-                </div>
-                @endforeach
-            </div>
-        </div>
-
-        {{-- ══ SECCIÓN 3: TOTALES ════════════════════════════════════════════ --}}
-        <div>
-            <h2 class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3 px-1">
-                📊 Totales Generales del Período
-            </h2>
-            <div class="grid grid-cols-1 sm:grid-cols-1 gap-3">
-                <div
-                    class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-200 dark:ring-gray-700 p-4 flex flex-col gap-1 items-center">
-                    <span class="text-2xl">👥</span>
-                    <span id="k-clientes"
-                        class="text-3xl font-extrabold text-gray-800 dark:text-gray-100 tabular-nums animate-pulse">—</span>
-                    <p class="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Clientes
-                        Registrados</p>
-                </div>
-            </div>
-        </div>
-
-        {{-- ══ GRÁFICOS FILA 1 ═══════════════════════════════════════════════ --}}
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-xl px-6 py-5 flex flex-col">
-                <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4">
-                    Distribución por Estado</h3>
-                <div class="flex-1 flex items-center justify-center min-h-[220px]">
-                    <canvas id="chart-donut"></canvas>
-                </div>
-            </div>
-            <div class="lg:col-span-2 bg-white dark:bg-gray-800 shadow-sm sm:rounded-xl px-6 py-5 flex flex-col">
-                <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4">Guías
-                    Entregadas por Día (últimos 14 días)</h3>
-                <div class="flex-1 min-h-[220px]">
-                    <canvas id="chart-bar-day"></canvas>
-                </div>
-            </div>
-        </div>
-
-        {{-- ══ GRÁFICOS FILA 2 ═══════════════════════════════════════════════ --}}
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-xl px-6 py-5 flex flex-col">
-                <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4">Guías
-                    Creadas vs Entregadas — Por Semana</h3>
-                <div class="flex-1 min-h-[230px]"><canvas id="chart-line-weekly"></canvas></div>
-            </div>
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-xl px-6 py-5 flex flex-col">
-                <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4">Top 10
-                    Destinos con Mayor Volumen</h3>
-                <div class="flex-1 min-h-[230px]"><canvas id="chart-h-bar-dest"></canvas></div>
-            </div>
-        </div>
-
-        {{-- ══ TABLAS OPERATIVAS ════════════════════════════════════════════ --}}
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-            {{-- Guías con problemas activos --}}
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-xl overflow-hidden">
-                <div
-                    class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-red-50 dark:bg-red-900/10 flex items-center gap-2">
-                    <span class="inline-block w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                    <h3 class="text-sm font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">Guías con
-                        Problemas Activos</h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-sm">
-                        <thead class="bg-gray-50 dark:bg-gray-900/40">
-                            <tr>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
-                                    Guía N°</th>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
-                                    Destino</th>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
-                                    Detalle del Problema</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbl-problems" class="divide-y divide-gray-100 dark:divide-gray-700">
-                            <tr>
-                                <td colspan="3" class="px-4 py-6 text-center text-gray-400 italic text-sm">Cargando...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            {{-- Repartos en curso --}}
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-xl overflow-hidden">
-                <div
-                    class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-orange-50 dark:bg-orange-900/10 flex items-center gap-2">
-                    <span class="inline-block w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
-                    <h3 class="text-sm font-bold text-orange-700 dark:text-orange-400 uppercase tracking-wider">Repartos
-                        en Curso</h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-sm">
-                        <thead class="bg-gray-50 dark:bg-gray-900/40">
-                            <tr>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
-                                    N° Reparto</th>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
-                                    Repartidor</th>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
-                                    Zona</th>
-                                <th
-                                    class="px-4 py-2 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
-                                    Guías</th>
-                                <th
-                                    class="px-4 py-2 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
-                                    ⚠</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbl-deliveries" class="divide-y divide-gray-100 dark:divide-gray-700">
-                            <tr>
-                                <td colspan="5" class="px-4 py-6 text-center text-gray-400 italic text-sm">Cargando...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-        </div>
-
-        {{-- Rutas en viaje --}}
-        <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-xl overflow-hidden">
+        {{-- KPIs: 4 en una fila, sin iconos, estilo uniforme --}}
+        <div class="flex items-stretch justify-between gap-2.5 w-full overflow-x-auto pb-1">
+            @foreach([
+            ['id'=>'k-rutas-viaje', 'label'=>'Rutas en Viaje'],
+            ['id'=>'k-desp-viaje', 'label'=>'Despachos Activos'],
+            ['id'=>'k-repartos', 'label'=>'Repartos en Curso'],
+            ['id'=>'k-problemas', 'label'=>'Con Problemas'],
+            ] as $kk)
             <div
-                class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-yellow-50 dark:bg-yellow-900/10 flex items-center gap-2">
-                <span class="inline-block w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
-                <h3 class="text-sm font-bold text-yellow-700 dark:text-yellow-400 uppercase tracking-wider">Rutas
-                    Actualmente en Viaje</h3>
+                class="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 px-2 py-3 shadow-sm hover:shadow transition text-center min-w-[120px]">
+                <span id="{{ $kk['id'] }}"
+                    class="text-2xl font-bold tabular-nums text-gray-800 dark:text-gray-100 animate-pulse leading-none block">--</span>
+                <p
+                    class="text-[9px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mt-1.5 leading-none">
+                    {{ $kk['label'] }}</p>
             </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-sm">
-                    <thead class="bg-gray-50 dark:bg-gray-900/40">
+            @endforeach
+        </div>
+
+        {{-- TABLAS: arriba de graficos, paginadas a 10 --}}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {{-- Guias con Problemas --}}
+            <div
+                class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                <div class="px-3 py-2 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse inline-block"></span>
+                        <span
+                            class="text-[9px] font-bold uppercase tracking-widest text-gray-600 dark:text-gray-300">Guias
+                            con Problemas</span>
+                    </div>
+                    <div class="flex items-center gap-1" id="pag-problems"></div>
+                </div>
+                <table class="min-w-full">
+                    <thead class="bg-gray-100 dark:bg-gray-700">
                         <tr>
                             <th
-                                class="px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
-                                N° Ruta</th>
+                                class="px-3 py-2 text-left text-[9px] font-semibold uppercase text-gray-500 dark:text-gray-300">
+                                Guia</th>
                             <th
-                                class="px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
-                                Origen</th>
-                            <th
-                                class="px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
+                                class="px-3 py-2 text-left text-[9px] font-semibold uppercase text-gray-500 dark:text-gray-300">
                                 Destino</th>
                             <th
-                                class="px-4 py-2 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
-                                Guías en Ruta</th>
+                                class="px-3 py-2 text-left text-[9px] font-semibold uppercase text-gray-500 dark:text-gray-300">
+                                Problema</th>
                         </tr>
                     </thead>
-                    <tbody id="tbl-routes" class="divide-y divide-gray-100 dark:divide-gray-700">
+                    <tbody id="tbl-problems" class="divide-y divide-gray-50 dark:divide-gray-700/40 text-xs">
                         <tr>
-                            <td colspan="4" class="px-4 py-6 text-center text-gray-400 italic text-sm">Cargando...</td>
+                            <td colspan="3"
+                                class="px-3 py-4 text-center text-gray-300 dark:text-gray-600 italic text-[10px]">
+                                Cargando...</td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+
+            {{-- Repartos en Curso --}}
+            <div
+                class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                <div class="px-3 py-2 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse inline-block"></span>
+                        <span
+                            class="text-[9px] font-bold uppercase tracking-widest text-gray-600 dark:text-gray-300">Repartos
+                            en Curso</span>
+                    </div>
+                    <div class="flex items-center gap-1" id="pag-deliveries"></div>
+                </div>
+                <table class="min-w-full">
+                    <thead class="bg-gray-100 dark:bg-gray-700">
+                        <tr>
+                            <th
+                                class="px-3 py-2 text-left text-[9px] font-semibold uppercase text-gray-500 dark:text-gray-300">
+                                Reparto</th>
+                            <th
+                                class="px-3 py-2 text-left text-[9px] font-semibold uppercase text-gray-500 dark:text-gray-300">
+                                Repartidor</th>
+                            <th
+                                class="px-3 py-2 text-left text-[9px] font-semibold uppercase text-gray-500 dark:text-gray-300">
+                                Zona</th>
+                            <th
+                                class="px-3 py-2 text-center text-[9px] font-semibold uppercase text-gray-500 dark:text-gray-300">
+                                Guias</th>
+                            <th
+                                class="px-3 py-2 text-center text-[9px] font-semibold uppercase text-gray-500 dark:text-gray-300">
+                                Prob.</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbl-deliveries" class="divide-y divide-gray-50 dark:divide-gray-700/40 text-xs">
+                        <tr>
+                            <td colspan="5"
+                                class="px-3 py-4 text-center text-gray-300 dark:text-gray-600 italic text-[10px]">
+                                Cargando...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {{-- Despachos en Curso --}}
+            <div
+                class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                <div class="px-3 py-2 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse inline-block"></span>
+                        <span
+                            class="text-[9px] font-bold uppercase tracking-widest text-gray-600 dark:text-gray-300">Despachos
+                            en Curso</span>
+                    </div>
+                    <div class="flex items-center gap-1" id="pag-dispatches"></div>
+                </div>
+                <table class="min-w-full">
+                    <thead class="bg-gray-100 dark:bg-gray-700">
+                        <tr>
+                            <th
+                                class="px-3 py-2 text-left text-[9px] font-semibold uppercase text-gray-500 dark:text-gray-300">
+                                Despacho</th>
+                            <th
+                                class="px-3 py-2 text-left text-[9px] font-semibold uppercase text-gray-500 dark:text-gray-300">
+                                Conductor</th>
+                            <th
+                                class="px-3 py-2 text-left text-[9px] font-semibold uppercase text-gray-500 dark:text-gray-300">
+                                Origen</th>
+                            <th
+                                class="px-3 py-2 text-left text-[9px] font-semibold uppercase text-gray-500 dark:text-gray-300">
+                                Destino</th>
+                            <th
+                                class="px-3 py-2 text-center text-[9px] font-semibold uppercase text-gray-500 dark:text-gray-300">
+                                Rutas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbl-dispatches" class="divide-y divide-gray-50 dark:divide-gray-700/40 text-xs">
+                        <tr>
+                            <td colspan="5"
+                                class="px-3 py-4 text-center text-gray-300 dark:text-gray-600 italic text-[10px]">
+                                Cargando...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Rutas en Viaje --}}
+            <div
+                class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                <div class="px-3 py-2 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse inline-block"></span>
+                        <span
+                            class="text-[9px] font-bold uppercase tracking-widest text-gray-600 dark:text-gray-300">Rutas
+                            en Viaje</span>
+                    </div>
+                    <div class="flex items-center gap-1" id="pag-routes"></div>
+                </div>
+                <table class="min-w-full">
+                    <thead class="bg-gray-100 dark:bg-gray-700">
+                        <tr>
+                            <th
+                                class="px-3 py-2 text-left text-[9px] font-semibold uppercase text-gray-500 dark:text-gray-300">
+                                Ruta</th>
+                            <th
+                                class="px-3 py-2 text-left text-[9px] font-semibold uppercase text-gray-500 dark:text-gray-300">
+                                Origen</th>
+                            <th
+                                class="px-3 py-2 text-left text-[9px] font-semibold uppercase text-gray-500 dark:text-gray-300">
+                                Destino</th>
+                            <th
+                                class="px-3 py-2 text-center text-[9px] font-semibold uppercase text-gray-500 dark:text-gray-300">
+                                Guias</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbl-routes" class="divide-y divide-gray-50 dark:divide-gray-700/40 text-xs">
+                        <tr>
+                            <td colspan="4"
+                                class="px-3 py-4 text-center text-gray-300 dark:text-gray-600 italic text-[10px]">
+                                Cargando...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- GRAFICOS: siempre 50/50 --}}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <div
+                class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-3 flex flex-col">
+                <p class="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1">Estado
+                    de Guias</p>
+                <div class="flex items-center gap-3 flex-1">
+                    <div id="chart-donut" class="w-36 shrink-0 -ml-1"></div>
+                    <div class="flex-1 min-w-0">
+                        <table class="w-full text-[11px]">
+                            <thead class="bg-gray-100 dark:bg-gray-700">
+                                <tr>
+                                    <th
+                                        class="text-left px-2 py-1 text-[9px] font-semibold uppercase text-gray-500 dark:text-gray-300 rounded-tl-md">
+                                        Estado</th>
+                                    <th
+                                        class="text-right px-2 py-1 text-[9px] font-semibold uppercase text-gray-500 dark:text-gray-300">
+                                        N</th>
+                                    <th
+                                        class="text-right px-2 py-1 text-[9px] font-semibold uppercase text-gray-500 dark:text-gray-300 rounded-tr-md">
+                                        %</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbl-donut-body" class="divide-y divide-gray-50 dark:divide-gray-700/40">
+                                <tr>
+                                    <td colspan="3" class="py-2 text-center text-gray-300 italic text-[10px]">
+                                        Cargando...</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="border-t border-gray-200 dark:border-gray-600">
+                                    <td class="pt-1 text-[10px] font-bold text-gray-600 dark:text-gray-300">Total</td>
+                                    <td class="pt-1 text-right text-[10px] font-bold text-gray-700 dark:text-gray-200"
+                                        id="tbl-donut-total">--</td>
+                                    <td class="pt-1 text-right text-[10px] font-bold text-gray-500">100%</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-3 flex flex-col">
+                <p class="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1">Volumen
+                    Operativo - Ultimos 30 dias</p>
+                <div id="chart-line-weekly" class="flex-1 min-h-[190px] -mx-1"></div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <div
+                class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-3 flex flex-col">
+                <p class="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1">Guias
+                    Entregadas x Dia (ult. 14 dias)</p>
+                <div id="chart-bar-day" class="flex-1 min-h-[170px] -mx-1"></div>
+            </div>
+            <div
+                class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-3 flex flex-col">
+                <p class="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1">Top 10
+                    Destinos por Volumen</p>
+                <div id="chart-h-bar-dest" class="flex-1 min-h-[170px] -mx-1"></div>
             </div>
         </div>
 
@@ -280,181 +289,205 @@
 @endsection
 
 @section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.54.0/dist/apexcharts.min.js"></script>
 <script>
-const STATS_URL = "{{ route('dashboard.stats') }}";
+var STATS_URL = "{{ route('dashboard.stats') }}";
+var PAGE_SIZE = 10;
 
-const STATUS_COLORS = {
+var STATUS_COLORS = {
     'Dto origen':    '#6366f1',
-    'En transito':   '#f59e0b',
+    'En transito':   '#f97316',
     'Dto destino':   '#3b82f6',
-    'En reparto':    '#f97316',
+    'En reparto':    '#fb923c',
     'Entregado':     '#22c55e',
-    'Con problemas': '#ef4444',
+    'Con problemas': '#ef4444'
 };
 
-let chartDonut, chartBarDay, chartLineWeekly, chartHBarDest;
+var apexDonut = null, apexLine = null, apexBar = null, apexHBar = null;
+var tableData = {};
 
-const isDark      = () => document.documentElement.classList.contains('dark');
-const gridColor   = () => isDark() ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
-const labelColor  = () => isDark() ? '#9ca3af' : '#6b7280';
+function isDark()     { return document.documentElement.classList.contains('dark'); }
+function labelColor() { return isDark() ? '#9ca3af' : '#9ca3af'; }
+function gridColor()  { return isDark() ? '#374151' : '#f3f4f6'; }
+function fgCard()     { return isDark() ? '#1f2937' : '#ffffff'; }
 
 function stopPulse() {
-    document.querySelectorAll('.animate-pulse[id]').forEach(el => el.classList.remove('animate-pulse'));
+    document.querySelectorAll('.animate-pulse[id]').forEach(function(el) { el.classList.remove('animate-pulse'); });
 }
 
 function getParams() {
-    const from = document.getElementById('filter-from').value;
-    const to   = document.getElementById('filter-to').value;
-    return (from && to) ? `?from=${from}&to=${to}` : '';
+    var from = document.getElementById('filter-from').value;
+    var to   = document.getElementById('filter-to').value;
+    return (from && to) ? '?from=' + from + '&to=' + to : '';
 }
 
-async function loadStats() {
-    const res  = await fetch(STATS_URL + getParams(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-    const data = await res.json();
-    const k    = data.kpi;
+// Paginacion generica
+function paginate(allRows, page, tbodyId, pagContainerId, renderRowFn, emptyMsg, emptyCols) {
+    var totalPages = Math.max(1, Math.ceil(allRows.length / PAGE_SIZE));
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
 
-    // ── KPI Flujo de Guías ─────────────────────────────────
-    document.getElementById('k-total').textContent      = k.guias_totales;
-    document.getElementById('k-origen').textContent     = k.guias_en_origen;
-    document.getElementById('k-transito').textContent   = k.guias_en_transito;
-    document.getElementById('k-destino').textContent    = k.guias_en_destino;
-    document.getElementById('k-reparto').textContent    = k.guias_en_reparto;
-    document.getElementById('k-entregadas').textContent = k.guias_entregadas;
-    document.getElementById('k-hoy').textContent        = k.guias_entregadas_hoy;
-    document.getElementById('k-problemas').textContent  = k.guias_con_problemas;
+    var start = (page - 1) * PAGE_SIZE;
+    var slice = allRows.slice(start, start + PAGE_SIZE);
 
-    // ── KPI Operaciones Activas ─────────────────────────────
-    document.getElementById('k-rutas-viaje').textContent  = k.rutas_en_viaje;
-    document.getElementById('k-rutas-listas').textContent = k.rutas_listas_salir;
-    document.getElementById('k-desp-viaje').textContent   = k.despachos_en_viaje;
-    document.getElementById('k-repartos').textContent     = k.repartos_en_curso;
-    document.getElementById('k-conductores').textContent  = k.conductores;
-    document.getElementById('k-repartidores').textContent = k.repartidores;
+    var tbody = document.getElementById(tbodyId);
+    if (allRows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="' + emptyCols + '" class="px-3 py-3 text-center text-gray-300 dark:text-gray-600 italic text-[10px]">' + emptyMsg + '</td></tr>';
+    } else {
+        tbody.innerHTML = slice.map(renderRowFn).join('');
+    }
 
-    // ── KPI Totales ─────────────────────────────────────────
-    document.getElementById('k-clientes').textContent = k.total_clientes;
+    var pagBox = document.getElementById(pagContainerId);
+    if (totalPages <= 1) { pagBox.innerHTML = ''; return; }
 
-    stopPulse();
+    var html = '';
+    var btnBase = 'px-1.5 py-0.5 text-[9px] rounded transition font-medium ';
+    var btnActive = btnBase + 'bg-indigo-600 text-white';
+    var btnInactive = btnBase + 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700';
 
-    // ── Timestamp ──────────────────────────────────────────
-    document.getElementById('last-refresh').textContent =
-        'Actualizado: ' + new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
-
-    // ── Dona ───────────────────────────────────────────────
-    const statusLabels = Object.keys(data.chart_status);
-    const statusData   = Object.values(data.chart_status);
-    const statusColors = statusLabels.map(s => STATUS_COLORS[s] || '#9ca3af');
-    if (chartDonut) chartDonut.destroy();
-    chartDonut = new Chart(document.getElementById('chart-donut'), {
-        type: 'doughnut',
-        data: { labels: statusLabels, datasets: [{ data: statusData, backgroundColor: statusColors, borderWidth: 2, borderColor: isDark() ? '#1f2937' : '#fff' }] },
-        options: { cutout: '65%', plugins: { legend: { position: 'bottom', labels: { color: labelColor(), font: { size: 11 }, padding: 10 } } } }
+    for (var i = 1; i <= totalPages; i++) {
+        html += '<button data-page="' + i + '" class="' + (i === page ? btnActive : btnInactive) + '">' + i + '</button>';
+    }
+    pagBox.innerHTML = html;
+    pagBox.querySelectorAll('button').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var p = parseInt(this.getAttribute('data-page'));
+            paginate(allRows, p, tbodyId, pagContainerId, renderRowFn, emptyMsg, emptyCols);
+        });
     });
-
-    // ── Barras entregadas x día ─────────────────────────────
-    if (chartBarDay) chartBarDay.destroy();
-    chartBarDay = new Chart(document.getElementById('chart-bar-day'), {
-        type: 'bar',
-        data: {
-            labels: data.chart_bar.labels,
-            datasets: [{ label: 'Guías Entregadas', data: data.chart_bar.data, backgroundColor: 'rgba(99,102,241,0.75)', borderRadius: 5 }]
-        },
-        options: { plugins: { legend: { display: false } }, scales: {
-            x: { grid: { color: gridColor() }, ticks: { color: labelColor() } },
-            y: { grid: { color: gridColor() }, ticks: { color: labelColor(), stepSize: 1 }, beginAtZero: true }
-        }}
-    });
-
-    // ── Línea creadas vs entregadas ─────────────────────────
-    if (chartLineWeekly) chartLineWeekly.destroy();
-    chartLineWeekly = new Chart(document.getElementById('chart-line-weekly'), {
-        type: 'line',
-        data: {
-            labels: data.chart_line.labels,
-            datasets: [
-                { label: 'Guías Creadas',    data: data.chart_line.created,   borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)',  tension: 0.3, fill: true, pointRadius: 4 },
-                { label: 'Guías Entregadas', data: data.chart_line.delivered, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.08)', tension: 0.3, fill: true, pointRadius: 4 },
-            ]
-        },
-        options: {
-            plugins: { legend: { labels: { color: labelColor() } } },
-            scales: {
-                x: { grid: { color: gridColor() }, ticks: { color: labelColor() } },
-                y: { grid: { color: gridColor() }, ticks: { color: labelColor(), stepSize: 1 }, beginAtZero: true }
-            }
-        }
-    });
-
-    // ── Barras horizontales top destinos ───────────────────
-    if (chartHBarDest) chartHBarDest.destroy();
-    chartHBarDest = new Chart(document.getElementById('chart-h-bar-dest'), {
-        type: 'bar',
-        data: {
-            labels: data.top_destinations.map(d => d.nombre),
-            datasets: [{ label: 'Guías', data: data.top_destinations.map(d => d.total), backgroundColor: 'rgba(249,115,22,0.75)', borderRadius: 4 }]
-        },
-        options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: {
-            x: { grid: { color: gridColor() }, ticks: { color: labelColor(), stepSize: 1 }, beginAtZero: true },
-            y: { grid: { display: false }, ticks: { color: labelColor() } }
-        }}
-    });
-
-    // ── Tabla: guías con problemas ─────────────────────────
-    const tblP = document.getElementById('tbl-problems');
-    tblP.innerHTML = data.problem_list.length === 0
-        ? '<tr><td colspan="3" class="px-4 py-6 text-center text-green-500 font-medium">🎉 Sin guías con problemas activos</td></tr>'
-        : data.problem_list.map(p => `
-            <tr class="hover:bg-red-50 dark:hover:bg-red-900/10 transition">
-                <td class="px-4 py-2.5 font-mono font-bold text-indigo-600 dark:text-indigo-400 text-sm">${p.numero}</td>
-                <td class="px-4 py-2.5 text-gray-700 dark:text-gray-300 text-sm">${p.destino}</td>
-                <td class="px-4 py-2.5">
-                    <button type="button" class="btn-open-spm text-left text-red-600 dark:text-red-400 hover:underline text-sm line-clamp-1"
-                        data-shipment-id="${p.shipment_id}" data-shipment-numero="${p.numero}">
-                        ${p.problema}
-                    </button>
-                </td>
-            </tr>`).join('');
-
-    // ── Tabla: repartos en curso ────────────────────────────
-    const tblD = document.getElementById('tbl-deliveries');
-    tblD.innerHTML = data.active_deliveries_list.length === 0
-        ? '<tr><td colspan="5" class="px-4 py-6 text-center text-gray-400 italic text-sm">No hay repartos en curso</td></tr>'
-        : data.active_deliveries_list.map(d => `
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40 transition cursor-pointer" onclick="window.location='${d.edit_url}'">
-                <td class="px-4 py-2.5 font-mono font-bold text-indigo-600 dark:text-indigo-400 text-sm">${d.numero}</td>
-                <td class="px-4 py-2.5 text-gray-700 dark:text-gray-300 text-sm">${d.repartidor}</td>
-                <td class="px-4 py-2.5 text-gray-700 dark:text-gray-300 text-sm">${d.ubicacion}</td>
-                <td class="px-4 py-2.5 text-center font-semibold text-gray-800 dark:text-gray-100 text-sm">${d.guias}</td>
-                <td class="px-4 py-2.5 text-center text-sm">
-                    ${d.con_problema > 0
-                        ? `<span class="text-red-500 font-bold">⚠ ${d.con_problema}</span>`
-                        : '<span class="text-green-500">✓</span>'}
-                </td>
-            </tr>`).join('');
-
-    // ── Tabla: rutas en viaje ───────────────────────────────
-    const tblR = document.getElementById('tbl-routes');
-    tblR.innerHTML = data.active_routes_list.length === 0
-        ? '<tr><td colspan="4" class="px-4 py-6 text-center text-gray-400 italic text-sm">No hay rutas en viaje</td></tr>'
-        : data.active_routes_list.map(r => `
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40 transition">
-                <td class="px-4 py-2.5 font-mono font-bold t600 dark:text-indigo-400 text-sm">${r.numero}</td>
-                <td class="px-4 py-2.5 text-gray-700 dark:text-gray-300 text-sm">${r.origen}</td>
-                <td class="px-4 py-2.5 text-gray-700 dark:text-gray-300 text-sm">${r.destino}</td>
-                <td class="px-4 py-2.5 text-center font-semibold text-gray-800 dark:text-gray-100 text-sm">${r.guias}</td>
-            </tr>`).join('');
 }
 
-document.getElementById('btn-apply-filter').addEventListener('click', () => {
-    const from = document.getElementById('filter-from').value;
-    const to   = document.getElementById('filter-to').value;
-    if (!from || !to) { alert('Seleccioná ambas fechas para filtrar.'); return; }
+function loadStats() {
+    fetch(STATS_URL + getParams(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        var k = data.kpi;
+        document.getElementById('k-rutas-viaje').textContent = k.rutas_en_viaje;
+        document.getElementById('k-desp-viaje').textContent  = k.despachos_en_viaje;
+        document.getElementById('k-repartos').textContent    = k.repartos_en_curso;
+        document.getElementById('k-problemas').textContent   = k.guias_con_problemas;
+        stopPulse();
+
+        document.getElementById('last-refresh').textContent =
+            'actualizado ' + new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+
+        renderDonut(data);
+        renderLine(data);
+        renderBar(data);
+        renderHBar(data);
+        renderTables(data);
+    });
+}
+
+function renderDonut(data) {
+    var labels = Object.keys(data.chart_status);
+    var vals   = Object.values(data.chart_status);
+    var colors = labels.map(function(s) { return STATUS_COLORS[s] || '#9ca3af'; });
+    var total  = vals.reduce(function(a,b){ return a+b; }, 0);
+
+    if (apexDonut) apexDonut.destroy();
+    apexDonut = new ApexCharts(document.getElementById('chart-donut'), {
+        series: vals, labels: labels, colors: colors,
+        chart: { type: 'donut', height: 180, background: 'transparent', toolbar: { show: false }, animations: { enabled: true, speed: 500 } },
+        dataLabels: { enabled: false }, legend: { show: false },
+        stroke: { width: 2, colors: [fgCard()] },
+        plotOptions: { pie: { donut: { size: '74%', labels: { show: true, total: { show: true, label: 'Total', fontSize: '10px', color: '#9ca3af', formatter: function() { return total; } }, value: { show: true, fontSize: '20px', fontWeight: 700, color: isDark() ? '#e5e7eb' : '#111827', offsetY: 2 } } } } },
+        tooltip: { theme: isDark() ? 'dark' : 'light', y: { formatter: function(v) { return v + ' guias'; } } }
+    });
+    apexDonut.render();
+
+    document.getElementById('tbl-donut-total').textContent = total;
+    document.getElementById('tbl-donut-body').innerHTML = labels.map(function(label, i) {
+        var pct = total > 0 ? Math.round(vals[i] / total * 100) : 0;
+        return '<tr><td class="py-1 pr-1"><span class="flex items-center gap-1"><i style="background:' + colors[i] + '" class="inline-block w-2 h-2 rounded-full shrink-0"></i><span class="text-gray-600 dark:text-gray-300 truncate">' + label + '</span></span></td><td class="py-1 text-right font-semibold text-gray-700 dark:text-gray-200">' + vals[i] + '</td><td class="py-1 pl-1 text-right text-gray-400">' + pct + '%</td></tr>';
+    }).join('');
+}
+
+function renderLine(data) {
+    if (apexLine) apexLine.destroy();
+    apexLine = new ApexCharts(document.getElementById('chart-line-weekly'), {
+        series: [
+            { name: 'Guias', data: data.chart_line.shipments },
+            { name: 'Rutas', data: data.chart_line.routes },
+            { name: 'Despachos', data: data.chart_line.dispatches },
+            { name: 'Repartos', data: data.chart_line.deliveries }
+        ],
+        chart: { type: 'area', height: 200, background: 'transparent', toolbar: { show: false }, zoom: { enabled: false }, animations: { enabled: true, speed: 600 } },
+        colors: ['#6366f1', '#f59e0b', '#8b5cf6', '#f97316'],
+        dataLabels: { enabled: false }, stroke: { curve: 'smooth', width: 2 },
+        fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.2, opacityTo: 0.02, stops: [0, 90, 100] } },
+        markers: { size: 0, hover: { size: 4 } },
+        xaxis: { categories: data.chart_line.labels, labels: { style: { fontSize: '9px', colors: labelColor() }, rotate: -30 }, axisBorder: { show: false }, axisTicks: { show: false }, tickAmount: 10 },
+        yaxis: { labels: { style: { fontSize: '9px', colors: labelColor() }, formatter: function(v) { return Math.round(v); } }, min: 0 },
+        grid: { borderColor: gridColor(), strokeDashArray: 3, xaxis: { lines: { show: false } }, padding: { left: 2, right: 4 } },
+        legend: { position: 'top', horizontalAlign: 'right', fontSize: '10px', labels: { colors: labelColor() }, markers: { width: 16, height: 3, radius: 1 }, itemMargin: { horizontal: 6 } },
+        tooltip: { theme: isDark() ? 'dark' : 'light', shared: true, intersect: false }
+    });
+    apexLine.render();
+}
+
+function renderBar(data) {
+    if (apexBar) apexBar.destroy();
+    apexBar = new ApexCharts(document.getElementById('chart-bar-day'), {
+        series: [{ name: 'Entregadas', data: data.chart_bar.data }],
+        chart: { type: 'bar', height: 180, background: 'transparent', toolbar: { show: false } },
+        colors: ['#6366f1'], dataLabels: { enabled: false },
+        plotOptions: { bar: { borderRadius: 3, columnWidth: '50%' } },
+        xaxis: { categories: data.chart_bar.labels, labels: { style: { fontSize: '9px', colors: labelColor() } }, axisBorder: { show: false }, axisTicks: { show: false } },
+        yaxis: { labels: { style: { fontSize: '9px', colors: labelColor() }, formatter: function(v) { return Math.round(v); } } },
+        grid: { borderColor: gridColor(), strokeDashArray: 3, xaxis: { lines: { show: false } }, padding: { left: 2, right: 4 } },
+        tooltip: { theme: isDark() ? 'dark' : 'light', y: { formatter: function(v) { return v + ' guias'; } } }
+    });
+    apexBar.render();
+}
+
+function renderHBar(data) {
+    if (apexHBar) apexHBar.destroy();
+    apexHBar = new ApexCharts(document.getElementById('chart-h-bar-dest'), {
+        series: [{ name: 'Guias', data: data.top_destinations.map(function(d) { return d.total; }) }],
+        chart: { type: 'bar', height: 180, background: 'transparent', toolbar: { show: false } },
+        colors: ['#f97316'], dataLabels: { enabled: false },
+        plotOptions: { bar: { horizontal: true, borderRadius: 3, barHeight: '50%' } },
+        xaxis: { categories: data.top_destinations.map(function(d) { return d.nombre; }), labels: { style: { fontSize: '9px', colors: labelColor() }, formatter: function(v) { return Math.round(v); } }, axisBorder: { show: false }, axisTicks: { show: false } },
+        yaxis: { labels: { style: { fontSize: '9px', colors: labelColor() }, maxWidth: 90 } },
+        grid: { borderColor: gridColor(), strokeDashArray: 3, yaxis: { lines: { show: false } }, padding: { left: 2, right: 4 } },
+        tooltip: { theme: isDark() ? 'dark' : 'light', x: { show: true }, y: { formatter: function(v) { return v + ' guias'; } } }
+    });
+    apexHBar.render();
+}
+
+function renderTables(data) {
+    // Problemas
+    paginate(data.problem_list, 1, 'tbl-problems', 'pag-problems', function(p) {
+        return '<tr class="hover:bg-red-50/60 dark:hover:bg-red-900/10 transition-colors"><td class="px-3 py-1.5 font-mono font-bold text-indigo-600 dark:text-indigo-400 text-[11px]">' + p.numero + '</td><td class="px-3 py-1.5 text-gray-600 dark:text-gray-300 text-[11px]">' + p.destino + '</td><td class="px-3 py-1.5"><button type="button" class="btn-open-spm text-left text-red-500 dark:text-red-400 hover:underline text-[11px] line-clamp-1" data-shipment-id="' + p.shipment_id + '" data-shipment-numero="' + p.numero + '">' + p.problema + '</button></td></tr>';
+    }, 'Sin problemas activos', 3);
+
+    // Repartos
+    paginate(data.active_deliveries_list, 1, 'tbl-deliveries', 'pag-deliveries', function(d) {
+        var prob = d.con_problema > 0 ? '<span class="text-red-500 font-semibold">&#9888; ' + d.con_problema + '</span>' : '<span class="text-green-500">&#10003;</span>';
+        return '<tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors cursor-pointer" onclick="window.location=\'' + d.edit_url + '\'"><td class="px-3 py-1.5 font-mono font-bold text-indigo-600 dark:text-indigo-400 text-[11px]">' + d.numero + '</td><td class="px-3 py-1.5 text-gray-600 dark:text-gray-300 text-[11px]">' + d.repartidor + '</td><td class="px-3 py-1.5 text-gray-500 dark:text-gray-400 text-[11px]">' + d.ubicacion + '</td><td class="px-3 py-1.5 text-center font-semibold text-gray-700 dark:text-gray-200 text-[11px]">' + d.guias + '</td><td class="px-3 py-1.5 text-center text-[11px]">' + prob + '</td></tr>';
+    }, 'Sin repartos en curso', 5);
+
+    // Despachos
+    paginate(data.active_dispatches_list || [], 1, 'tbl-dispatches', 'pag-dispatches', function(dp) {
+        return '<tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors cursor-pointer" onclick="window.location=\'' + dp.edit_url + '\'"><td class="px-3 py-1.5 font-mono font-bold text-indigo-600 dark:text-indigo-400 text-[11px]">' + dp.numero + '</td><td class="px-3 py-1.5 text-gray-600 dark:text-gray-300 text-[11px]">' + dp.conductor + '</td><td class="px-3 py-1.5 text-gray-500 dark:text-gray-400 text-[11px]">' + dp.origen + '</td><td class="px-3 py-1.5 text-gray-500 dark:text-gray-400 text-[11px]">' + dp.destino + '</td><td class="px-3 py-1.5 text-center font-semibold text-gray-700 dark:text-gray-200 text-[11px]">' + dp.rutas + '</td></tr>';
+    }, 'Sin despachos en curso', 5);
+
+    // Rutas
+    paginate(data.active_routes_list, 1, 'tbl-routes', 'pag-routes', function(r) {
+        return '<tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors"><td class="px-3 py-1.5 font-mono font-bold text-indigo-600 dark:text-indigo-400 text-[11px]">' + r.numero + '</td><td class="px-3 py-1.5 text-gray-600 dark:text-gray-300 text-[11px]">' + r.origen + '</td><td class="px-3 py-1.5 text-gray-500 dark:text-gray-400 text-[11px]">' + r.destino + '</td><td class="px-3 py-1.5 text-center font-semibold text-gray-700 dark:text-gray-200 text-[11px]">' + r.guias + '</td></tr>';
+    }, 'Sin rutas en viaje', 4);
+}
+
+document.getElementById('btn-apply-filter').addEventListener('click', function() {
+    var from = document.getElementById('filter-from').value;
+    var to   = document.getElementById('filter-to').value;
+    if (!from || !to) { alert('Selecciona ambas fechas.'); return; }
     document.getElementById('filter-label').classList.remove('hidden');
     loadStats();
 });
 
-document.getElementById('btn-clear-filter').addEventListener('click', () => {
+document.getElementById('btn-clear-filter').addEventListener('click', function() {
     document.getElementById('filter-from').value = '';
     document.getElementById('filter-to').value   = '';
     document.getElementById('filter-label').classList.add('hidden');
@@ -462,6 +495,6 @@ document.getElementById('btn-clear-filter').addEventListener('click', () => {
 });
 
 document.addEventListener('DOMContentLoaded', loadStats);
-window.addEventListener('themeChanged', loadStats);
+window.addEventListener('themeChanged', function() { loadStats(); });
 </script>
 @endsection

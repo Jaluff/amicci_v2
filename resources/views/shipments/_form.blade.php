@@ -372,7 +372,7 @@ $items = $isEdit ? $shipment->items : [ (object)[ 'tipo_paquete' => 'bultos', 'c
             </svg>
             Cancelar
         </a>
-        <button type="submit"
+        <button type="submit" name="action" value="save"
             class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
             @if($isEdit)
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -390,8 +390,42 @@ $items = $isEdit ? $shipment->items : [ (object)[ 'tipo_paquete' => 'bultos', 'c
             Guardar
             @endif
         </button>
+        <button type="submit" name="action" value="save_and_print" id="btn_save_and_print"
+            class="inline-flex items-center px-4 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 focus:bg-emerald-700 active:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+            </svg>
+            @if($isEdit)
+            Actualizar e imprimir
+            @else
+            Guardar e imprimir
+            @endif
+        </button>
     </div>
 </form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnPrint = document.getElementById('btn_save_and_print');
+        const btnSave = document.querySelector('button[value="save"]');
+        const form = document.getElementById('shipment-form');
+        
+        if (btnPrint && form) {
+            btnPrint.addEventListener('click', function(e) {
+                // Obviamos el bloqueador abriendo nosotros mismos una ventana vacía pero con nombre
+                // Esto nos asegura mantener viva la referencia (window.opener) a esta página original
+                window.open('', 'PrintWindow');
+                form.setAttribute('target', 'PrintWindow');
+            });
+        }
+        
+        if (btnSave && form) {
+            btnSave.addEventListener('click', function() {
+                form.removeAttribute('target');
+            });
+        }
+    });
+</script>
 
 <template id="item-row-template">
     <div

@@ -13,7 +13,10 @@ export default defineConfig({
                 'resources/js/pages/transportRoutes/form.js',
                 'resources/js/pages/dispatches/dispatches.js',
                 'resources/js/pages/dispatches/form.js',
-                'resources/js/pages/deliveries/deliveries.js'
+                'resources/js/pages/deliveries/deliveries.js',
+                'resources/js/pages/users/index.js',
+                'resources/js/pages/drivers/index.js',
+                'resources/js/pages/deliverers/index.js'
             ],
             refresh: true,
         }),

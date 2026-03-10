@@ -13,7 +13,17 @@ const RouteModule = (function ($) {
         dataTable = $('#routes-table').DataTable({
             processing: true,
             serverSide: true,
-            ajax: $('#routes-table').data('url'),
+            ajax: {
+                url: $('#routes-table').data('url'),
+                data: function (d) {
+                    d.origen_id = $('#filter_origen_id').val();
+                    d.destino_id = $('#filter_destino_id').val();
+                    d.fecha_inicio = $('#filter_fecha_inicio').val();
+                    d.fecha_fin = $('#filter_fecha_fin').val();
+                    d.numero_documento = $('#filter_numero_documento').val();
+                    d.estado = $('#filter_estado').val();
+                }
+            },
             columns: [
                 {
                     data: 'created_at',
@@ -87,4 +97,15 @@ const RouteModule = (function ($) {
 
 $(document).ready(function () {
     RouteModule.init();
+
+    $('#btn-filter').on('click', function () {
+        $('#routes-table').DataTable().ajax.reload();
+    });
+
+    $('input[id^="filter_"], select[id^="filter_"]').on('keypress', function (e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            $('#btn-filter').click();
+        }
+    });
 });

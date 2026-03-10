@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasAddresses;
 use Illuminate\Database\Eloquent\Model;
 
 class Company extends Model
 {
+    use HasAddresses;
+
     protected $fillable = [
         'name',
         'prefix',

@@ -38,7 +38,6 @@ class DeliveryService
                 Shipment::whereIn('id', $shipments->pluck('id'))
                     ->update([
                     'delivery_id' => $delivery->id,
-                    'ubicacion_actual' => 'En reparto'
                 ]);
             }
 
@@ -72,7 +71,6 @@ class DeliveryService
 
                 Shipment::whereIn('id', $shipmentIds)->update([
                     'delivery_id' => $delivery->id,
-                    'ubicacion_actual' => 'En reparto'
                 ]);
 
                 $data['guide_count'] = count($shipments);

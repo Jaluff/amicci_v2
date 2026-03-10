@@ -23,4 +23,44 @@ class DeliveryStateMachine extends BaseStateMachine
             self::FINISHED => [],
         ];
     }
+
+    protected function afterTransition(string $from, string $to): void
+    {
+        if ($from === self::READY && $to === self::ON_DELIVERY) {
+            // Cascade status change to shipments
+            $this->model->shipments()->update(['ubicacion_actual' => 'En reparto']);
+        }
+        elseif ($from === self::ON_DELIVERY && $to === self::READY) {
+            // Revert state if necessary
+            $this->model->shipments()
+                ->where('ubicacion_actual', 'En reparto')
+                ->update(['ubicacion_actual' => 'Dto destino']);
+        }
+        elseif ($to === self::FINISHED) {
+            // Finalizar guías del reparto
+            foreach ($this->model->shipments as $shipment) {
+                // Transicionar la guía a entregado
+                $shipment->update(['ubicacion_actual' => 'Entregado']);
+
+                // Registrar en historial para mantener consistencia
+                \App\Models\StatusHistory::create([
+                    'model_type' => get_class($shipment),
+                    'model_id' => $shipment->getKey(),
+                    'from_status' => 'En reparto',
+                    'to_status' => 'Entregado',
+                    'comment' => 'Entregado desde Reparto ' . $this->model->delivery_number,
+                    'user_id' => \Illuminate\Support\Facades\Auth::id(),
+                    'transitioned_at' => now(),
+                ]);
+
+                // Resolver problemas activos
+                if ($shipment->hasActiveProblem()) {
+                    $problem = $shipment->currentProblem;
+                    if ($problem) {
+                        $problem->update(['is_active' => false]);
+                    }
+                }
+            }
+        }
+    }
 }

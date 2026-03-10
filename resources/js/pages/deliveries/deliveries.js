@@ -14,7 +14,16 @@ const DeliveryModule = (function ($) {
         dataTable = $('#deliveries-table').DataTable({
             processing: true,
             serverSide: true,
-            ajax: $('#deliveries-table').data('url'),
+            ajax: {
+                url: $('#deliveries-table').data('url'),
+                data: function (d) {
+                    d.location_id = $('#filter_location_id').val();
+                    d.fecha_inicio = $('#filter_fecha_inicio').val();
+                    d.fecha_fin = $('#filter_fecha_fin').val();
+                    d.numero_documento = $('#filter_numero_documento').val();
+                    d.estado = $('#filter_estado').val();
+                }
+            },
             columns: [
                 {
                     data: 'load_date',
@@ -77,6 +86,17 @@ const DeliveryModule = (function ($) {
 
 $(document).ready(function () {
     DeliveryModule.init();
+
+    $('#btn-filter').on('click', function () {
+        $('#deliveries-table').DataTable().ajax.reload();
+    });
+
+    $('input[id^="filter_"], select[id^="filter_"]').on('keypress', function (e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            $('#btn-filter').click();
+        }
+    });
 
     // === Modal and Form Logic ===
     const modal = $('#shipments-modal');

@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use App\Models\Scopes\CompanyScope;
+use App\Traits\HasAddresses;
 use Illuminate\Database\Eloquent\Model;
 
 class Party extends Model
 {
+    use HasAddresses;
+
     protected $fillable = [
         'name',
         'address',
@@ -23,15 +26,14 @@ class Party extends Model
     ];
 
     /* protected static function booted()
-    {
-        static::addGlobalScope(new CompanyScope);
-
-        static::creating(function ($model) {
-            if (session()->has('company_id')) {
-                $model->company_id = session('company_id');
-            }
-        });
-    } */
+     {
+     static::addGlobalScope(new CompanyScope);
+     static::creating(function ($model) {
+     if (session()->has('company_id')) {
+     $model->company_id = session('company_id');
+     }
+     });
+     } */
 
     public function company()
     {

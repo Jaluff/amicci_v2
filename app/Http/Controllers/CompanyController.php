@@ -39,6 +39,128 @@ class CompanyController extends Controller
 
         session()->put('company_id', $company->id);
 
-        return redirect()->back()->with('success', "Empresa activa: {$company->name}");
+        return redirect()->route('dashboard')->with('success', "Empresa activa: {$company->name}");
+    }
+
+    /**
+     * Show the active company settings edit form.
+     */
+    public function edit()
+    {
+        $companyId = session('company_id');
+
+        if (!$companyId) {
+            return redirect()->route('dashboard')->with('error', 'No hay empresa activa seleccionada.');
+        }
+
+        $company = Auth::user()->companies()->findOrFail($companyId);
+        $company->load('addresses'); // Cargar todas las direcciones polimórficas
+
+        return view('company.edit', compact('company'));
+    }
+
+    /**
+     * Update the active company's settings and its primary address.
+     */
+    public function update(Request $request)
+    {
+        $companyId = session('company_id');
+
+        if (!$companyId) {
+            return redirect()->route('dashboard')->with('error', 'No hay empresa activa seleccionada.');
+        }
+
+        $company = Auth::user()->companies()->findOrFail($companyId);
+
+        $validated = $request->validate([
+            // Core Config
+            'name' => ['required', 'string', 'max:255'],
+            'prefix' => ['nullable', 'string', 'max:10'],
+            'last_shipment_number' => ['required', 'integer', 'min:0'],
+            'last_dispatch_number' => ['required', 'integer', 'min:0'],
+            'last_route_number' => ['required', 'integer', 'min:0'],
+
+            // Billing / Legal Profile
+            'legal_name' => ['nullable', 'string', 'max:255'],
+            'cuit' => ['nullable', 'string', 'max:50'],
+            'gross_income' => ['nullable', 'string', 'max:50'],
+            'establishment' => ['nullable', 'string', 'max:100'],
+            'stamping_headquarters' => ['nullable', 'string', 'max:100'],
+            'start_of_activities' => ['nullable', 'date'],
+
+            // Legacy ones inside companies (opcional)
+            'address_line1' => ['nullable', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:100'],
+            'email' => ['nullable', 'email', 'max:255'],
+
+            // Array of addresses
+            'addresses' => ['array'],
+            'addresses.*.id' => ['nullable'],
+            'addresses.*.type' => ['required', 'string', 'max:50'],
+            'addresses.*.address_line1' => ['required', 'string', 'max:255'],
+            'addresses.*.city' => ['nullable', 'string', 'max:100'],
+            'addresses.*.state' => ['nullable', 'string', 'max:100'],
+            'addresses.*.zip_code' => ['nullable', 'string', 'max:20'],
+            'addresses.*.phone' => ['nullable', 'string', 'max:100'],
+            'addresses.*.email' => ['nullable', 'email', 'max:255'],
+            'addresses.*.is_primary' => ['nullable'],
+        ]);
+
+        $company->update([
+            'name' => $validated['name'],
+            'prefix' => $validated['prefix'] ?? null,
+            'last_shipment_number' => $validated['last_shipment_number'],
+            'last_dispatch_number' => $validated['last_dispatch_number'],
+            'last_route_number' => $validated['last_route_number'],
+
+            'legal_name' => $validated['legal_name'] ?? null,
+            'cuit' => $validated['cuit'] ?? null,
+            'gross_income' => $validated['gross_income'] ?? null,
+            'establishment' => $validated['establishment'] ?? null,
+            'stamping_headquarters' => $validated['stamping_headquarters'] ?? null,
+            'start_of_activities' => $validated['start_of_activities'] ?? null,
+
+            // Dejar intactos los campos de dirección heredados; se actualizarán después con la Direccion Principal
+        ]);
+
+        // Sincronizar (crear/actualizar/borrar) múltiples direcciones polimórficas
+        $existingAddressesIds = [];
+        if ($request->has('addresses')) {
+            // Check if there is at least one primary. If not, make first one primary.
+            $hasPrimary = collect($validated['addresses'])->contains('is_primary', true);
+
+            foreach ($validated['addresses'] as $index => $addrData) {
+                $isPrimary = $hasPrimary ? !empty($addrData['is_primary']) : ($index === 0);
+
+                $address = $company->addresses()->updateOrCreate(
+                ['id' => $addrData['id'] ?? null],
+                [
+                    'type' => $addrData['type'] ?? 'Sucursal',
+                    'address_line1' => $addrData['address_line1'],
+                    'city' => $addrData['city'] ?? null,
+                    'state' => $addrData['state'] ?? null,
+                    'zip_code' => $addrData['zip_code'] ?? null,
+                    'phone' => $addrData['phone'] ?? null,
+                    'email' => $addrData['email'] ?? null,
+                    'is_primary' => $isPrimary,
+                ]
+                );
+                $existingAddressesIds[] = $address->id;
+
+                // Actualizar los legacy records de company si es primaria
+                if ($isPrimary) {
+                    $company->update([
+                        'address_line1' => $addrData['address_line1'],
+                        'phone' => $addrData['phone'] ?? null,
+                        'email' => $addrData['email'] ?? null,
+                    ]);
+                }
+            }
+        }
+
+        // Eliminar las que fueron quitadas en el frontend
+        $company->addresses()->whereNotIn('id', $existingAddressesIds)->delete();
+
+        return redirect()->route('company.edit')->with('success', "Datos de la empresa '{$company->name}' actualizados correctamente.");
     }
 }

@@ -18,10 +18,11 @@ class ShipmentController extends Controller
 {
     public function index()
     {
-        return view('shipments.index');
+        $ubicaciones = Ubicacion::orderBy('nombre')->get();
+        return view('shipments.index', compact('ubicaciones'));
     }
 
-    public function datatable()
+    public function datatable(Request $request)
     {
         $query = Shipment::query()
             ->select([
@@ -43,7 +44,29 @@ class ShipmentController extends Controller
             ->leftJoin('ubicaciones as destino', 'shipments.destino_id', '=', 'destino.id')
             ->leftJoin('parties as remitente', 'shipments.remitente_id', '=', 'remitente.id')
             ->leftJoin('parties as destinatario', 'shipments.destinatario_id', '=', 'destinatario.id')
-            ->whereNull('shipments.deleted_at');
+            ->whereNull('shipments.deleted_at')
+            ->withCount(['problems as has_active_problem' => function ($q) {
+            $q->where('is_active', true);
+        }]);
+
+        if ($request->filled('origen_id')) {
+            $query->where('shipments.origen_id', $request->origen_id);
+        }
+        if ($request->filled('destino_id')) {
+            $query->where('shipments.destino_id', $request->destino_id);
+        }
+        if ($request->filled('fecha_inicio')) {
+            $query->whereDate('shipments.fecha', '>=', $request->fecha_inicio);
+        }
+        if ($request->filled('fecha_fin')) {
+            $query->whereDate('shipments.fecha', '<=', $request->fecha_fin);
+        }
+        if ($request->filled('numero_documento')) {
+            $query->where('shipments.numero', 'like', '%' . $request->numero_documento . '%');
+        }
+        if ($request->filled('ubicacion')) {
+            $query->where('shipments.ubicacion_actual', $request->ubicacion);
+        }
 
         return DataTables::of($query)
             ->addColumn('bultos', function ($row) {
@@ -54,10 +77,14 @@ class ShipmentController extends Controller
         })
             ->addColumn('acciones', function ($row) {
             $editUrl = route('shipments.edit', $row->id);
+            $printUrl = route('shipments.print', $row->id);
             $deleteUrl = route('shipments.destroy', $row->id);
             $csrf = csrf_token();
             $confirm = 'return confirm(\'¿Eliminar esta guía?\')';
             return "<div class='flex items-center gap-2'>
+                    <a href='{$printUrl}' target='_blank' title='Imprimir' class='inline-flex items-center justify-center p-2 rounded-md bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 dark:bg-yellow-900/40 dark:text-yellow-400 dark:border-yellow-800 dark:hover:bg-yellow-800/60 dark:hover:text-yellow-300 transition-colors'>
+                        <svg xmlns='http://www.w3.org/2000/svg' class='w-4 h-4' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 6 2 18 2 18 9'></polyline><path d='M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2'></path><rect x='6' y='14' width='12' height='8'></rect></svg>
+                    </a>
                     <a href='{$editUrl}' title='Editar' class='inline-flex items-center justify-center p-2 rounded-md bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/40 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-800/60 dark:hover:text-blue-300 transition-colors'>
                         <svg xmlns='http://www.w3.org/2000/svg' class='w-4 h-4' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/><path d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'/></svg>
                     </a>
@@ -135,7 +162,13 @@ class ShipmentController extends Controller
         $items = $validated['items'];
         $data = collect($validated)->except('items')->toArray();
 
-        $service->create($data, $items);
+        $shipmentModel = $service->create($data, $items);
+
+        if ($request->input('action') === 'save_and_print') {
+            return redirect()
+                ->route('shipments.print', $shipmentModel->id)
+                ->with('auto_close_and_reload_opener', true);
+        }
 
         return redirect()
             ->route('shipments.index')
@@ -170,6 +203,12 @@ class ShipmentController extends Controller
 
         $service->update($shipment, $data, $items);
 
+        if ($request->input('action') === 'save_and_print') {
+            return redirect()
+                ->route('shipments.print', $shipment->id)
+                ->with('auto_close_and_reload_opener', true);
+        }
+
         return redirect()
             ->route('shipments.index')
             ->with('success', 'Guía actualizada correctamente.');
@@ -183,5 +222,19 @@ class ShipmentController extends Controller
         return redirect()
             ->route('shipments.index')
             ->with('success', 'Guía eliminada correctamente.');
+    }
+
+    public function print(Shipment $shipment)
+    {
+        $shipment->load([
+            'origin',
+            'destination',
+            'sender',
+            'recipient',
+            'items',
+            'company.addresses'
+        ]);
+
+        return view('shipments.print', compact('shipment'));
     }
 }

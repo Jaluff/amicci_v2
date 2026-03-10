@@ -32,6 +32,10 @@ Route::middleware('auth')->group(function () {
     // Company selector & switch (sin middleware 'company' para evitar loop)
     Route::get('/company/select', [CompanyController::class , 'select'])->name('company.select');
     Route::post('/company/switch', [CompanyController::class , 'switch'])->name('company.switch');
+
+    // Company settings (editar la actual)
+    Route::get('/company/settings', [CompanyController::class , 'edit'])->name('company.edit');
+    Route::put('/company/settings', [CompanyController::class , 'update'])->name('company.update');
 });
 
 // Rutas que requieren empresa activa en sesión
@@ -43,8 +47,21 @@ Route::middleware(['auth', 'company'])->group(function () {
     Route::get('/shipments/create', [ShipmentController::class , 'create'])->name('shipments.create');
     Route::post('/shipments', [ShipmentController::class , 'store'])->name('shipments.store');
     Route::get('/shipments/{shipment}/edit', [ShipmentController::class , 'edit'])->name('shipments.edit');
+    Route::get('/shipments/{shipment}/print', [ShipmentController::class , 'print'])->name('shipments.print');
     Route::post('/shipments/{shipment}', [ShipmentController::class , 'update'])->name('shipments.update');
     Route::delete('/shipments/{shipment}', [ShipmentController::class , 'destroy'])->name('shipments.destroy');
+
+    // Clientes (Remitentes y Destinatarios)
+    Route::get('/parties/datatable', [\App\Http\Controllers\PartyController::class , 'datatable'])->name('parties.datatable');
+    Route::resource('parties', \App\Http\Controllers\PartyController::class)->except(['show']);
+
+    // Conductores
+    Route::get('/drivers/datatable', [\App\Http\Controllers\DriverController::class, 'datatable'])->name('drivers.datatable');
+    Route::resource('drivers', \App\Http\Controllers\DriverController::class)->except(['show']);
+
+    // Repartidores
+    Route::get('/deliverers/datatable', [\App\Http\Controllers\DelivererController::class, 'datatable'])->name('deliverers.datatable');
+    Route::resource('deliverers', \App\Http\Controllers\DelivererController::class)->except(['show']);
 
     Route::get('/routes', [TransportRouteController::class , 'index'])->name('routes.index');
     Route::get('/routes/datatable', [TransportRouteController::class , 'datatable'])->name('routes.datatable');
@@ -87,6 +104,9 @@ Route::middleware(['auth', 'company'])->group(function () {
 // Rutas exclusivas para administradores
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('users', \App\Http\Controllers\UserController::class)->except(['show']);
+
+    Route::get('users/{user}/permissions', [\App\Http\Controllers\UserPermissionController::class , 'show'])->name('users.permissions.show');
+    Route::put('users/{user}/permissions', [\App\Http\Controllers\UserPermissionController::class , 'update'])->name('users.permissions.update');
 });
 
 require __DIR__ . '/auth.php';

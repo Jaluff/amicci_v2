@@ -83,32 +83,42 @@ class DashboardController extends Controller
             ->groupBy('day')->orderBy('day')
             ->pluck('total', 'day');
 
-        // ── GRÁFICO Línea: creadas vs entregadas por semana ────────
-        $lineFrom = $from ?? now()->subWeeks(7)->startOfWeek();
-        $lineTo   = $to   ?? now()->endOfWeek();
+        // ── GRÁFICO Línea: volumen en los últimos 30 días ────────
+        $lineFrom = $from ?? now()->subDays(30)->startOfDay();
+        $lineTo   = $to   ?? now()->endOfDay();
 
-        $createdPerWeek = Shipment::query()
+        $shipmentsPerDay = Shipment::query()
             ->whereBetween('fecha', [$lineFrom, $lineTo])
-            ->select(DB::raw('YEARWEEK(fecha, 1) as week'), DB::raw('count(*) as total'))
-            ->groupBy('week')->orderBy('week')
-            ->pluck('total', 'week');
+            ->select(DB::raw('DATE(fecha) as day'), DB::raw('count(*) as total'))
+            ->groupBy('day')->orderBy('day')
+            ->pluck('total', 'day');
 
-        $deliveredPerWeek = Shipment::query()
-            ->whereNotNull('fecha_entrega')
-            ->whereBetween('fecha_entrega', [$lineFrom, $lineTo])
-            ->select(DB::raw('YEARWEEK(fecha_entrega, 1) as week'), DB::raw('count(*) as total'))
-            ->groupBy('week')->orderBy('week')
-            ->pluck('total', 'week');
+        $routesPerDay = TransportRoute::query()
+            ->whereBetween('created_at', [$lineFrom, $lineTo])
+            ->select(DB::raw('DATE(created_at) as day'), DB::raw('count(*) as total'))
+            ->groupBy('day')->orderBy('day')
+            ->pluck('total', 'day');
 
-        $weekKeys = collect($createdPerWeek)->keys()
-            ->merge(collect($deliveredPerWeek)->keys())
+        $dispatchesPerDay = Dispatch::query()
+            ->whereBetween('created_at', [$lineFrom, $lineTo])
+            ->select(DB::raw('DATE(created_at) as day'), DB::raw('count(*) as total'))
+            ->groupBy('day')->orderBy('day')
+            ->pluck('total', 'day');
+
+        $deliveriesPerDay = Delivery::query()
+            ->whereBetween('created_at', [$lineFrom, $lineTo])
+            ->select(DB::raw('DATE(created_at) as day'), DB::raw('count(*) as total'))
+            ->groupBy('day')->orderBy('day')
+            ->pluck('total', 'day');
+
+        $dayKeys = collect($shipmentsPerDay)->keys()
+            ->merge(collect($routesPerDay)->keys())
+            ->merge(collect($dispatchesPerDay)->keys())
+            ->merge(collect($deliveriesPerDay)->keys())
             ->unique()->sort()->values();
 
-        $weekLabels = $weekKeys->map(function ($yw) {
-            $ywStr = (string) $yw;
-            $year  = (int) substr($ywStr, 0, 4);
-            $week  = (int) substr($ywStr, 4);
-            return "Sem {$week}/" . substr($ywStr, 2, 2);
+        $dayLabels = $dayKeys->map(function ($day) {
+            return \Carbon\Carbon::parse($day)->format('d/m');
         });
 
         // ── Top 10 destinos ─────────────────────────────────────────
@@ -159,12 +169,28 @@ class DashboardController extends Controller
             ->with(['origin:id,nombre', 'destination:id,nombre', 'dispatch'])
             ->withCount('shipments')
             ->orderByDesc('created_at')
-            ->limit(6)->get()
+            ->limit(10)->get()
             ->map(fn($r) => [
                 'numero'  => $r->route_number,
                 'origen'  => $r->origin?->nombre ?? '-',
                 'destino' => $r->destination?->nombre ?? '-',
                 'guias'   => $r->shipments_count,
+            ]);
+
+        // ── Despachos en curso ────────────────────────────────────────
+        $activeDispatchesList = Dispatch::query()
+            ->where('status', '=', 'En viaje')
+            ->with(['driver:id,name', 'origin:id,nombre', 'destination:id,nombre'])
+            ->withCount('routes')
+            ->orderByDesc('created_at')
+            ->limit(10)->get()
+            ->map(fn($dp) => [
+                'numero'    => $dp->dispatch_number,
+                'conductor' => $dp->driver?->name ?? '-',
+                'origen'    => $dp->origin?->nombre ?? '-',
+                'destino'   => $dp->destination?->nombre ?? '-',
+                'rutas'     => $dp->routes_count,
+                'edit_url'  => route('dispatches.edit', $dp->id),
             ]);
 
         return response()->json([
@@ -191,14 +217,17 @@ class DashboardController extends Controller
             'chart_status'          => $shipmentsByStatus,
             'chart_bar'             => ['labels' => $deliveredPerDay->keys()->values(), 'data' => $deliveredPerDay->values()],
             'chart_line'            => [
-                'labels'    => $weekLabels->values(),
-                'created'   => $weekKeys->map(fn($w) => $createdPerWeek[$w] ?? 0)->values(),
-                'delivered' => $weekKeys->map(fn($w) => $deliveredPerWeek[$w] ?? 0)->values(),
+                'labels'     => $dayLabels->values(),
+                'shipments'  => $dayKeys->map(fn($d) => $shipmentsPerDay[$d] ?? 0)->values(),
+                'routes'     => $dayKeys->map(fn($d) => $routesPerDay[$d] ?? 0)->values(),
+                'dispatches' => $dayKeys->map(fn($d) => $dispatchesPerDay[$d] ?? 0)->values(),
+                'deliveries' => $dayKeys->map(fn($d) => $deliveriesPerDay[$d] ?? 0)->values(),
             ],
             'top_destinations'       => $topDestinations->values(),
             'problem_list'           => $problemList->values(),
             'active_deliveries_list' => $activeDeliveriesList->values(),
             'active_routes_list'     => $activeRoutesList->values(),
+            'active_dispatches_list' => $activeDispatchesList->values(),
         ]);
     }
 }

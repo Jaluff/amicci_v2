@@ -66,10 +66,11 @@ class TransportRouteController extends Controller
     }
     public function index(): View|JsonResponse
     {
-        return view('transportRoutes.index');
+        $ubicaciones = \App\Models\Ubicacion::orderBy('nombre')->get();
+        return view('transportRoutes.index', compact('ubicaciones'));
     }
 
-    public function datatable()
+    public function datatable(\Illuminate\Http\Request $request)
     {
         $query = TransportRoute::query()
             ->with(['origin', 'destination', 'dispatch'])
@@ -77,6 +78,25 @@ class TransportRouteController extends Controller
             ->withCount(['shipments as problem_count' => function ($q) {
             $q->where('ubicacion_actual', '=', 'Con problemas');
         }]);
+
+        if ($request->filled('origen_id')) {
+            $query->where('origin_id', $request->origen_id);
+        }
+        if ($request->filled('destino_id')) {
+            $query->where('destination_id', $request->destino_id);
+        }
+        if ($request->filled('fecha_inicio')) {
+            $query->whereDate('created_at', '>=', $request->fecha_inicio);
+        }
+        if ($request->filled('fecha_fin')) {
+            $query->whereDate('created_at', '<=', $request->fecha_fin);
+        }
+        if ($request->filled('numero_documento')) {
+            $query->where('route_number', 'like', '%' . $request->numero_documento . '%');
+        }
+        if ($request->filled('estado')) {
+            $query->where('status', $request->estado);
+        }
 
         return \Yajra\DataTables\Facades\DataTables::of($query)
             ->addColumn('acciones', function ($row) {

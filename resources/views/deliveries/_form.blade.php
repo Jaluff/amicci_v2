@@ -12,7 +12,7 @@
     <input type="hidden" name="status" value="{{ $delivery->status ?? 'Listo' }}">
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Ubicación del Reparto</label>
         <select name="location_id" id="location_id"
@@ -48,7 +48,7 @@
     <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Fecha de Carga</label>
         <input type="date" name="load_date"
-            value="{{ old('load_date', isset($delivery) && $delivery->load_date ? $delivery->load_date->format('Y-m-d') : '') }}"
+            value="{{ old('load_date', isset($delivery) && $delivery->load_date ? $delivery->load_date->format('Y-m-d') : date('Y-m-d')) }}"
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white">
         @error('load_date') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
     </div>

@@ -13,7 +13,17 @@ const DispatchModule = (function ($) {
         dataTable = $('#dispatches-table').DataTable({
             processing: true,
             serverSide: true,
-            ajax: $('#dispatches-table').data('url'),
+            ajax: {
+                url: $('#dispatches-table').data('url'),
+                data: function (d) {
+                    d.origen_id = $('#filter_origen_id').val();
+                    d.destino_id = $('#filter_destino_id').val();
+                    d.fecha_inicio = $('#filter_fecha_inicio').val();
+                    d.fecha_fin = $('#filter_fecha_fin').val();
+                    d.numero_documento = $('#filter_numero_documento').val();
+                    d.estado = $('#filter_estado').val();
+                }
+            },
             columns: [
                 { data: 'dispatch_number', name: 'dispatch_number' },
                 {
@@ -79,4 +89,15 @@ const DispatchModule = (function ($) {
 
 $(document).ready(function () {
     DispatchModule.init();
+
+    $('#btn-filter').on('click', function () {
+        $('#dispatches-table').DataTable().ajax.reload();
+    });
+
+    $('input[id^="filter_"], select[id^="filter_"]').on('keypress', function (e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            $('#btn-filter').click();
+        }
+    });
 });

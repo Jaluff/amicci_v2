@@ -59,8 +59,14 @@ const StateMachineUI = (function ($) {
             },
             success: function (response) {
                 showToast(response.message || 'Estado actualizado.', 'success');
-                // Recargar para reflejar los cambios en cascada
-                setTimeout(() => location.reload(), 800);
+                // Recargar o redirigir para reflejar los cambios en cascada
+                setTimeout(() => {
+                    if (response.redirect_url) {
+                        window.location.href = response.redirect_url;
+                    } else {
+                        location.reload();
+                    }
+                }, 800);
             },
             error: function (xhr) {
                 const data = xhr.responseJSON;

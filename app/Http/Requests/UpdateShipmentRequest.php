@@ -22,7 +22,7 @@ class UpdateShipmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'numero' => 'required|string|unique:shipments,numero,' . $this->route('shipment')->id,
+            // 'numero' => 'required|string|unique:shipments,numero,' . $this->route('shipment')->id,
             'fecha' => 'required|date',
             'origen_id' => 'nullable|integer|exists:ubicaciones,id',
             'destino_id' => 'nullable|integer|exists:ubicaciones,id|different:origen_id',

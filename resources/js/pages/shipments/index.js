@@ -10,7 +10,17 @@ $(function () {
     $('#shipmentsTable').DataTable({
         processing: true,
         serverSide: true,
-        ajax: $('#shipmentsTable').data('url'),
+        ajax: {
+            url: $('#shipmentsTable').data('url'),
+            data: function (d) {
+                d.origen_id = $('#filter_origen_id').val();
+                d.destino_id = $('#filter_destino_id').val();
+                d.fecha_inicio = $('#filter_fecha_inicio').val();
+                d.fecha_fin = $('#filter_fecha_fin').val();
+                d.numero_documento = $('#filter_numero_documento').val();
+                d.ubicacion = $('#filter_ubicacion').val();
+            }
+        },
         columns: [
             { data: 'numero', name: 'shipments.numero', responsivePriority: 1 },
             { data: 'fecha', name: 'shipments.fecha', responsivePriority: 2 },
@@ -47,5 +57,16 @@ $(function () {
             { data: 'acciones', name: 'acciones', orderable: false, searchable: false, responsivePriority: 1 },
         ],
         order: [[0, 'desc']],
+    });
+
+    $('#btn-filter').on('click', function () {
+        $('#shipmentsTable').DataTable().ajax.reload();
+    });
+
+    $('input[id^="filter_"], select[id^="filter_"]').on('keypress', function (e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            $('#btn-filter').click();
+        }
     });
 });

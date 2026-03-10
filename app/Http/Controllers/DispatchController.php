@@ -26,10 +26,11 @@ class DispatchController extends Controller
 
     public function index(): View
     {
-        return view('dispatches.index');
+        $ubicaciones = \App\Models\Ubicacion::orderBy('nombre')->get();
+        return view('dispatches.index', compact('ubicaciones'));
     }
 
-    public function datatable(): JsonResponse
+    public function datatable(Request $request): JsonResponse
     {
         $query = Dispatch::query()
             ->with(['driver', 'origin', 'destination'])
@@ -37,6 +38,25 @@ class DispatchController extends Controller
             ->withCount(['shipments as problem_count' => function ($q) {
             $q->where('ubicacion_actual', '=', 'Con problemas');
         }]);
+
+        if ($request->filled('origen_id')) {
+            $query->where('origin_id', $request->origen_id);
+        }
+        if ($request->filled('destino_id')) {
+            $query->where('destination_id', $request->destino_id);
+        }
+        if ($request->filled('fecha_inicio')) {
+            $query->whereDate('created_at', '>=', $request->fecha_inicio);
+        }
+        if ($request->filled('fecha_fin')) {
+            $query->whereDate('created_at', '<=', $request->fecha_fin);
+        }
+        if ($request->filled('numero_documento')) {
+            $query->where('dispatch_number', 'like', '%' . $request->numero_documento . '%');
+        }
+        if ($request->filled('estado')) {
+            $query->where('status', $request->estado);
+        }
 
         return DataTables::of($query)
             ->addColumn('acciones', function ($row) {

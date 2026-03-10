@@ -73,4 +73,9 @@ class Shipment extends Model
     {
         return $this->belongsTo(Party::class , 'destinatario_id');
     }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
 }

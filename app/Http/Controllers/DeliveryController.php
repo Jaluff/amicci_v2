@@ -24,16 +24,33 @@ class DeliveryController extends Controller
 
     public function index(): View|JsonResponse
     {
-        return view('deliveries.index');
+        $ubicaciones = \App\Models\Ubicacion::orderBy('nombre')->get();
+        return view('deliveries.index', compact('ubicaciones'));
     }
 
-    public function datatable()
+    public function datatable(Request $request)
     {
         $query = Delivery::query()
             ->with(['deliverer', 'location'])
             ->withCount(['shipments as problem_count' => function ($q) {
-            $q->where('ubicacion_actual', '=', 'Con problemas');
+            $q->whereHas('problems', fn($query) => $query->where('is_active', true));
         }]);
+
+        if ($request->filled('location_id')) {
+            $query->where('location_id', $request->location_id);
+        }
+        if ($request->filled('fecha_inicio')) {
+            $query->whereDate('load_date', '>=', $request->fecha_inicio);
+        }
+        if ($request->filled('fecha_fin')) {
+            $query->whereDate('load_date', '<=', $request->fecha_fin);
+        }
+        if ($request->filled('numero_documento')) {
+            $query->where('delivery_number', 'like', '%' . $request->numero_documento . '%');
+        }
+        if ($request->filled('estado')) {
+            $query->where('status', $request->estado);
+        }
 
         return DataTables::of($query)
             ->addColumn('acciones', function ($row) {

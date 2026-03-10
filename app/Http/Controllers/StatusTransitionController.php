@@ -22,6 +22,7 @@ class StatusTransitionController extends Controller
         'shipment' => Shipment::class ,
         'route' => TransportRoute::class ,
         'dispatch' => Dispatch::class ,
+        'delivery' => \App\Models\Delivery::class ,
     ];
 
     public function transition(Request $request): JsonResponse
@@ -42,12 +43,21 @@ class StatusTransitionController extends Controller
                 $request->comment
             );
 
+            // Rutas base para redireccionar luego de cambiar estado
+            $redirectRoutes = [
+                'shipment' => route('shipments.index'),
+                'route' => route('routes.index'),
+                'dispatch' => route('dispatches.index'),
+                'delivery' => route('deliveries.index'),
+            ];
+
             return response()->json([
                 'success' => true,
                 'message' => 'Estado actualizado exitosamente.',
                 'new_status' => $updated->{ $model->stateMachine()->currentStatus() === $request->status
                 ? 'status'
                 : 'ubicacion_actual'} ?? $request->status,
+                'redirect_url' => $redirectRoutes[$request->model_type] ?? null,
             ]);
 
         }
