@@ -6,7 +6,7 @@ $canCancel = $shipment->ubicacion_actual === \App\StateMachines\ShipmentStateMac
 @endphp
 
 <div class="py-6">
-    <div class="w-full sm:px-6 lg:px-8 space-y-5">
+    <div class="space-y-5">
 
         {{-- ══ CABECERA ══════════════════════════════════════════════════════ --}}
         <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg px-6 py-4">

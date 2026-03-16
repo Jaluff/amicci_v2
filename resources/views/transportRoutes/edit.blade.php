@@ -6,7 +6,7 @@ $canCancel = $route->status === \App\StateMachines\RouteStateMachine::STATUS_CAR
 @endphp
 
 <div class="py-6">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-5">
+    <div class="space-y-5">
 
         {{-- ══ CABECERA ══════════════════════════════════════════════════════ --}}
         <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg px-6 py-4">

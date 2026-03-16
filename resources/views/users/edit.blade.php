@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="py-12">
-    <div class="w-full sm:px-6 lg:px-8">
+    
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
             <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">Editar Usuario: {{ $user->name }}</h2>
 
