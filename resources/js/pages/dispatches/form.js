@@ -20,8 +20,9 @@ $(function () {
 
     // Control origen/destino
     function handleLocationSelects() {
-        const originSelect = $('select[name="origin_id"]');
+        const originSelect = $('#origin_id');
         const destSelect = $('select[name="destination_id"]');
+        const branchSelect = $('#branch_id');
 
         const updateOptions = function () {
             const originVal = originSelect.val();
@@ -33,9 +34,24 @@ $(function () {
         };
 
         originSelect.on('change', function () {
-            destSelect.val('');
+            // destSelect.val(''); // Comentado para mantener fluidez
             updateOptions();
         });
+
+        // Auto-seleccionar Origen al cambiar de Sucursal
+        if (branchSelect.length && branchSelect.is('select')) {
+            branchSelect.on('change', function() {
+                const selected = $(this).find('option:selected');
+                const ubicacionId = selected.data('ubicacion');
+                if (ubicacionId) {
+                    originSelect.val(ubicacionId).trigger('change');
+                }
+            });
+            // Disparar inicialmente si estamos en creación
+            if (!$('input[name="_method"][value="PUT"]').length) {
+                branchSelect.trigger('change');
+            }
+        }
 
         updateOptions();
     }

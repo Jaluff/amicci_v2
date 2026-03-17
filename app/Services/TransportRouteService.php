@@ -34,7 +34,7 @@ class TransportRouteService
                 $this->validateDeliveryStatus($route);
             }
             $route->update($data);
-            if (isset($data['shipments'])) {
+            if (isset($data['shipments']) && $route->status === 'Cargada') {
                 $this->assignShipments($route, $data['shipments']);
             }
             return $route->loadCount('shipments');

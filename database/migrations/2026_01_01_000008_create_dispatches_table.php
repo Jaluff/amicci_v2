@@ -10,6 +10,7 @@ return new class extends Migration {
         Schema::create('dispatches', function (Blueprint $table) {
             $table->id();
             $table->foreignId('company_id')->constrained()->index();
+            $table->foreignId('branch_id')->nullable()->constrained()->onDelete('set null');
             $table->string('dispatch_number')->unique()->index();
             $table->foreignId('origin_id')->constrained('ubicaciones');
             $table->foreignId('destination_id')->constrained('ubicaciones');
@@ -24,12 +25,7 @@ return new class extends Migration {
 
         // Agregar dispatch_id a transport_routes para la relacion
         Schema::table('transport_routes', function (Blueprint $table) {
-            $table->foreignId('dispatch_id')->nullable()->constrained('dispatches')->nullOnDelete()->after('company_id');
-        });
-
-        // Contador de despachos en companies
-        Schema::table('companies', function (Blueprint $table) {
-            $table->unsignedBigInteger('last_dispatch_number')->default(0)->after('last_route_number');
+            $table->foreignId('dispatch_id')->nullable()->constrained('dispatches')->nullOnDelete()->after('branch_id');
         });
     }
 
@@ -38,9 +34,6 @@ return new class extends Migration {
         Schema::table('transport_routes', function (Blueprint $table) {
             $table->dropForeign(['dispatch_id']);
             $table->dropColumn('dispatch_id');
-        });
-        Schema::table('companies', function (Blueprint $table) {
-            $table->dropColumn('last_dispatch_number');
         });
         Schema::dropIfExists('dispatches');
     }

@@ -13,37 +13,30 @@ return new class extends Migration {
         Schema::create('shipments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('company_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('transport_route_id')->nullable()->constrained('transport_routes')->nullOnDelete();
+            $table->foreignId('delivery_id')->nullable()->constrained()->nullOnDelete();
 
             // Identification
-            $table->string('numero')->unique(); // prefijo + correlativo
+            $table->string('numero')->unique();
             $table->date('fecha');
 
             // Locations (references to ubicaciones table)
-            $table->unsignedBigInteger('origen_id')->nullable();
-            $table->foreign('origen_id')->references('id')->on('ubicaciones')->nullOnDelete();
-            
-            $table->unsignedBigInteger('destino_id')->nullable();
-            $table->foreign('destino_id')->references('id')->on('ubicaciones')->nullOnDelete();
+            $table->foreignId('origen_id')->nullable()->constrained('ubicaciones')->nullOnDelete();
+            $table->foreignId('destino_id')->nullable()->constrained('ubicaciones')->nullOnDelete();
 
             // Parties (references to parties table)
-            $table->unsignedBigInteger('remitente_id')->nullable();
-            $table->foreign('remitente_id')->references('id')->on('parties')->nullOnDelete();
-            
-            $table->unsignedBigInteger('destinatario_id')->nullable();
-            $table->foreign('destinatario_id')->references('id')->on('parties')->nullOnDelete();
+            $table->foreignId('remitente_id')->nullable()->constrained('parties')->nullOnDelete();
+            $table->foreignId('destinatario_id')->nullable()->constrained('parties')->nullOnDelete();
 
-            
-            
             // Invoice & Delivery
             $table->string('numero_factura')->nullable();
-            $table->enum('estado_facturacion', ['No facturada', 'Facturada', 'Rendida', 'Anulada'])->default('No facturada');
-            $table->enum('ubicacion_actual', ['Dto origen', 'En transito', 'Dto destino', 'En reparto', 'Entregado'])->default('Dto origen');
+            $table->enum('ubicacion_actual', ['Dto origen', 'En transito', 'Dto destino', 'En reparto', 'Entregado', 'Con problemas'])->default('Dto origen');
             $table->enum('flete_a_pagar_en', ['Origen', 'Destino'])->nullable();
             $table->date('fecha_entrega')->nullable();
             
             $table->boolean('cobrada')->default(false);
             $table->boolean('contra_reembolso')->default(false);
-            $table->boolean('rendida')->default(false);
 
             // Amounts
             $table->decimal('flete', 12, 2)->default(0);
@@ -62,6 +55,10 @@ return new class extends Migration {
 
             $table->softDeletes();
             $table->timestamps();
+
+            $table->index('transport_route_id');
+            $table->index('delivery_id');
+            $table->index('branch_id');
         });
     }
 

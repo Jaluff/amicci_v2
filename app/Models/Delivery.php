@@ -9,14 +9,17 @@ use App\Models\Traits\HasProblems;
 use App\Models\Traits\HasStateMachine;
 use App\StateMachines\DeliveryStateMachine;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 class Delivery extends Model
 {
-    use HasProblems, HasStateMachine;
+    use HasProblems, HasStateMachine, HasFactory;
 
     protected string $stateMachineClass = DeliveryStateMachine::class;
 
     protected $fillable = [
         'company_id',
+        'branch_id',
         'delivery_number',
         'deliverer_id',
         'location_id',
@@ -35,12 +38,18 @@ class Delivery extends Model
     protected static function booted(): void
     {
         static::addGlobalScope(new \App\Models\Scopes\CompanyScope);
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
 
         static::creating(function ($model) {
             if (!$model->company_id) {
                 $model->company_id = session('company_id');
             }
         });
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
     }
 
     public function deliverer(): BelongsTo

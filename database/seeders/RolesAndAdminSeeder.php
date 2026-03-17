@@ -92,5 +92,19 @@ class RolesAndAdminSeeder extends Seeder
             $operatorUser->companies()->attach($company->id);
         }
 
+        // Asignar primera sucursal al operador
+        $branch = \App\Models\Branch::where('company_id', $company->id)->first();
+        if ($branch && !$operatorUser->branches()->where('branch_id', $branch->id)->exists()) {
+            $operatorUser->branches()->attach($branch->id);
+        }
+
+        // El supervisor tiene ambas sucursales
+        $branches = \App\Models\Branch::where('company_id', $company->id)->get();
+        foreach ($branches as $b) {
+            if (!$supervisorUser->branches()->where('branch_id', $b->id)->exists()) {
+                $supervisorUser->branches()->attach($b->id);
+            }
+        }
+
     }
 }

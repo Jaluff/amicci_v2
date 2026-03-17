@@ -20,8 +20,9 @@ $(function () {
 
     // Control de selectores de Origen y Destino (para evitar seleccionar el mismo)
     function handleLocationSelects() {
-        const originSelect = $('select[name="origin_id"]');
+        const originSelect = $('#origin_id');
         const destSelect = $('select[name="destination_id"]');
+        const branchSelect = $('#branch_id');
 
         const updateOptions = function () {
             const originVal = originSelect.val();
@@ -41,10 +42,25 @@ $(function () {
         };
 
         originSelect.on('change', function () {
-            // Cuando cambie origen, siempre se resetea destino
-            destSelect.val('');
+            // Cuando cambie origen, siempre se resetea destino (a menos que lo quitemos por fluidez, pero mantenemos tu lógica)
+            // destSelect.val(''); // Comentado para permitir que si ya estaba elegido no se pierda si el cambio es por sucursal
             updateOptions();
         });
+
+        // Auto-seleccionar Origen al cambiar de Sucursal
+        if (branchSelect.length && branchSelect.is('select')) {
+            branchSelect.on('change', function() {
+                const selected = $(this).find('option:selected');
+                const ubicacionId = selected.data('ubicacion');
+                if (ubicacionId) {
+                    originSelect.val(ubicacionId).trigger('change');
+                }
+            });
+            // Disparar inicialmente si estamos en creación
+            if (!$('input[name="_method"][value="PUT"]').length) {
+                branchSelect.trigger('change');
+            }
+        }
 
         // Ejecutar al cargar la vista
         updateOptions();

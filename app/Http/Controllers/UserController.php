@@ -28,8 +28,9 @@ class UserController extends Controller
     {
         $roles = Role::all();
         $companies = Company::all();
+        $branches = \App\Models\Branch::with('company')->get();
 
-        return view('users.create', compact('roles', 'companies'));
+        return view('users.create', compact('roles', 'companies', 'branches'));
     }
 
     /**
@@ -44,6 +45,8 @@ class UserController extends Controller
             'role' => ['required', 'exists:roles,name'],
             'companies' => ['required', 'array'],
             'companies.*' => ['exists:companies,id'],
+            'branches' => ['nullable', 'array'],
+            'branches.*' => ['exists:branches,id'],
         ]);
 
         $user = User::create([
@@ -54,6 +57,7 @@ class UserController extends Controller
 
         $user->assignRole($request->role);
         $user->companies()->sync($request->companies);
+        $user->branches()->sync($request->input('branches', []));
 
         return redirect()->route('users.index')->with('success', 'Usuario creado exitosamente.');
     }
@@ -65,8 +69,9 @@ class UserController extends Controller
     {
         $roles = Role::all();
         $companies = Company::all();
+        $branches = \App\Models\Branch::with('company')->get();
 
-        return view('users.edit', compact('user', 'roles', 'companies'));
+        return view('users.edit', compact('user', 'roles', 'companies', 'branches'));
     }
 
     /**
@@ -80,6 +85,8 @@ class UserController extends Controller
             'role' => ['required', 'exists:roles,name'],
             'companies' => ['required', 'array'],
             'companies.*' => ['exists:companies,id'],
+            'branches' => ['nullable', 'array'],
+            'branches.*' => ['exists:branches,id'],
         ];
 
         // Validar contraseña si se agregó alguna
@@ -102,6 +109,7 @@ class UserController extends Controller
 
         $user->syncRoles([$request->role]);
         $user->companies()->sync($request->companies);
+        $user->branches()->sync($request->input('branches', []));
 
         return redirect()->route('users.index')->with('success', 'Usuario actualizado exitosamente.');
     }

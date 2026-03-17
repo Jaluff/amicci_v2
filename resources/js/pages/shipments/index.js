@@ -18,6 +18,7 @@ $(function () {
                 d.fecha_inicio = $('#filter_fecha_inicio').val();
                 d.fecha_fin = $('#filter_fecha_fin').val();
                 d.numero_documento = $('#filter_numero_documento').val();
+                d.cliente = $('#filter_cliente').val();
                 d.ubicacion = $('#filter_ubicacion').val();
             }
         },
@@ -26,11 +27,10 @@ $(function () {
             { data: 'fecha', name: 'shipments.fecha', responsivePriority: 2 },
             { data: 'origen_nombre', name: 'origen.nombre', defaultContent: '-', responsivePriority: 6 },
             { data: 'destino_nombre', name: 'destino.nombre', defaultContent: '-', responsivePriority: 6 },
-            { data: 'remitente_nombre', name: 'remitente.name', defaultContent: '-', responsivePriority: 7, visible: false },
-            { data: 'destinatario_nombre', name: 'destinatario.name', defaultContent: '-', responsivePriority: 7, visible: false },
+            { data: 'remitente_destinatario', name: 'remitente_destinatario', orderable: false, searchable: false, responsivePriority: 7 },
             { data: 'flete', name: 'shipments.flete', responsivePriority: 5 },
             { data: 'bultos', name: 'bultos', orderable: false, searchable: false, responsivePriority: 4 },
-            { data: 'valor_declarado', name: 'valor_declarado', orderable: false, searchable: false, responsivePriority: 8, visible: false },
+            { data: 'valor_declarado', name: 'valor_declarado', orderable: false, searchable: false, visible: false },
             { data: 'total', name: 'shipments.total', responsivePriority: 3 },
             {
                 data: 'ubicacion_actual',
@@ -39,20 +39,6 @@ $(function () {
                 responsivePriority: 5,
                 orderable: true,
                 searchable: true,
-            },
-            {
-                data: 'estado_facturacion', name: 'shipments.estado_facturacion', defaultContent: '-', responsivePriority: 8, visible: false,
-                render: function (data) {
-                    if (!data || data === '-') return '<span class="dt-badge dt-badge-gray">—</span>';
-                    const colores = {
-                        'No facturada': 'dt-badge-gray',
-                        'Facturada': 'dt-badge-blue',
-                        'Rendida': 'dt-badge-green',
-                        'Anulada': 'dt-badge-red',
-                    };
-                    const color = colores[data] || 'dt-badge-gray';
-                    return '<span class="dt-badge ' + color + '">' + data + '</span>';
-                }
             },
             { data: 'acciones', name: 'acciones', orderable: false, searchable: false, responsivePriority: 1 },
         ],

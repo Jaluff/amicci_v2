@@ -6,9 +6,11 @@ use App\Models\Scopes\CompanyScope;
 use App\Traits\HasAddresses;
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 class Party extends Model
 {
-    use HasAddresses;
+    use HasFactory, HasAddresses;
 
     protected $fillable = [
         'name',

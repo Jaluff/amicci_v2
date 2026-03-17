@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ShipmentController;
@@ -34,8 +35,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/company/switch', [CompanyController::class , 'switch'])->name('company.switch');
 
     // Company settings (editar la actual)
-    Route::get('/company/settings', [CompanyController::class , 'edit'])->name('company.edit');
-    Route::put('/company/settings', [CompanyController::class , 'update'])->name('company.update');
+    Route::middleware('role:admin|supervisor')->group(function () {
+        Route::get('/company/settings', [CompanyController::class , 'edit'])->name('company.edit');
+        Route::put('/company/settings', [CompanyController::class , 'update'])->name('company.update');
+    });
 });
 
 // Rutas que requieren empresa activa en sesión
@@ -58,6 +61,12 @@ Route::middleware(['auth', 'company'])->group(function () {
     // Conductores
     Route::get('/drivers/datatable', [\App\Http\Controllers\DriverController::class, 'datatable'])->name('drivers.datatable');
     Route::resource('drivers', \App\Http\Controllers\DriverController::class)->except(['show']);
+
+    // Sucursales (Solo admin/supervisor)
+    Route::middleware('role:admin|supervisor')->group(function () {
+        Route::get('/branches/datatable', [BranchController::class, 'datatable'])->name('branches.datatable');
+        Route::resource('branches', BranchController::class)->except(['show']);
+    });
 
     // Repartidores
     Route::get('/deliverers/datatable', [\App\Http\Controllers\DelivererController::class, 'datatable'])->name('deliverers.datatable');
@@ -101,8 +110,8 @@ Route::middleware(['auth', 'company'])->group(function () {
 });
 
 
-// Rutas exclusivas para administradores
-Route::middleware(['auth', 'role:admin'])->group(function () {
+// Rutas exclusivas para administrador y supervisor
+Route::middleware(['auth', 'role:admin|supervisor'])->group(function () {
     Route::resource('users', \App\Http\Controllers\UserController::class)->except(['show']);
 
     Route::get('users/{user}/permissions', [\App\Http\Controllers\UserPermissionController::class , 'show'])->name('users.permissions.show');

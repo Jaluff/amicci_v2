@@ -32,7 +32,6 @@ class ShipmentController extends Controller
             'shipments.flete',
             'shipments.total',
             'shipments.ubicacion_actual',
-            'shipments.estado_facturacion',
             'origen.nombre as origen_nombre',
             'destino.nombre as destino_nombre',
             'remitente.name as remitente_nombre',
@@ -54,6 +53,14 @@ class ShipmentController extends Controller
         }
         if ($request->filled('destino_id')) {
             $query->where('shipments.destino_id', $request->destino_id);
+        }
+
+        if ($request->filled('cliente')) {
+            $cliente = $request->cliente;
+            $query->where(function($q) use ($cliente) {
+                $q->where('remitente.name', 'like', "%{$cliente}%")
+                  ->orWhere('destinatario.name', 'like', "%{$cliente}%");
+            });
         }
         if ($request->filled('fecha_inicio')) {
             $query->whereDate('shipments.fecha', '>=', $request->fecha_inicio);
@@ -81,6 +88,18 @@ class ShipmentController extends Controller
             $deleteUrl = route('shipments.destroy', $row->id);
             $csrf = csrf_token();
             $confirm = 'return confirm(\'¿Eliminar esta guía?\')';
+            $deleteForm = "";
+            if ($row->ubicacion_actual === 'Dto origen') {
+                $deleteForm = "
+                    <form action='{$deleteUrl}' method='POST' onsubmit='{$confirm}' class='inline m-0'>
+                        <input type='hidden' name='_token' value='{$csrf}'>
+                        <input type='hidden' name='_method' value='DELETE'>
+                        <button type='submit' title='Eliminar' class='inline-flex items-center justify-center p-2 rounded-md bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 dark:bg-red-900/40 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-800/60 dark:hover:text-red-300 transition-colors'>
+                            <svg xmlns='http://www.w3.org/2000/svg' class='w-4 h-4' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='3 6 5 6 21 6'/><path d='M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6'/><path d='M10 11v6'/><path d='M14 11v6'/><path d='M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2'/></svg>
+                        </button>
+                    </form>";
+            }
+
             return "<div class='flex items-center gap-2'>
                     <a href='{$printUrl}' target='_blank' title='Imprimir' class='inline-flex items-center justify-center p-2 rounded-md bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 dark:bg-yellow-900/40 dark:text-yellow-400 dark:border-yellow-800 dark:hover:bg-yellow-800/60 dark:hover:text-yellow-300 transition-colors'>
                         <svg xmlns='http://www.w3.org/2000/svg' class='w-4 h-4' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 6 2 18 2 18 9'></polyline><path d='M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2'></path><rect x='6' y='14' width='12' height='8'></rect></svg>
@@ -88,13 +107,7 @@ class ShipmentController extends Controller
                     <a href='{$editUrl}' title='Editar' class='inline-flex items-center justify-center p-2 rounded-md bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/40 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-800/60 dark:hover:text-blue-300 transition-colors'>
                         <svg xmlns='http://www.w3.org/2000/svg' class='w-4 h-4' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/><path d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'/></svg>
                     </a>
-                    <form action='{$deleteUrl}' method='POST' onsubmit='{$confirm}' class='inline m-0'>
-                        <input type='hidden' name='_token' value='{$csrf}'>
-                        <input type='hidden' name='_method' value='DELETE'>
-                        <button type='submit' title='Eliminar' class='inline-flex items-center justify-center p-2 rounded-md bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 dark:bg-red-900/40 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-800/60 dark:hover:text-red-300 transition-colors'>
-                            <svg xmlns='http://www.w3.org/2000/svg' class='w-4 h-4' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='3 6 5 6 21 6'/><path d='M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6'/><path d='M10 11v6'/><path d='M14 11v6'/><path d='M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2'/></svg>
-                        </button>
-                    </form>
+                    {$deleteForm}
                 </div>";
         })
             ->editColumn('fecha', function ($row) {
@@ -128,28 +141,36 @@ class ShipmentController extends Controller
 
             return "<span class='dt-badge {$color}'>{$estado}</span>";
         })
-            ->editColumn('estado_facturacion', function ($row) {
-            return $row->estado_facturacion ?? '-';
-        })
-            ->rawColumns(['acciones', 'ubicacion_actual'])
+            ->addColumn('remitente_destinatario', function ($row) {
+                return '<div class="text-xs">' .
+                    '<span class="font-bold text-gray-700 dark:text-gray-300">R:</span> ' . ($row->remitente_nombre ?? '-') . '<br>' .
+                    '<span class="font-bold text-gray-700 dark:text-gray-300">D:</span> ' . ($row->destinatario_nombre ?? '-') .
+                    '</div>';
+            })
+            ->rawColumns(['acciones', 'ubicacion_actual', 'remitente_destinatario'])
             ->make(true);
     }
 
     public function create()
     {
         $ubicaciones = Ubicacion::orderBy('nombre')->get();
-        $parties = Party::withoutGlobalScope('company')->orderBy('name')->get();
-        return view('shipments.create', compact('ubicaciones', 'parties'));
+        $parties     = Party::withoutGlobalScope('company')->orderBy('name')->get();
+
+        $user = auth()->user();
+        $branches = \App\Models\Branch::where('active', true)
+            ->permitted()
+            ->orderBy('code')
+            ->get();
+
+        return view('shipments.create', compact('ubicaciones', 'parties', 'branches'));
     }
 
     public function store(StoreShipmentRequest $request, ShipmentService $service)
     {
         $validated = $request->validated();
 
-        // Convertir valores booleanos
         $validated['cobrada'] = $request->boolean('cobrada');
         $validated['contra_reembolso'] = $request->boolean('contra_reembolso');
-        $validated['rendida'] = $request->boolean('rendida');
 
         // Limpiar separadores de miles en campos numéricos
         $numericFields = ['flete', 'seguro', 'monto_contra_reembolso', 'retencion_mercaderia', 'otros_cargos', 'subtotal', 'iva_monto', 'total'];
@@ -178,18 +199,23 @@ class ShipmentController extends Controller
     public function edit(Shipment $shipment)
     {
         $ubicaciones = Ubicacion::orderBy('nombre')->get();
-        $parties = Party::withoutGlobalScope('company')->orderBy('name')->get();
-        return view('shipments.edit', compact('shipment', 'ubicaciones', 'parties'));
+        $parties     = Party::withoutGlobalScope('company')->orderBy('name')->get();
+
+        $user = auth()->user();
+        $branches = \App\Models\Branch::where('active', true)
+            ->permitted()
+            ->orderBy('code')
+            ->get();
+
+        return view('shipments.edit', compact('shipment', 'ubicaciones', 'parties', 'branches'));
     }
 
     public function update(UpdateShipmentRequest $request, Shipment $shipment, ShipmentService $service)
     {
         $validated = $request->validated();
 
-        // Convertir valores booleanos
         $validated['cobrada'] = $request->boolean('cobrada');
         $validated['contra_reembolso'] = $request->boolean('contra_reembolso');
-        $validated['rendida'] = $request->boolean('rendida');
 
         // Limpiar separadores de miles en campos numéricos
         $numericFields = ['flete', 'seguro', 'monto_contra_reembolso', 'retencion_mercaderia', 'otros_cargos', 'subtotal', 'iva_monto', 'total'];
@@ -217,6 +243,12 @@ class ShipmentController extends Controller
     public function destroy(Shipment $shipment, ShipmentService $service)
     {
         abort_if(!auth()->user()->hasAnyRole(['admin', 'Supervisor']), 403, 'No tienes permisos para anular documentos.');
+
+        if ($shipment->ubicacion_actual !== 'Dto origen') {
+            return redirect()
+                ->route('shipments.index')
+                ->with('error', 'No se puede eliminar una guía que ya tiene movimientos (Ubicación: ' . $shipment->ubicacion_actual . ').');
+        }
 
         $service->delete($shipment);
         return redirect()

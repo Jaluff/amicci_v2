@@ -14,7 +14,7 @@
 
             <div
                 class="mb-4 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-                <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-4 items-end">
+                <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-8 gap-4 items-end">
                     <div>
                         <label for="filter_origen_id"
                             class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Origen</label>
@@ -63,6 +63,13 @@
                         </div>
                     </div>
                     <div>
+                        <label for="filter_cliente"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cliente</label>
+                        <input type="text" id="filter_cliente"
+                            class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                            placeholder="Nombre...">
+                    </div>
+                    <div>
                         <label for="filter_ubicacion"
                             class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Estado</label>
                         <select id="filter_ubicacion"
@@ -95,14 +102,13 @@
                             <th>Fecha</th>
                             <th>Origen</th>
                             <th>Destino</th>
-                            <th>Remitente</th>
-                            <th>Destinatario</th>
+                            <th>Remitente / Destinatario</th>
                             <th>Flete</th>
                             <th>Bultos</th>
                             <th>Valor Decl.</th>
                             <th>Total</th>
                             <th>Ubicación</th>
-                            <th>Facturación</th>
+
                             <th>Acciones</th>
                         </tr>
                     </thead>

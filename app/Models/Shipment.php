@@ -23,15 +23,14 @@ class Shipment extends Model
         'fecha_entrega' => 'date',
         'cobrada' => 'boolean',
         'contra_reembolso' => 'boolean',
-        'rendida' => 'boolean',
         'delivery_id' => 'integer',
     ];
 
     protected $fillable = [
-        'transport_route_id', 'delivery_id', 'numero', 'fecha', 'origen_id', 'destino_id', 'remitente_id', 'destinatario_id',
-        'tipo_flete', 'cobrada', 'contra_reembolso', 'rendida',
+        'transport_route_id', 'delivery_id', 'branch_id', 'numero', 'fecha', 'origen_id', 'destino_id', 'remitente_id', 'destinatario_id',
+        'tipo_flete', 'cobrada', 'contra_reembolso',
         'numero_factura', 'flete_a_pagar_en', 'ubicacion_id', 'fecha_entrega', 'turno_entrega',
-        'ubicacion_actual', 'estado_facturacion', 'route_sheet_id',
+        'ubicacion_actual', 'route_sheet_id',
         'flete', 'seguro', 'monto_contra_reembolso', 'retencion_mercaderia', 'otros_cargos',
         'subtotal', 'iva_monto', 'total', 'notas',
     ];
@@ -39,10 +38,16 @@ class Shipment extends Model
     protected static function booted()
     {
         static::addGlobalScope(new CompanyScope);
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
 
         static::creating(function ($model) {
             $model->company_id = session('company_id');
         });
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 
     public function items()

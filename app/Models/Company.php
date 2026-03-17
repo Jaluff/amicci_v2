@@ -26,4 +26,9 @@ class Company extends Model
     {
         return $this->hasMany(Shipment::class);
     }
+
+    public function branches()
+    {
+        return $this->hasMany(Branch::class);
+    }
 }

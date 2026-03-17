@@ -52,49 +52,54 @@ class DeliveryService
     public function updateDelivery(Delivery $delivery, array $data): Delivery
     {
         return DB::transaction(function () use ($delivery, $data) {
-            $shipmentIds = $data['shipments'] ?? [];
+            // Connect / Disconnect only if status is 'Listo'
+            if ($delivery->status === 'Listo') {
+                $shipmentIds = $data['shipments'] ?? [];
 
-            // Desconectar las guías viejas que no están en la lista
-            $removedShipments = Shipment::where('delivery_id', $delivery->id)
-                ->whereNotIn('id', $shipmentIds)
-                ->where('ubicacion_actual', '!=', 'Entregado') // don't detach delivered ones
-                ->get();
-                
-            foreach($removedShipments as $s) {
-                $s->update([
-                    'delivery_id' => null,
-                    'ubicacion_actual' => 'Dto destino'
-                ]);
-                $s->logActivity("Desvinculada del reparto {$delivery->delivery_number}", 'unassigned_delivery');
-            }
-
-            // Connect new ones
-            if (!empty($shipmentIds)) {
-                $shipments = Shipment::query()->with('items')->whereIn('id', $shipmentIds)
-                    ->where(function ($q) use ($delivery) {
-                    $q->whereNull('delivery_id')
-                        ->orWhere('delivery_id', $delivery->id);
-                }
-                )
+                // Desconectar las guías viejas que no están en la lista
+                $removedShipments = Shipment::where('delivery_id', $delivery->id)
+                    ->whereNotIn('id', $shipmentIds)
                     ->get();
-
-                Shipment::whereIn('id', $shipmentIds)->update([
-                    'delivery_id' => $delivery->id,
-                ]);
-                
-                foreach ($shipments as $s) {
-                    // Si no estaban asignadas antes a este delivery, lo logueamos
-                    if ($s->getOriginal('delivery_id') != $delivery->id) {
-                        $s->logActivity("Asignada al reparto {$delivery->delivery_number}", 'assigned_delivery');
-                    }
+                    
+                foreach($removedShipments as $s) {
+                    $s->update([
+                        'delivery_id' => null,
+                        'ubicacion_actual' => 'Dto destino'
+                    ]);
+                    $s->logActivity("Desvinculada del reparto {$delivery->delivery_number}", 'unassigned_delivery');
                 }
 
-                $data['guide_count'] = count($shipments);
-                $data['package_count'] = collect($shipments)->sum(fn($s) => $s->items->sum('cantidad'));
+                // Connect new ones
+                if (!empty($shipmentIds)) {
+                    $shipments = Shipment::query()->with('items')->whereIn('id', $shipmentIds)
+                        ->where(function ($q) use ($delivery) {
+                        $q->whereNull('delivery_id')
+                            ->orWhere('delivery_id', $delivery->id);
+                    }
+                    )
+                        ->get();
+
+                    Shipment::whereIn('id', $shipmentIds)->update([
+                        'delivery_id' => $delivery->id,
+                    ]);
+                    
+                    foreach ($shipments as $s) {
+                        if ($s->getOriginal('delivery_id') != $delivery->id) {
+                            $s->logActivity("Asignada al reparto {$delivery->delivery_number}", 'assigned_delivery');
+                        }
+                    }
+
+                    $data['guide_count'] = count($shipments);
+                    $data['package_count'] = collect($shipments)->sum(fn($s) => $s->items->sum('cantidad'));
+                }
+                else {
+                    $data['guide_count'] = 0;
+                    $data['package_count'] = 0;
+                }
             }
             else {
-                $data['guide_count'] = 0;
-                $data['package_count'] = 0;
+                // Si no es Listo, ignoramos cualquier cambio en el array de shipments
+                unset($data['shipments']);
             }
 
             $delivery->update($data);

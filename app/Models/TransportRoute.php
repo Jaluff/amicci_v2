@@ -18,6 +18,7 @@ class TransportRoute extends Model
 
     protected $fillable = [
         'company_id',
+        'branch_id',
         'dispatch_id',
         'route_number',
         'origin_id',
@@ -28,6 +29,7 @@ class TransportRoute extends Model
     protected static function booted()
     {
         static::addGlobalScope(new \App\Models\Scopes\CompanyScope);
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
 
         static::creating(function ($model) {
             if (!$model->company_id) {
@@ -36,6 +38,11 @@ class TransportRoute extends Model
         });
     }
 
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
+    }
 
     public function dispatch(): BelongsTo
     {

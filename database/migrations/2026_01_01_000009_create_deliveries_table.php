@@ -13,6 +13,7 @@ return new class extends Migration {
         Schema::create('deliveries', function (Blueprint $table) {
             $table->id();
             $table->foreignId('company_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->onDelete('set null');
             $table->string('delivery_number')->unique()->index();
             $table->foreignId('deliverer_id')->constrained()->cascadeOnDelete();
             $table->foreignId('location_id')->constrained('ubicaciones')->cascadeOnDelete();

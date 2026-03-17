@@ -23,20 +23,19 @@ class UpdateShipmentRequest extends FormRequest
     {
         return [
             // 'numero' => 'required|string|unique:shipments,numero,' . $this->route('shipment')->id,
-            'fecha' => 'required|date',
+            'fecha'             => 'required|date',
+            'branch_id'         => 'nullable|integer|exists:branches,id',
             'origen_id' => 'nullable|integer|exists:ubicaciones,id',
             'destino_id' => 'nullable|integer|exists:ubicaciones,id|different:origen_id',
             'remitente_id' => 'nullable|integer|exists:parties,id',
             'destinatario_id' => 'nullable|integer|exists:parties,id|different:remitente_id',
 
             'numero_factura' => 'nullable|string',
-            'estado_facturacion' => 'nullable|in:No facturada,Facturada,Rendida,Anulada',
             'ubicacion_actual' => 'nullable|in:Dto origen,En transito,Dto destino,En reparto,Entregado',
             'flete_a_pagar_en' => 'nullable|in:origen,destino',
             'fecha_entrega' => 'nullable|date',
             'cobrada' => 'boolean',
             'contra_reembolso' => 'boolean',
-            'rendida' => 'boolean',
             'flete' => 'numeric|min:0',
             'seguro' => 'numeric|min:0',
             'monto_contra_reembolso' => 'numeric|min:0',

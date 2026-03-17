@@ -66,6 +66,23 @@
                     </div>
                 </div>
 
+                <div class="mb-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+                    <x-input-label value="Sucursales Permitidas" class="mb-2" />
+                    <p class="text-sm text-gray-500 mb-4">Selecciona las sucursales desde las cuales este usuario podrá emitir guías.</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        @foreach($branches as $branch)
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" name="branches[]" value="{{ $branch->id }}" {{
+                                (is_array(old('branches')) && in_array($branch->id, old('branches'))) ||
+                                $user->branches->contains($branch->id) ? 'checked' : '' }}
+                            class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-emerald-600
+                            shadow-sm focus:ring-emerald-500 dark:focus:ring-emerald-600 dark:focus:ring-offset-gray-800">
+                            <span class="ml-2 text-gray-700 dark:text-gray-300">{{ $branch->company->name }} - {{ $branch->name }}</span>
+                        </label>
+                        @endforeach
+                    </div>
+                </div>
+
                 <div class="flex items-center justify-end mt-4">
                     <a href="{{ route('users.index') }}"
                         class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 mr-2">

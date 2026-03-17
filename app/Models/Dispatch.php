@@ -19,6 +19,7 @@ class Dispatch extends Model
 
     protected $fillable = [
         'company_id',
+        'branch_id',
         'dispatch_number',
         'origin_id',
         'destination_id',
@@ -37,12 +38,18 @@ class Dispatch extends Model
     protected static function booted(): void
     {
         static::addGlobalScope(new \App\Models\Scopes\CompanyScope);
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
 
         static::creating(function ($model) {
             if (!$model->company_id) {
                 $model->company_id = session('company_id');
             }
         });
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
     }
 
     public function company(): BelongsTo

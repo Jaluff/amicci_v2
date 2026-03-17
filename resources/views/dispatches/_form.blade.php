@@ -1,8 +1,48 @@
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-    @if(!isset($dispatch) || !$dispatch->exists)
+    <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Sucursal</label>
+        @php
+            $userBranch = $branches->first();
+            $isEdit = isset($dispatch) && $dispatch->exists;
+        @endphp
+        @if(!$isEdit && $branches->count() > 1)
+            <select name="branch_id" id="branch_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white" required>
+                @foreach($branches as $b)
+                    <option value="{{ $b->id }}" data-ubicacion="{{ $b->ubicacion_id }}" @selected(old('branch_id', $dispatch->branch_id) == $b->id)>
+                        {{ $b->name }}
+                    </option>
+                @endforeach
+            </select>
+        @else
+            <div class="mt-2 text-sm font-semibold text-gray-800 dark:text-gray-200">
+                {{ $dispatch->branch->name ?? $userBranch?->name ?? '—' }}
+            </div>
+            <input type="hidden" name="branch_id" id="branch_id" value="{{ old('branch_id', $dispatch->branch_id ?? $userBranch?->id) }}">
+        @endif
+        @error('branch_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+    </div>
+
+    <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Conductor</label>
+        <select name="driver_id"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white"
+            required>
+            <option value="">Seleccione un conductor</option>
+            @foreach($drivers as $driver)
+            <option value="{{ $driver->id }}" {{ old('driver_id', $dispatch->driver_id) == $driver->id ? 'selected' : ''
+                }}>
+                {{ $driver->name }} (DNI: {{ $driver->dni }})
+            </option>
+            @endforeach
+        </select>
+        @error('driver_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    @if($isEdit)
     <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Estado</label>
-        {{-- El estado NO se edita desde el form, solo se muestra. Los cambios van por botones de acción --}}
         @php
         $statusColors = [
         'Cargado' => 'dt-badge-blue',
@@ -20,24 +60,7 @@
         </div>
     </div>
     @endif
-    {{-- Hidden: mantiene el status actual para el submit del form (no lo cambia) --}}
     <input type="hidden" name="status" value="{{ $dispatch->status ?? 'Cargado' }}">
-
-    <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Conductor</label>
-        <select name="driver_id"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white"
-            required>
-            <option value="">Seleccione un conductor</option>
-            @foreach($drivers as $driver)
-            <option value="{{ $driver->id }}" {{ old('driver_id', $dispatch->driver_id) == $driver->id ? 'selected' : ''
-                }}>
-                {{ $driver->name }} (DNI: {{ $driver->dni }})
-            </option>
-            @endforeach
-        </select>
-        @error('driver_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-    </div>
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -69,7 +92,7 @@
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Origen</label>
-        <select name="origin_id"
+        <select name="origin_id" id="origin_id"
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white"
             required>
             <option value="">Seleccione origen</option>
@@ -111,10 +134,12 @@
 <div class="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
     <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">Rutas Asignadas</h3>
+        @if(!isset($dispatch) || $dispatch->status === 'Cargado')
         <button type="button"
             class="btn-open-routes-modal bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 font-medium py-1.5 px-3 rounded text-sm transition-colors cursor-pointer">
             + Seleccionar Rutas
         </button>
+        @endif
     </div>
 
     @error('routes') <div class="text-red-500 text-sm mt-1 mb-4">{{ $message }}</div> @enderror
@@ -156,8 +181,12 @@
                     </td>
                     <td class="p-3 text-sm text-gray-800 dark:text-gray-200">{{ $route->shipments_count ?? 0 }}</td>
                     <td class="p-3 text-center">
+                        @if(!isset($dispatch) || $dispatch->status === 'Cargado')
                         <button type="button" class="text-red-500 hover:text-red-700 btn-remove-route font-bold"
                             title="Remover">&times;</button>
+                        @else
+                        <span class="text-gray-400">—</span>
+                        @endif
                     </td>
                 </tr>
                 @endforeach
@@ -191,7 +220,7 @@
             @else
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4">
+                    d="M8 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4">
                 </path>
             </svg>
             Guardar

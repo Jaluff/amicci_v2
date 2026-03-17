@@ -54,34 +54,41 @@ $items = $isEdit ? $shipment->items : [ (object)[ 'tipo_paquete' => 'bultos', 'c
                         class="w-full py-2 px-2  mt-0.5 rounded border-gray-300 dark:border-gray-700"
                         placeholder="GU-001" readonly />
                 </div>
+                @php
+                    $userBranch = $branches->first();
+                @endphp
+                <div class="w-48">
+                    <label class="font-medium text-gray-700 dark:text-gray-300 block">Sucursal</label>
+                    @if($branches->count() > 1)
+                        <select name="branch_id" id="branch_id" class="w-full py-2 px-2 mt-0.5 rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900" required>
+                            @foreach($branches as $b)
+                                <option value="{{ $b->id }}" data-ubicacion="{{ $b->ubicacion_id }}" @selected(old('branch_id') == $b->id)>
+                                    {{ $b->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    @else
+                        <p class="mt-1 text-sm font-semibold text-gray-700 dark:text-gray-200">
+                            {{ $userBranch?->name ?? '—' }}
+                        </p>
+                        <input type="hidden" name="branch_id" id="branch_id" value="{{ old('branch_id', $userBranch?->id) }}">
+                    @endif
+                </div>
+                @else
+                <div class="w-48">
+                    <label class="font-medium text-gray-700 dark:text-gray-300 block">Sucursal</label>
+                    <p class="mt-1 text-sm font-semibold text-gray-700 dark:text-gray-200">
+                        {{ $shipment->branch?->name ?? '—' }}
+                    </p>
+                    <input type="hidden" name="branch_id" id="branch_id" value="{{ $shipment->branch_id }}">
+                </div>
                 @endif
-                <div class="w-48        ">
+                <div class="w-48">
                     <label class=" font-medium text-gray-700 dark:text-gray-300 block">Fecha</label>
                     <x-text-input id="fecha" name="fecha" type="date"
                         value="{{ old('fecha', $isEdit ? ($shipment->fecha ? $shipment->fecha->format('Y-m-d') : '') : date('Y-m-d')) }}"
                         class="w-full py-2 px-2  mt-0.5 rounded border-gray-300 dark:border-gray-700" />
                 </div>
-                @if(!$isEdit)
-                <div class="w-48">
-                    <label class="font-medium text-gray-700 dark:text-gray-300 block">Ubicación</label>
-                    @php
-                    $shipUbicActual = $isEdit ? ($shipment->ubicacion_actual ?? 'Dto origen') : 'Dto origen';
-                    $shipUbicColors = [
-                    'Dto origen' => 'dt-badge-indigo',
-                    'En transito' => 'dt-badge-yellow',
-                    'Dto destino' => 'dt-badge-blue',
-                    'En reparto' => 'dt-badge-orange',
-                    'Entregado' => 'dt-badge-green',
-                    ];
-                    $shipUbicColor = $shipUbicColors[$shipUbicActual] ?? 'dt-badge-gray';
-                    @endphp
-                    <div class="mt-1">
-                        <span class="dt-badge {{ $shipUbicColor }}">
-                            {{ $shipUbicActual }}
-                        </span>
-                    </div>
-                </div>
-                @endif
                 <input type="hidden" name="ubicacion_actual"
                     value="{{ $isEdit ? ($shipment->ubicacion_actual ?? 'Dto origen') : 'Dto origen' }}">
 
@@ -91,12 +98,14 @@ $items = $isEdit ? $shipment->items : [ (object)[ 'tipo_paquete' => 'bultos', 'c
         <div class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-3">
             <div>
                 <label class="font-medium text-gray-700 dark:text-gray-300">Origen *</label>
+                @php
+                    $defaultOrigenId = $isEdit ? ($shipment->origen_id ?? $shipment->origin_id) : ($userBranch?->ubicacion_id);
+                @endphp
                 <select name="origen_id" id="origen_id"
                     class="w-full py-2 px-2  mt-1 rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900"
                     required>
                     @foreach($ubicaciones as $u)
-                    <option value="{{ $u->id }}" @selected($isEdit && ($shipment->origen_id ?? $shipment->origin_id) ==
-                        $u->id)>{{ $u->nombre }}</option>
+                    <option value="{{ $u->id }}" @selected($defaultOrigenId == $u->id)>{{ $u->nombre }}</option>
                     @endforeach
                 </select>
             </div>
@@ -105,6 +114,7 @@ $items = $isEdit ? $shipment->items : [ (object)[ 'tipo_paquete' => 'bultos', 'c
                 <select name="destino_id" id="destino_id"
                     class="w-full py-2 px-2  mt-1 rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900"
                     required>
+                    <option value="">Seleccionar Destino...</option>
                     @foreach($ubicaciones as $u)
                     <option value="{{ $u->id }}" @selected($isEdit && ($shipment->destino_id ??
                         $shipment->destination_id) == $u->id)>{{ $u->nombre }}</option>
@@ -140,90 +150,71 @@ $items = $isEdit ? $shipment->items : [ (object)[ 'tipo_paquete' => 'bultos', 'c
     <div class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
         <h3 class=" font-bold text-gray-800 dark:text-white mb-3">📍 ESTADO & ENTREGA</h3>
 
-        <!-- Fila 1: N° Factura, Estado Facturación, Fecha Entrega, Flete a pagar (cada uno en una columna) -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
+        <!-- Fila 1: Contra-reembolso, Cobrada, Flete a pagar en + Info: N° Factura y Fecha Entrega -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 items-start">
             <div>
-                <label class=" font-medium text-gray-700 dark:text-gray-300">N° Factura</label>
-                <x-text-input id="numero_factura" name="numero_factura" type="text"
-                    value="{{ old('numero_factura', $isEdit ? ($shipment->numero_factura ?? '') : '') }}"
-                    class="w-full py-2 px-2  mt-1 rounded border-gray-300 dark:border-gray-700" placeholder="FAC-001" />
+                <label class="font-medium text-gray-700 dark:text-gray-300">¿Contra-reembolso?</label>
+                <div class="flex gap-2 mt-1 items-center">
+                    <label class="flex items-center gap-1">
+                        <input type="radio" name="contra_reembolso" value="1" @checked(old('contra_reembolso', $isEdit ?
+                            $shipment->contra_reembolso : false)) class="w-3 h-3" />
+                        <span class="text-gray-800 dark:text-gray-200 font-medium">Sí</span>
+                    </label>
+                    <label class="flex items-center gap-1">
+                        <input type="radio" name="contra_reembolso" value="0" @checked(! old('contra_reembolso', $isEdit
+                            ? $shipment->contra_reembolso : false)) class="w-3 h-3" />
+                        <span class="text-gray-600 dark:text-gray-400">No</span>
+                    </label>
+                </div>
             </div>
             <div>
-                <label class=" font-medium text-gray-700 dark:text-gray-300">Estado Fact.</label>
-                <select id="estado_facturacion" name="estado_facturacion"
-                    class="w-full py-2 px-2  mt-1 rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900">
-                    @foreach(['No facturada','Facturada','Rendida','Anulada'] as $s)
-                    <option value="{{ $s }}" @selected(old('estado_facturacion', $isEdit ? ($shipment->
-                        estado_facturacion ?? 'No facturada') : 'No facturada') === $s)>{{ $s }}</option>
-                    @endforeach
-                </select>
+                <label class="font-medium text-gray-700 dark:text-gray-300">¿Cobrada?</label>
+                <div class="flex gap-2 mt-1 items-center">
+                    <label class="flex items-center gap-1">
+                        <input type="radio" name="cobrada" value="1" @checked(old('cobrada', $isEdit ?
+                            $shipment->cobrada : false)) class="w-3 h-3" />
+                        <span class="text-gray-800 dark:text-gray-200 font-medium">Sí</span>
+                    </label>
+                    <label class="flex items-center gap-1">
+                        <input type="radio" name="cobrada" value="0" @checked(! old('cobrada', $isEdit ?
+                            $shipment->cobrada : false)) class="w-3 h-3" />
+                        <span class="text-gray-600 dark:text-gray-400">No</span>
+                    </label>
+                </div>
             </div>
             <div>
-                <label class=" font-medium text-gray-700 dark:text-gray-300">Fecha Entrega</label>
-                <x-text-input id="fecha_entrega" name="fecha_entrega" type="date"
-                    value="{{ old('fecha_entrega', $isEdit && isset($shipment->fecha_entrega) ? $shipment->fecha_entrega->format('Y-m-d') : '') }}"
-                    class="w-full py-2 px-2  mt-1 rounded border-gray-300 dark:border-gray-700" />
+                <label class="font-medium text-gray-700 dark:text-gray-300">Flete a pagar en</label>
+                <div class="flex gap-2 mt-1 items-center">
+                    <label class="flex items-center gap-1">
+                        <input type="radio" name="flete_a_pagar_en" value="destino" @checked(old('flete_a_pagar_en',
+                            $isEdit ? ($shipment->flete_a_pagar_en ?? 'destino') : 'destino') === 'destino') class="w-3
+                        h-3" />
+                        <span class="text-gray-800 dark:text-gray-200 font-medium">Destino</span>
+                    </label>
+                    <label class="flex items-center gap-1">
+                        <input type="radio" name="flete_a_pagar_en" value="origen" @checked(old('flete_a_pagar_en',
+                            $isEdit ? ($shipment->flete_a_pagar_en ?? '') : '') === 'origen') class="w-3 h-3" />
+                        <span class="text-gray-600 dark:text-gray-400">Origen</span>
+                    </label>
+                </div>
             </div>
-            <div>
-                <label class=" font-medium text-gray-700 dark:text-gray-300">Flete a pagar</label>
-                <select id="flete_a_pagar_en" name="flete_a_pagar_en"
-                    class="w-full py-2 px-2  mt-1 rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900">
-                    <option value="destino" @selected(old('flete_a_pagar_en', $isEdit ? ($shipment->flete_a_pagar_en ??
-                        'destino') : 'destino') === 'destino')>Destino</option>
-                    <option value="origen" @selected(old('flete_a_pagar_en', $isEdit ? ($shipment->flete_a_pagar_en ??
-                        '') : '') === 'origen')>Origen</option>
-                </select>
-            </div>
-        </div>
 
-        <!-- Fila 2: Radios (Contra, Rendida, Cobrada) en una sola línea -->
-        <div class="grid grid-cols-1 gap-2 mb-3">
-            <div class="grid grid-cols-3 gap-3 items-center justify-center">
-                <div>
-                    <label class=" font-medium text-gray-700 dark:text-gray-300">¿Contra Entrega?</label>
-                    <div class="flex gap-2 mt-1 items-center">
-                        <label class="flex items-center gap-1 ">
-                            <input type="radio" name="contra_reembolso" value="1" @checked(old('contra_reembolso',
-                                $isEdit ? $shipment->contra_reembolso : false)) class="w-3 h-3" />
-                            <span class="text-gray-800 dark:text-gray-200 font-medium">Sí</span>
-                        </label>
-                        <label class="flex items-center gap-1 ">
-                            <input type="radio" name="contra_reembolso" value="0" @checked(! old('contra_reembolso',
-                                $isEdit ? $shipment->contra_reembolso : false)) class="w-3 h-3" />
-                            <span class="text-gray-600 dark:text-gray-400">No</span>
-                        </label>
-                    </div>
-                </div>
-                <div>
-                    <label class=" font-medium text-gray-700 dark:text-gray-300">¿Rendida?</label>
-                    <div class="flex gap-2 mt-1 items-center">
-                        <label class="flex items-center gap-1 ">
-                            <input type="radio" name="rendida" value="1" @checked(old('rendida', $isEdit ?
-                                $shipment->rendida : false)) class="w-3 h-3" />
-                            <span class="text-gray-800 dark:text-gray-200 font-medium">Sí</span>
-                        </label>
-                        <label class="flex items-center gap-1 ">
-                            <input type="radio" name="rendida" value="0" @checked(! old('rendida', $isEdit ?
-                                $shipment->rendida : false)) class="w-3 h-3" />
-                            <span class="text-gray-600 dark:text-gray-400">No</span>
-                        </label>
-                    </div>
-                </div>
-                <div>
-                    <label class=" font-medium text-gray-700 dark:text-gray-300">¿Cobrada?</label>
-                    <div class="flex gap-2 mt-1 items-center">
-                        <label class="flex items-center gap-1 ">
-                            <input type="radio" name="cobrada" value="1" @checked(old('cobrada', $isEdit ?
-                                $shipment->cobrada : false)) class="w-3 h-3" />
-                            <span class="text-gray-800 dark:text-gray-200 font-medium">Sí</span>
-                        </label>
-                        <label class="flex items-center gap-1 ">
-                            <input type="radio" name="cobrada" value="0" @checked(! old('cobrada', $isEdit ?
-                                $shipment->cobrada : false)) class="w-3 h-3" />
-                            <span class="text-gray-600 dark:text-gray-400">No</span>
-                        </label>
-                    </div>
-                </div>
+            {{-- Info: N° Factura --}}
+            <div class="text-center">
+                <p class="text-xs font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider mb-1">N°
+                    Factura</p>
+                <p class="text-lg font-bold text-indigo-700 dark:text-indigo-300">
+                    {{ $isEdit && $shipment->numero_factura ? $shipment->numero_factura : '—' }}
+                </p>
+            </div>
+
+            {{-- Info: Fecha Entrega --}}
+            <div class="text-center">
+                <p class="text-xs font-semibold text-emerald-500 dark:text-emerald-400 uppercase tracking-wider mb-1">
+                    Fecha Entrega</p>
+                <p class="text-lg font-bold text-emerald-700 dark:text-emerald-300">
+                    {{ $isEdit && $shipment->fecha_entrega ? $shipment->fecha_entrega->format('d/m/Y') : '—' }}
+                </p>
             </div>
         </div>
     </div>
@@ -256,7 +247,7 @@ $items = $isEdit ? $shipment->items : [ (object)[ 'tipo_paquete' => 'bultos', 'c
                     </select>
                 </div>
                 <div class="flex-1">
-                    <label class=" font-medium text-gray-600 dark:text-gray-400 block mb-0.5">Cant. *</label>
+                    <label class=" font-medium text-gray-600 dark:text-gray-400 block mb-0.5">Cantidad</label>
                     <x-text-input type="number" name="items[{{ $index }}][cantidad]" value="{{ $item->cantidad ?? 1 }}"
                         min="1" class="w-full py-1.5 px-1 " required />
                 </div>
@@ -271,12 +262,22 @@ $items = $isEdit ? $shipment->items : [ (object)[ 'tipo_paquete' => 'bultos', 'c
                         class="w-full py-1.5 px-1 " />
                 </div>
                 <div class="flex-1">
-                    <label class=" font-medium text-gray-600 dark:text-gray-400 block mb-0.5">Vol</label>
+                    <label class=" font-medium text-gray-600 dark:text-gray-400 block mb-0.5">Volumen</label>
                     <x-text-input type="number" step="1" name="items[{{ $index }}][volumen]"
                         value="{{ $item->volumen ?? 0 }}" class="w-full py-1.5 px-1 " />
                 </div>
                 <div class="flex-1">
-                    <label class=" font-medium text-gray-600 dark:text-gray-400 block mb-0.5">Valor</label>
+                    <label class=" font-medium text-gray-600 dark:text-gray-400 block mb-0.5">Orden carga</label>
+                    <x-text-input type="text" name="items[{{ $index }}][referencia_orden_carga]"
+                        value="{{ $item->referencia_orden_carga ?? '' }}" class="w-full py-1.5 px-1 " />
+                </div>
+                <div class="flex-1">
+                    <label class=" font-medium text-gray-600 dark:text-gray-400 block mb-0.5">P. Recepción</label>
+                    <x-text-input type="text" name="items[{{ $index }}][referencia_recepcion]"
+                        value="{{ $item->referencia_recepcion ?? '' }}" class="w-full py-1.5 px-1 " />
+                </div>
+                <div class="flex-1">
+                    <label class=" font-medium text-gray-600 dark:text-gray-400 block mb-0.5">Valor declarado</label>
                     <x-text-input type="number" step="0.01" name="items[{{ $index }}][monto_valor_declarado]"
                         value="{{ $item->monto_valor_declarado ?? 0 }}" class="w-full py-1.5 px-1 " />
                 </div>
@@ -393,7 +394,9 @@ $items = $isEdit ? $shipment->items : [ (object)[ 'tipo_paquete' => 'bultos', 'c
         <button type="submit" name="action" value="save_and_print" id="btn_save_and_print"
             class="inline-flex items-center px-4 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 focus:bg-emerald-700 active:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
+                </path>
             </svg>
             @if($isEdit)
             Actualizar e imprimir
@@ -405,25 +408,62 @@ $items = $isEdit ? $shipment->items : [ (object)[ 'tipo_paquete' => 'bultos', 'c
 </form>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const btnPrint = document.getElementById('btn_save_and_print');
         const btnSave = document.querySelector('button[value="save"]');
         const form = document.getElementById('shipment-form');
-        
+
         if (btnPrint && form) {
-            btnPrint.addEventListener('click', function(e) {
+            btnPrint.addEventListener('click', function (e) {
                 // Obviamos el bloqueador abriendo nosotros mismos una ventana vacía pero con nombre
                 // Esto nos asegura mantener viva la referencia (window.opener) a esta página original
                 window.open('', 'PrintWindow');
                 form.setAttribute('target', 'PrintWindow');
             });
         }
-        
+
         if (btnSave && form) {
-            btnSave.addEventListener('click', function() {
+            btnSave.addEventListener('click', function () {
                 form.removeAttribute('target');
             });
         }
+
+        // Usar jQuery para manejar los eventos compatibles con Select2
+        $(document).ready(function() {
+            var $branchSelect = $('#branch_id');
+            var $origenSelect = $('#origen_id');
+            var $destinoSelect = $('#destino_id');
+
+            // Validación Origen vs Destino (usando el mecanismo existente en form.js o reforzándolo aquí)
+            function validateLocations() {
+                var origin = $origenSelect.val();
+                var dest = $destinoSelect.val();
+                if (origin && dest && origin === dest) {
+                    alert('El Origen y el Destino no pueden ser iguales.');
+                    $destinoSelect.val('').trigger('change'); 
+                }
+            }
+
+            $origenSelect.on('change', validateLocations);
+            $destinoSelect.on('change', validateLocations);
+
+            // Auto-seleccionar Origen al cambiar de Sucursal
+            if ($branchSelect.length) {
+                $branchSelect.on('change', function() {
+                    // Si es un select nativo o Select2, buscamos el atributo data-ubicacion de la opción seleccionada
+                    var $selected = $branchSelect.find('option:selected');
+                    var ubicacionId = $selected.data('ubicacion');
+                    
+                    if (ubicacionId && $origenSelect.length) {
+                        // Sincronizamos y disparamos el cambio para Select2
+                        $origenSelect.val(ubicacionId).trigger('change');
+                    }
+                });
+
+                // Disparar inicialmente para cargar la sucursal por defecto
+                $branchSelect.trigger('change');
+            }
+        });
     });
 </script>
 
@@ -457,6 +497,14 @@ $items = $isEdit ? $shipment->items : [ (object)[ 'tipo_paquete' => 'bultos', 'c
             <label class=" font-medium text-gray-600 dark:text-gray-400 block mb-0.5">Vol</label>
             <x-text-input type="number" step="1" name="items[__INDEX__][volumen]" value="0"
                 class="w-full py-1.5 px-1 " />
+        </div>
+        <div class="flex-1">
+            <label class=" font-medium text-gray-600 dark:text-gray-400 block mb-0.5">Orden carga</label>
+            <x-text-input type="text" name="items[__INDEX__][referencia_orden_carga]" class="w-full py-1.5 px-1 " />
+        </div>
+        <div class="flex-1">
+            <label class=" font-medium text-gray-600 dark:text-gray-400 block mb-0.5">P. Recepción</label>
+            <x-text-input type="text" name="items[__INDEX__][referencia_recepcion]" class="w-full py-1.5 px-1 " />
         </div>
         <div class="flex-1">
             <label class=" font-medium text-gray-600 dark:text-gray-400 block mb-0.5">Valor</label>

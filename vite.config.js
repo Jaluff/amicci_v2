@@ -16,7 +16,8 @@ export default defineConfig({
                 'resources/js/pages/deliveries/deliveries.js',
                 'resources/js/pages/users/index.js',
                 'resources/js/pages/drivers/index.js',
-                'resources/js/pages/deliverers/index.js'
+                'resources/js/pages/deliverers/index.js',
+                'resources/js/pages/branches/index.js'
             ],
             refresh: true,
         }),

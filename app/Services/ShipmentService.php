@@ -12,20 +12,29 @@ class ShipmentService
     {
         return DB::transaction(function () use ($data, $items) {
 
-            $company = Company::lockForUpdate()
-                ->findOrFail(session('company_id'));
+            $company = Company::lockForUpdate()->findOrFail(session('company_id'));
 
-            $company->last_shipment_number++;
-            $company->save();
+            // Numeración por sucursal si se seleccionó una
+            if (!empty($data['branch_id'])) {
+                $branch = \App\Models\Branch::lockForUpdate()->findOrFail($data['branch_id']);
+                $branch->last_shipment_number++;
+                $branch->save();
 
-            $number = $company->prefix . '-' . str_pad(
-                $company->last_shipment_number,
-                8,
-                '0',
-                STR_PAD_LEFT
-            );
+                $number = $branch->generateShipmentNumber($company->prefix);
+            } else {
+                // Fallback: contador legacy de la empresa
+                $company->last_shipment_number++;
+                $company->save();
 
-            $data['numero'] = $number;
+                $number = $company->prefix . '-' . str_pad(
+                    $company->last_shipment_number,
+                    8,
+                    '0',
+                    STR_PAD_LEFT
+                );
+            }
+
+            $data['numero']     = $number;
             $data['company_id'] = $company->id;
 
             $shipment = Shipment::create($data);

@@ -12,12 +12,16 @@ return new class extends Migration {
     {
         Schema::create('transport_routes', function (Blueprint $table) {
             $table->id();
-            $table->string('route_number')->unique()->index();
-            $table->string('origin');
-            $table->string('destination');
+            $table->foreignId('company_id')->constrained('companies')->restrictOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->onDelete('set null');
+            $table->string('route_number')->index();
+            $table->foreignId('origin_id')->constrained('ubicaciones')->restrictOnDelete();
+            $table->foreignId('destination_id')->constrained('ubicaciones')->restrictOnDelete();
             $table->enum('status', ['Cargada', 'Entregada', 'En viaje', 'Con problemas'])->default('Cargada');
 
             $table->timestamps();
+            
+            $table->unique(['company_id', 'route_number']);
         });
     }
 

@@ -20,9 +20,10 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UbicacionSeeder::class ,
             CompanySeeder::class ,
-            PartySeeder::class ,
             RolesAndAdminSeeder::class ,
             DriverSeeder::class ,
+            DelivererSeeder::class, // Asegurar que exista
+            BigDataSeeder::class , // El nuevo seeder masivo
         ]);
 
     }

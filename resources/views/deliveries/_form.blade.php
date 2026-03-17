@@ -1,6 +1,29 @@
-<div class="mb-4">
-    @if(isset($delivery) && $delivery->exists)
-    <div class="mb-4">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Sucursal</label>
+        @php
+            $userBranch = $branches->first();
+            $isEdit = isset($delivery) && $delivery->exists;
+        @endphp
+        @if(!$isEdit && $branches->count() > 1)
+            <select name="branch_id" id="branch_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white" required>
+                @foreach($branches as $b)
+                    <option value="{{ $b->id }}" data-ubicacion="{{ $b->ubicacion_id }}" @selected(old('branch_id', $delivery->branch_id) == $b->id)>
+                        {{ $b->name }}
+                    </option>
+                @endforeach
+            </select>
+        @else
+            <div class="mt-2 text-sm font-semibold text-gray-800 dark:text-gray-200">
+                {{ $delivery->branch->name ?? $userBranch?->name ?? '—' }}
+            </div>
+            <input type="hidden" name="branch_id" id="branch_id" value="{{ old('branch_id', $delivery->branch_id ?? $userBranch?->id) }}">
+        @endif
+        @error('branch_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+    </div>
+
+    @if($isEdit)
+    <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Fecha de Creación</label>
         <div class="mt-2 flex items-center gap-2">
             <span class="text-gray-900 dark:text-gray-100 font-medium">
@@ -57,10 +80,12 @@
 <div class="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
     <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">Guías (Shipments) Asignadas</h3>
+        @if(!isset($delivery) || $delivery->status === 'Listo')
         <button type="button"
             class="btn-open-shipments-modal bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 font-medium py-1.5 px-3 rounded text-sm transition-colors cursor-pointer">
             + Seleccionar Guías
         </button>
+        @endif
     </div>
 
     <div class="overflow-x-auto shadow rounded-lg mb-6 max-w-full">
@@ -107,8 +132,10 @@
                     </td>
                     <td class="p-3 text-sm text-gray-800 dark:text-gray-200">{{ $shipment->bultos ?? 0 }}</td>
                     <td class="p-3 text-center">
+                        @if(!isset($delivery) || $delivery->status === 'Listo')
                         <button type="button" class="text-red-500 hover:text-red-700 btn-remove-shipment font-bold mr-2"
                             title="Remover">&times;</button>
+                        @endif
                         <button type="button"
                             class="text-yellow-500 hover:text-yellow-700 btn-problem-shipment font-bold"
                             title="Reportar Problema" data-id="{{ $shipment->id }}">!</button>
