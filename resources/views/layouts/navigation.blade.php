@@ -74,7 +74,7 @@
                     <x-dropdown align="left" width="48">
                         <x-slot name="trigger">
                             <button
-                                class="inline-flex items-center px-1 pt-1 h-full border-b-2 {{ request()->routeIs('users.*') || request()->routeIs('branches.*') || request()->routeIs('company.edit') ? 'border-indigo-400 dark:border-indigo-600 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700' }} text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
+                                class="inline-flex items-center px-1 pt-1 h-full border-b-2 {{ request()->routeIs('users.*') || request()->routeIs('branches.*') || request()->routeIs('company.edit') || request()->routeIs('tariff-tables.*') ? 'border-indigo-400 dark:border-indigo-600 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700' }} text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
                                 <div>{{ __('Configuraciones') }}</div>
                                 <div class="ms-1">
                                     <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
@@ -96,6 +96,9 @@
                             </x-dropdown-link>
                             <x-dropdown-link :href="route('company.edit')">
                                 {{ __('Datos de Empresa') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('tariff-tables.index')">
+                                {{ __('Tarifas') }}
                             </x-dropdown-link>
                         </x-slot>
                     </x-dropdown>
@@ -299,6 +302,9 @@
                     </x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('company.edit')" :active="request()->routeIs('company.edit')">
                         {{ __('Datos de Empresa') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('tariff-tables.index')" :active="request()->routeIs('tariff-tables.*')">
+                        {{ __('Tarifas') }}
                     </x-responsive-nav-link>
                 </div>
             </div>

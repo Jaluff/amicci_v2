@@ -24,17 +24,22 @@
 
     <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Conductor</label>
-        <select name="driver_id"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white"
-            required>
-            <option value="">Seleccione un conductor</option>
-            @foreach($drivers as $driver)
-            <option value="{{ $driver->id }}" {{ old('driver_id', $dispatch->driver_id) == $driver->id ? 'selected' : ''
-                }}>
-                {{ $driver->name }} (DNI: {{ $driver->dni }})
-            </option>
-            @endforeach
-        </select>
+        <div class="flex gap-2">
+            <select name="driver_id" id="driver_id"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white"
+                required>
+                <option value="">Seleccione un conductor</option>
+                @foreach($drivers as $driver)
+                <option value="{{ $driver->id }}" {{ old('driver_id', $dispatch->driver_id) == $driver->id ? 'selected' : ''
+                    }}>
+                    {{ $driver->name }} (DNI: {{ $driver->dni }})
+                </option>
+                @endforeach
+            </select>
+            <button type="button" onclick="document.getElementById('driver-modal').classList.remove('hidden')" class="mt-1 px-3 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition" title="Nuevo Conductor">
+                +
+            </button>
+        </div>
         @error('driver_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
     </div>
 </div>
@@ -228,3 +233,124 @@
         </button>
     </div>
 </div>
+
+<!-- Driver Modal -->
+<div id="driver-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-gray-900 bg-opacity-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl">
+            <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Nuevo Conductor</h3>
+                <button type="button" onclick="document.getElementById('driver-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-500">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-4">
+                <div id="ajax-driver-form" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre / Razón Social *</label>
+                            <input type="text" name="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">DNI / Documento</label>
+                            <input type="text" name="dni" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Número de Licencia</label>
+                            <input type="text" name="license_number" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Teléfono</label>
+                            <input type="text" name="phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Correo Electrónico</label>
+                            <input type="email" name="email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Dirección</label>
+                            <input type="text" name="address" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white">
+                        </div>
+                    </div>
+                    <div id="driver-error-messages" class="hidden text-red-500 text-sm bg-red-50 dark:bg-red-900/30 p-3 rounded"></div>
+                    <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <button type="button" onclick="document.getElementById('driver-modal').classList.add('hidden')" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 dark:text-gray-300 text-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition">Cancelar</button>
+                        <button type="button" id="btn-save-driver" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('btn-save-driver');
+    if(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const container = document.getElementById('ajax-driver-form');
+            const errorDiv = document.getElementById('driver-error-messages');
+            
+            btn.disabled = true;
+            btn.innerText = 'Guardando...';
+            errorDiv.classList.add('hidden');
+            errorDiv.innerHTML = '';
+
+            const inputs = container.querySelectorAll('input, select, textarea');
+            const data = {};
+            inputs.forEach(input => {
+                if(input.name) {
+                    data[input.name] = input.value;
+                }
+            });
+
+            fetch('{{ route("drivers.store") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json().then(data => ({status: response.status, body: data})))
+            .then(res => {
+                btn.disabled = false;
+                btn.innerText = 'Guardar';
+                
+                if (res.status === 200 || res.status === 201) {
+                    const select = document.getElementById('driver_id');
+                    const option = document.createElement('option');
+                    option.value = res.body.driver.id;
+                    option.text = `${res.body.driver.name} (DNI: ${res.body.driver.dni})`;
+                    option.selected = true;
+                    select.appendChild(option);
+                    
+                    document.getElementById('driver-modal').classList.add('hidden');
+                    inputs.forEach(input => input.value = '');
+                } else if (res.status === 422) {
+                    let errorsHtml = '<ul class="list-disc pl-5">';
+                    for (const [key, messages] of Object.entries(res.body.errors)) {
+                        messages.forEach(msg => {
+                            errorsHtml += `<li>${msg}</li>`;
+                        });
+                    }
+                    errorsHtml += '</ul>';
+                    errorDiv.innerHTML = errorsHtml;
+                    errorDiv.classList.remove('hidden');
+                } else {
+                    errorDiv.innerText = res.body.message || 'Ocurrió un error inesperado al guardar el conductor.';
+                    errorDiv.classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                btn.disabled = false;
+                btn.innerText = 'Guardar';
+                errorDiv.innerText = 'Error de conexión. Intente nuevamente.';
+                errorDiv.classList.remove('hidden');
+            });
+        });
+    }
+});
+</script>

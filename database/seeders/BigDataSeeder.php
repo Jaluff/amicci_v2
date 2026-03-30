@@ -41,10 +41,10 @@ class BigDataSeeder extends Seeder
             return;
         }
 
-        // 2. Crear 2000 Clientes
-        $this->command->info('Creando 2000 clientes...');
+        // 2. Crear 200 Clientes
+        $this->command->info('Creando 200 clientes...');
         foreach ($companies as $company) {
-            Party::factory()->count(1000)->create([
+            Party::factory()->count(100)->create([
                 'company_id' => $company->id
             ]);
         }
@@ -95,9 +95,9 @@ class BigDataSeeder extends Seeder
 
         $availableShipments = Shipment::all();
 
-        // 4. Crear 100 Rutas
-        $this->command->info('Creando 100 rutas...');
-        for ($i = 0; $i < 100; $i++) {
+        // 4. Crear 2 Rutas
+        $this->command->info('Creando 2 rutas...');
+        for ($i = 0; $i < 2; $i++) {
             $company = $companies->random();
             $branch = Branch::where('company_id', $company->id)->get()->random();
             $origen = $ubicaciones->random();
@@ -124,10 +124,10 @@ class BigDataSeeder extends Seeder
             }
         }
 
-        // 5. Crear 30 Despachos
-        $this->command->info('Creando 30 despachos...');
+        // 5. Crear 3 Despachos
+        $this->command->info('Creando 3 despachos...');
         $availableRoutes = TransportRoute::all();
-        for ($i = 0; $i < 30; $i++) {
+        for ($i = 0; $i < 3; $i++) {
             $company = $companies->random();
             $branch = Branch::where('company_id', $company->id)->get()->random();
             $driver = $drivers->random();
@@ -157,9 +157,9 @@ class BigDataSeeder extends Seeder
             }
         }
 
-        // 6. Crear 20 Repartos
-        $this->command->info('Creando 20 repartos...');
-        for ($i = 0; $i < 20; $i++) {
+        // 6. Crear 5 Repartos
+        $this->command->info('Creando 5 repartos...');
+        for ($i = 0; $i < 5; $i++) {
             $company = $companies->random();
             $branch = Branch::where('company_id', $company->id)->get()->random();
             $deliverer = $deliverers->random();

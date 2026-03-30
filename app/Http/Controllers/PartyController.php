@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Party;
+use App\Models\PartyTariffSetting;
+use App\Models\TariffTable;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -76,9 +78,9 @@ class PartyController extends Controller
             'addresses' => 'array',
             'addresses.*.id' => 'nullable',
             'addresses.*.type' => 'required|string|max:50',
-            'addresses.*.address_line1' => 'required|string|max:255',
+            'addresses.*.address_line1' => 'nullable|string|max:255',
             'addresses.*.city' => 'nullable|string|max:100',
-            'addresses.*.state' => 'nullable|string|max:100',
+            'addresses.*.state' => 'required|string|max:100',
             'addresses.*.zip_code' => 'nullable|string|max:20',
             'addresses.*.phone' => 'nullable|string|max:100',
             'addresses.*.email' => 'nullable|email|max:255',
@@ -86,11 +88,11 @@ class PartyController extends Controller
         ]);
 
         $party = Party::create([
-            'name' => $validated['name'],
-            'document' => $validated['document'],
-            'document_type' => $validated['document_type'],
-            'tax_status' => $validated['tax_status'],
-            'company_id' => session('company_id'),
+            'name'          => $validated['name'],
+            'document'      => $validated['document'] ?? null,
+            'document_type' => $validated['document_type'] ?? null,
+            'tax_status'    => $validated['tax_status'] ?? null,
+            'company_id'    => session('company_id'),
         ]);
 
         if ($request->has('addresses')) {
@@ -112,13 +114,20 @@ class PartyController extends Controller
             }
         }
 
+        // Guardar configuración tarifaria si se envió habilitada
+        // Solo guarda si se marcó el checkbox (billing_mode tiene valor)
+        if ($request->filled('tariff.billing_mode')) {
+            $this->saveTariffSetting($party, $request->input('tariff'));
+        }
+
         return redirect()->route('parties.index')->with('success', 'Cliente creado correctamente.');
     }
 
     public function edit(Party $party)
     {
-        $party->load('addresses');
-        return view('parties.edit', compact('party'));
+        $party->load(['addresses', 'activeTariffSetting']);
+        $tariffTables = TariffTable::active()->orderBy('name')->get();
+        return view('parties.edit', compact('party', 'tariffTables'));
     }
 
     public function update(Request $request, Party $party)
@@ -133,9 +142,9 @@ class PartyController extends Controller
             'addresses' => 'array',
             'addresses.*.id' => 'nullable',
             'addresses.*.type' => 'required|string|max:50',
-            'addresses.*.address_line1' => 'required|string|max:255',
+            'addresses.*.address_line1' => 'nullable|string|max:255',
             'addresses.*.city' => 'nullable|string|max:100',
-            'addresses.*.state' => 'nullable|string|max:100',
+            'addresses.*.state' => 'required|string|max:100',
             'addresses.*.zip_code' => 'nullable|string|max:20',
             'addresses.*.phone' => 'nullable|string|max:100',
             'addresses.*.email' => 'nullable|email|max:255',
@@ -143,10 +152,10 @@ class PartyController extends Controller
         ]);
 
         $party->update([
-            'name' => $validated['name'],
-            'document' => $validated['document'],
-            'document_type' => $validated['document_type'],
-            'tax_status' => $validated['tax_status'],
+            'name'          => $validated['name'],
+            'document'      => $validated['document']      ?? null,
+            'document_type' => $validated['document_type'] ?? null,
+            'tax_status'    => $validated['tax_status']    ?? null,
         ]);
 
         $existingAddressesIds = [];
@@ -177,15 +186,93 @@ class PartyController extends Controller
         // Remove deleted addresses
         $party->addresses()->whereNotIn('id', $existingAddressesIds)->delete();
 
+        // Actualizar configuración tarifaria si se envió habilitada
+        // Solo guarda si se marcó el checkbox (billing_mode tiene valor)
+        if ($request->filled('tariff.billing_mode')) {
+            $this->saveTariffSetting($party, $request->input('tariff'));
+        }
+
         return redirect()->route('parties.index')->with('success', 'Cliente actualizado correctamente.');
+    }
+
+    /**
+     * Devuelve la configuración tarifaria activa del cliente (AJAX).
+     * Usada por el formulario de guías para calcular el flete automáticamente
+     * cuando se selecciona el remitente o se modifican los ítems de carga.
+     */
+    public function tariffSetting(Party $party): \Illuminate\Http\JsonResponse
+    {
+        $setting = $party->activeTariffSetting;
+
+        if (!$setting) {
+            return response()->json(['has_tariff' => false]);
+        }
+
+        return response()->json([
+            'has_tariff'        => true,
+            'billing_mode'      => $setting->billing_mode,
+            'billing_mode_label'=> $setting->billing_mode_label,
+            'minimum_charge'    => (float) ($setting->minimum_charge    ?? 0),
+            'rate_per_ton'      => (float) ($setting->rate_per_ton_custom ?? 0),
+            'rate_per_m3'       => (float) ($setting->rate_per_m3_custom  ?? 0),
+            'rate_per_bulto'    => (float) ($setting->rate_per_bulto      ?? 0),
+            'minimum_per_bulto' => (float) ($setting->minimum_per_bulto   ?? 0),
+            'rate_per_pallet'   => (float) ($setting->rate_per_pallet     ?? 0),
+            'minimum_per_pallet'=> (float) ($setting->minimum_per_pallet  ?? 0),
+            'declared_value_pct'=> (float) ($setting->declared_value_pct  ?? 0),
+        ]);
     }
 
     public function destroy(Party $party)
     {
-        // Las direcciones polimórficas también deberían eliminarse
+        // Las configuraciones tarifarias también se eliminan en cascada por FK
         $party->addresses()->delete();
         $party->delete();
 
         return redirect()->route('parties.index')->with('success', 'Cliente eliminado correctamente.');
+    }
+
+
+    /**
+     * Guarda o actualiza la configuración tarifaria del cliente.
+     * Usa updateOrCreate por party_id (un acuerdo por cliente).
+     * El cuadro tarifario se determina en tiempo real por origen/destino de la guía.
+     *
+     * @param  Party  $party
+     * @param  array  $tariffData  Datos del bloque tariff[] del formulario
+     */
+    private function saveTariffSetting(Party $party, array $tariffData): void
+    {
+        // Determinar el billing_mode final según los checkboxes de bultos/pallets
+        $mode = $tariffData['billing_mode'] ?? '';
+
+        if ($mode === 'bultos_pallets') {
+            // Ambos seleccionados
+            $finalMode = 'bultos_pallets';
+        } else {
+            $finalMode = $mode;
+        }
+
+        PartyTariffSetting::updateOrCreate(
+            [
+                // Un único acuerdo por cliente (sin filtrar por tariff_table_id)
+                'party_id' => $party->id,
+            ],
+            [
+                'tariff_table_id'     => null,
+                'billing_mode'        => $finalMode,
+                'minimum_charge'      => ($tariffData['minimum_charge']      ?? null) ?: null,
+                'rate_per_ton_custom' => ($tariffData['rate_per_ton_custom']  ?? null) ?: null,
+                'rate_per_m3_custom'  => ($tariffData['rate_per_m3_custom']   ?? null) ?: null,
+                'rate_per_bulto'      => ($tariffData['rate_per_bulto']       ?? null) ?: null,
+                'minimum_per_bulto'   => ($tariffData['minimum_per_bulto']    ?? null) ?: null,
+                'rate_per_pallet'     => ($tariffData['rate_per_pallet']      ?? null) ?: null,
+                'minimum_per_pallet'  => ($tariffData['minimum_per_pallet']   ?? null) ?: null,
+                'declared_value_pct'  => ($tariffData['declared_value_pct']   ?? null) ?: null,
+                'valid_from'          => $tariffData['valid_from']            ?? null,
+                'valid_until'         => ($tariffData['valid_until']          ?? null) ?: null,
+                'notes'               => ($tariffData['notes']               ?? null) ?: null,
+            ]
+        );
     }
 }

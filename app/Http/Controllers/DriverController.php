@@ -50,14 +50,22 @@ class DriverController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
-            'phone' => 'required|string|max:50',
-            'email' => 'required|email|max:255|unique:drivers,email',
-            'license_number' => 'required|string|max:100|unique:drivers,license_number',
-            'dni' => 'required|string|max:50|unique:drivers,dni',
+            'address' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:50',
+            'email' => 'nullable|email|max:255|unique:drivers,email',
+            'license_number' => 'nullable|string|max:100|unique:drivers,license_number',
+            'dni' => 'nullable|string|max:50|unique:drivers,dni',
         ]);
 
-        Driver::create($validated);
+        $driver = Driver::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'driver' => $driver,
+                'message' => 'Conductor guardado correctamente.'
+            ]);
+        }
 
         return redirect()->route('drivers.index')->with('success', 'Conductor guardado correctamente.');
     }
@@ -71,11 +79,11 @@ class DriverController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
-            'phone' => 'required|string|max:50',
-            'email' => 'required|email|max:255|unique:drivers,email,' . $driver->id,
-            'license_number' => 'required|string|max:100|unique:drivers,license_number,' . $driver->id,
-            'dni' => 'required|string|max:50|unique:drivers,dni,' . $driver->id,
+            'address' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:50',
+            'email' => 'nullable|email|max:255|unique:drivers,email,' . $driver->id,
+            'license_number' => 'nullable|string|max:100|unique:drivers,license_number,' . $driver->id,
+            'dni' => 'nullable|string|max:50|unique:drivers,dni,' . $driver->id,
         ]);
 
         $driver->update($validated);

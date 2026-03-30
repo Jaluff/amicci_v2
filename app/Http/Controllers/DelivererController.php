@@ -57,7 +57,15 @@ class DelivererController extends Controller
             'email' => 'nullable|email|max:255',
         ]);
 
-        Deliverer::create($validated);
+        $deliverer = Deliverer::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'deliverer' => $deliverer,
+                'message' => 'Repartidor guardado correctamente.'
+            ]);
+        }
 
         return redirect()->route('deliverers.index')->with('success', 'Repartidor guardado correctamente.');
     }

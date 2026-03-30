@@ -17,10 +17,10 @@ return new class extends Migration {
             $table->morphs('addressable');
 
             $table->string('type')->default('Principal'); // Facturación, Fiscal, Depósito...
-            $table->string('address_line1');
+            $table->string('address_line1')->nullable();
             $table->string('address_line2')->nullable();
             $table->string('city')->nullable();
-            $table->string('state')->nullable();
+            $table->string('state');
             $table->string('zip_code')->nullable();
             $table->string('phone')->nullable();
             $table->string('email')->nullable();

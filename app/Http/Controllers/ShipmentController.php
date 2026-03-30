@@ -8,6 +8,7 @@ use App\Models\Party;
 use App\Models\Shipment;
 use App\Models\Ubicacion;
 use App\Services\ShipmentService;
+use App\Services\GuiaImporteService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
@@ -268,5 +269,95 @@ class ShipmentController extends Controller
         ]);
 
         return view('shipments.print', compact('shipment'));
+    }
+
+    /**
+     * Calcula el flete para modo 'kg' dado un origen, destino y peso total.
+     * Usado por el formulario de guías vía AJAX para actualizar el campo
+     * flete en tiempo real cuando el billing_mode del remitente es 'kg'.
+     *
+     * GET /shipments/calcular-flete?origen_id=&destino_id=&peso_kg=&party_id=
+     */
+    public function calcularFlete(Request $request, GuiaImporteService $service)
+    {
+        $origenId    = $request->origen_id;
+        $destinoId   = $request->destino_id;
+        $pesoKg      = (float) $request->peso_kg;
+        $remitenteId = $request->remitente_id;
+
+        if (!$origenId || !$destinoId) {
+            return response()->json(['flete' => 0]);
+        }
+
+        $origen  = Ubicacion::find($origenId);
+        $destino = Ubicacion::find($destinoId);
+
+        if (!$origen || !$destino) {
+            return response()->json(['flete' => 0]);
+        }
+
+        // Buscar el cuadro tarifario base para esta ruta por nombre (LIKE en ambas direcciones)
+        $tariffTable = \App\Models\TariffTable::where(function ($q) use ($origen) {
+                $q->whereRaw("LOWER(origin) LIKE CONCAT('%', LOWER(?), '%')", [$origen->nombre])
+                  ->orWhereRaw("LOWER(?) LIKE CONCAT('%', LOWER(origin), '%')", [$origen->nombre]);
+            })
+            ->where(function ($q) use ($destino) {
+                $q->whereRaw("LOWER(destination) LIKE CONCAT('%', LOWER(?), '%')", [$destino->nombre])
+                  ->orWhereRaw("LOWER(?) LIKE CONCAT('%', LOWER(destination), '%')", [$destino->nombre]);
+            })
+            ->where('is_active', true)
+            ->first();
+
+        if (!$tariffTable) {
+            return response()->json(['flete' => 0, 'detalle' => "Sin tarifa cargada para la ruta: {$origen->nombre} → {$destino->nombre}"]);
+        }
+
+        // Si tenemos un remitente, intentamos el cálculo profesional vía Service (considera mínimos y acuerdos)
+        if ($remitenteId) {
+            $shipment = new Shipment([
+                'remitente_id' => $remitenteId,
+                'origen_id'    => $origenId,
+                'destino_id'   => $destinoId,
+            ]);
+            // Creamos un ítem virtual para que el service sume el peso
+            $item = new \App\Models\ShipmentItem(['peso' => $pesoKg, 'tipo_paquete' => 'bultos', 'cantidad' => 1]);
+            $shipment->setRelation('items', collect([$item]));
+
+            $res = $service->calcular($shipment, $tariffTable->id);
+
+            if ($res) {
+                return response()->json([
+                    'flete'   => (float) $res['importe_final'],
+                    'detalle' => $res['billing_mode_label'] . ($res['importe_final'] > $res['importe_calculado'] ? " (Mínimo aplicado)" : ""),
+                    'table'   => $res['tariff_table_name'],
+                ]);
+            }
+        }
+
+        // Fallback: cálculo genérico de la tabla si no hay acuerdo particular o no se envió remitente
+        if ($pesoKg >= 1000) {
+            $ton   = $pesoKg / 1000;
+            $flete = (float) $tariffTable->rate_per_ton * $ton;
+            return response()->json([
+                'flete'    => round($flete, 2),
+                'detalle'  => "Por tonelada: {$ton} ton × \${$tariffTable->rate_per_ton}",
+                'table'    => $tariffTable->name,
+            ]);
+        }
+
+        $bracket = \App\Models\TariffBracket::where('tariff_table_id', $tariffTable->id)
+            ->where('weight_from', '<=', (int) ceil($pesoKg))
+            ->where('weight_to',   '>=', (int) ceil($pesoKg))
+            ->first();
+
+        if (!$bracket) {
+            return response()->json(['flete' => 0, 'detalle' => 'Peso fuera de escala', 'table' => $tariffTable->name]);
+        }
+
+        return response()->json([
+            'flete'   => (float) $bracket->rate,
+            'detalle' => "Tramo {$bracket->weight_from}-{$bracket->weight_to} kg → \${$bracket->rate}",
+            'table'   => $tariffTable->name,
+        ]);
     }
 }

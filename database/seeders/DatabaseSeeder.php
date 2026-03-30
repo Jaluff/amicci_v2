@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             DriverSeeder::class ,
             DelivererSeeder::class, // Asegurar que exista
             BigDataSeeder::class , // El nuevo seeder masivo
+            TariffTableSeeder::class, // Cuadros tarifarios y tramos de peso
         ]);
 
     }

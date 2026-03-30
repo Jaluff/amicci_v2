@@ -19,50 +19,50 @@
         </div>
 
         <div>
-            <label for="dni" class="block text-sm font-medium text-gray-700 dark:text-gray-300">DNI / Documento *</label>
+            <label for="dni" class="block text-sm font-medium text-gray-700 dark:text-gray-300">DNI / Documento</label>
             <x-text-input type="text" id="dni" name="dni"
                 value="{{ old('dni', $driver->dni ?? '') }}"
-                class="mt-1 block w-full" required />
+                class="mt-1 block w-full" />
             @error('dni')
                 <span class="text-red-500 text-sm">{{ $message }}</span>
             @enderror
         </div>
 
         <div>
-            <label for="license_number" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Número de Licencia *</label>
+            <label for="license_number" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Número de Licencia</label>
             <x-text-input type="text" id="license_number" name="license_number"
                 value="{{ old('license_number', $driver->license_number ?? '') }}"
-                class="mt-1 block w-full" required />
+                class="mt-1 block w-full" />
             @error('license_number')
                 <span class="text-red-500 text-sm">{{ $message }}</span>
             @enderror
         </div>
 
         <div>
-            <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Teléfono *</label>
+            <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Teléfono</label>
             <x-text-input type="text" id="phone" name="phone"
                 value="{{ old('phone', $driver->phone ?? '') }}"
-                class="mt-1 block w-full" required />
+                class="mt-1 block w-full" />
             @error('phone')
                 <span class="text-red-500 text-sm">{{ $message }}</span>
             @enderror
         </div>
 
         <div>
-            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Correo Electrónico *</label>
+            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Correo Electrónico</label>
             <x-text-input type="email" id="email" name="email"
                 value="{{ old('email', $driver->email ?? '') }}"
-                class="mt-1 block w-full" required />
+                class="mt-1 block w-full" />
             @error('email')
                 <span class="text-red-500 text-sm">{{ $message }}</span>
             @enderror
         </div>
 
         <div>
-            <label for="address" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Dirección *</label>
+            <label for="address" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Dirección</label>
             <x-text-input type="text" id="address" name="address"
                 value="{{ old('address', $driver->address ?? '') }}"
-                class="mt-1 block w-full" required />
+                class="mt-1 block w-full" />
             @error('address')
                 <span class="text-red-500 text-sm">{{ $message }}</span>
             @enderror

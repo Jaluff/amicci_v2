@@ -48,7 +48,9 @@ Route::middleware(['auth', 'company'])->group(function () {
     Route::get('/shipments', [ShipmentController::class , 'index'])->name('shipments.index');
     Route::get('/shipments/datatable', [ShipmentController::class , 'datatable'])->name('shipments.datatable');
     Route::get('/shipments/create', [ShipmentController::class , 'create'])->name('shipments.create');
+    Route::get('/shipments/calcular-flete', [ShipmentController::class, 'calcularFlete'])->name('shipments.calcular-flete');
     Route::post('/shipments', [ShipmentController::class , 'store'])->name('shipments.store');
+
     Route::get('/shipments/{shipment}/edit', [ShipmentController::class , 'edit'])->name('shipments.edit');
     Route::get('/shipments/{shipment}/print', [ShipmentController::class , 'print'])->name('shipments.print');
     Route::post('/shipments/{shipment}', [ShipmentController::class , 'update'])->name('shipments.update');
@@ -56,7 +58,9 @@ Route::middleware(['auth', 'company'])->group(function () {
 
     // Clientes (Remitentes y Destinatarios)
     Route::get('/parties/datatable', [\App\Http\Controllers\PartyController::class , 'datatable'])->name('parties.datatable');
+    Route::get('/parties/{party}/tariff-setting', [\App\Http\Controllers\PartyController::class , 'tariffSetting'])->name('parties.tariff-setting');
     Route::resource('parties', \App\Http\Controllers\PartyController::class)->except(['show']);
+
 
     // Conductores
     Route::get('/drivers/datatable', [\App\Http\Controllers\DriverController::class, 'datatable'])->name('drivers.datatable');
@@ -107,6 +111,10 @@ Route::middleware(['auth', 'company'])->group(function () {
     Route::post('/documents/problem', [\App\Http\Controllers\DocumentProblemController::class , 'store'])->name('documents.problem.store');
     Route::get('/documents/problem', [\App\Http\Controllers\DocumentProblemController::class , 'history'])->name('documents.problem.history');
     Route::get('/documents/problem/shipments', [\App\Http\Controllers\DocumentProblemController::class , 'shipmentProblems'])->name('documents.problem.shipments');
+
+    // Cuadros Tarifarios — ABM con gestión de tramos de peso
+    Route::get('/tariff-tables/datatable', [\App\Http\Controllers\TariffTableController::class, 'datatable'])->name('tariff-tables.datatable');
+    Route::resource('tariff-tables', \App\Http\Controllers\TariffTableController::class)->except(['show']);
 });
 
 
