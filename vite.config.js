@@ -17,7 +17,8 @@ export default defineConfig({
                 'resources/js/pages/users/index.js',
                 'resources/js/pages/drivers/index.js',
                 'resources/js/pages/deliverers/index.js',
-                'resources/js/pages/branches/index.js'
+                'resources/js/pages/branches/index.js',
+                'resources/js/pages/reports/dispatches.js'
             ],
             refresh: true,
         }),

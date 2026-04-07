@@ -140,6 +140,12 @@
                                 value="{{ old('stamping_headquarters', $company->stamping_headquarters) }}"
                                 class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Cargo por Contra-reembolso (%)</label>
+                            <input type="number" step="0.01" min="0" max="100" name="contra_reembolso_percent"
+                                value="{{ old('contra_reembolso_percent', $company->contra_reembolso_percent ?? '0') }}"
+                                class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </div>
                     </div>
                 </div>
 

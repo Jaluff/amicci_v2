@@ -85,7 +85,7 @@
 <div class="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
     <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">Guías (Shipments) Asignadas</h3>
-        @if(!isset($delivery) || $delivery->status === 'Listo')
+        @if(!isset($delivery) || !$delivery->exists || $delivery->status === 'Listo')
         <button type="button"
             class="btn-open-shipments-modal bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 font-medium py-1.5 px-3 rounded text-sm transition-colors cursor-pointer">
             + Seleccionar Guías
@@ -137,7 +137,7 @@
                     </td>
                     <td class="p-3 text-sm text-gray-800 dark:text-gray-200">{{ $shipment->bultos ?? 0 }}</td>
                     <td class="p-3 text-center">
-                        @if(!isset($delivery) || $delivery->status === 'Listo')
+                        @if(!isset($delivery) || !$delivery->exists || $delivery->status === 'Listo')
                         <button type="button" class="text-red-500 hover:text-red-700 btn-remove-shipment font-bold mr-2"
                             title="Remover">&times;</button>
                         @endif
@@ -189,7 +189,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre / Razón Social *</label>
-                            <input type="text" name="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white" required>
+                            <input type="text" id="modal_deliverer_name" name="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">DNI / Documento</label>

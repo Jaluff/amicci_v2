@@ -58,7 +58,10 @@ class DispatchController extends Controller
             $query->where('status', $request->estado);
         }
 
-        return DataTables::of($query)
+        return DataTables::of($query->orderByDesc('dispatches.created_at'))
+            ->addColumn('fecha', function ($row) {
+            return $row->created_at ? $row->created_at->format('d/m/Y') : '-';
+        })
             ->addColumn('acciones', function ($row) {
             $editUrl = route('dispatches.edit', $row->id);
             $deleteUrl = route('dispatches.destroy', $row->id);

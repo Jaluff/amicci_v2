@@ -139,6 +139,19 @@ document.addEventListener('alpine:init', () => {
                     required>
             </div>
 
+            {{-- Porcentaje Contra-Reembolso --}}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Contra-Reembolso (%)
+                </label>
+                <div class="mt-1 relative">
+                    <input type="number" name="contra_reembolso_percent" step="0.01" min="0" max="100"
+                        value="{{ old('contra_reembolso_percent', isset($tariffTable) ? (float) $tariffTable->contra_reembolso_percent : '0.00') }}"
+                        class="pr-7 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 text-sm">%</span>
+                </div>
+            </div>
+
             {{-- Válido hasta --}}
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">

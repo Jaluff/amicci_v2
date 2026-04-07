@@ -105,7 +105,7 @@ class TransportRouteController extends Controller
             $query->where('status', $request->estado);
         }
 
-        return \Yajra\DataTables\Facades\DataTables::of($query)
+        return \Yajra\DataTables\Facades\DataTables::of($query->orderByDesc('transport_routes.created_at'))
             ->addColumn('acciones', function ($row) {
             $editUrl = route('routes.edit', $row->id);
             $deleteUrl = route('routes.destroy', $row->id);

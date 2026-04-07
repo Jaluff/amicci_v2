@@ -73,6 +73,9 @@ class PartyController extends Controller
             'document' => 'nullable|string|max:100',
             'document_type' => 'nullable|string|max:50',
             'tax_status' => 'nullable|string|max:100',
+            'iva_percent' => 'nullable|numeric|min:0|max:100',
+            'has_insurance' => 'nullable|in:true,false,1,0',
+            'insurance_percent' => 'nullable|numeric|min:0|max:100',
 
             // Array of addresses
             'addresses' => 'array',
@@ -92,6 +95,9 @@ class PartyController extends Controller
             'document'      => $validated['document'] ?? null,
             'document_type' => $validated['document_type'] ?? null,
             'tax_status'    => $validated['tax_status'] ?? null,
+            'iva_percent'   => $validated['iva_percent'] ?? 0,
+            'has_insurance' => filter_var($validated['has_insurance'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'insurance_percent' => $validated['insurance_percent'] ?? null,
             'company_id'    => session('company_id'),
         ]);
 
@@ -137,6 +143,9 @@ class PartyController extends Controller
             'document' => 'nullable|string|max:100',
             'document_type' => 'nullable|string|max:50',
             'tax_status' => 'nullable|string|max:100',
+            'iva_percent' => 'nullable|numeric|min:0|max:100',
+            'has_insurance' => 'nullable|in:true,false,1,0',
+            'insurance_percent' => 'nullable|numeric|min:0|max:100',
 
             // Array of addresses
             'addresses' => 'array',
@@ -156,6 +165,9 @@ class PartyController extends Controller
             'document'      => $validated['document']      ?? null,
             'document_type' => $validated['document_type'] ?? null,
             'tax_status'    => $validated['tax_status']    ?? null,
+            'iva_percent'   => $validated['iva_percent'] ?? 0,
+            'has_insurance' => filter_var($validated['has_insurance'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'insurance_percent' => $validated['insurance_percent'] ?? null,
         ]);
 
         $existingAddressesIds = [];
@@ -205,11 +217,19 @@ class PartyController extends Controller
         $setting = $party->activeTariffSetting;
 
         if (!$setting) {
-            return response()->json(['has_tariff' => false]);
+            return response()->json([
+                'has_tariff'        => false,
+                'iva_percent'       => (float) ($party->iva_percent ?? 0),
+                'has_insurance'     => (bool) $party->has_insurance,
+                'insurance_percent' => (float) ($party->insurance_percent ?? 0),
+            ]);
         }
 
         return response()->json([
             'has_tariff'        => true,
+            'iva_percent'       => (float) ($party->iva_percent ?? 0),
+            'has_insurance'     => (bool) $party->has_insurance,
+            'insurance_percent' => (float) ($party->insurance_percent ?? 0),
             'billing_mode'      => $setting->billing_mode,
             'billing_mode_label'=> $setting->billing_mode_label,
             'minimum_charge'    => (float) ($setting->minimum_charge    ?? 0),

@@ -52,7 +52,7 @@ class DeliveryController extends Controller
             $query->where('status', $request->estado);
         }
 
-        return DataTables::of($query)
+        return DataTables::of($query->orderByDesc('deliveries.created_at'))
             ->addColumn('acciones', function ($row) {
             $editUrl = route('deliveries.edit', $row->id);
             $deleteUrl = route('deliveries.destroy', $row->id);

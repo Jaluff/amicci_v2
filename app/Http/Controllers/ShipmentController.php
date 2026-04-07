@@ -76,7 +76,7 @@ class ShipmentController extends Controller
             $query->where('shipments.ubicacion_actual', $request->ubicacion);
         }
 
-        return DataTables::of($query)
+        return DataTables::of($query->orderByDesc('shipments.fecha'))
             ->addColumn('bultos', function ($row) {
             return (int)($row->bultos_total ?? 0);
         })
@@ -283,7 +283,8 @@ class ShipmentController extends Controller
         $origenId    = $request->origen_id;
         $destinoId   = $request->destino_id;
         $pesoKg      = (float) $request->peso_kg;
-        $remitenteId = $request->remitente_id;
+        $partyId     = $request->party_id;
+        $payerType   = $request->payer_type ?? 'origen'; // 'origen' or 'destino'
 
         if (!$origenId || !$destinoId) {
             return response()->json(['flete' => 0]);
@@ -312,10 +313,12 @@ class ShipmentController extends Controller
             return response()->json(['flete' => 0, 'detalle' => "Sin tarifa cargada para la ruta: {$origen->nombre} → {$destino->nombre}"]);
         }
 
-        // Si tenemos un remitente, intentamos el cálculo profesional vía Service (considera mínimos y acuerdos)
-        if ($remitenteId) {
+        // Si tenemos un partido pagador, intentamos el cálculo profesional vía Service (considera mínimos y acuerdos)
+        if ($partyId) {
             $shipment = new Shipment([
-                'remitente_id' => $remitenteId,
+                'flete_a_pagar_en' => $payerType,
+                'remitente_id' => $payerType === 'origen' ? $partyId : null,
+                'destinatario_id' => $payerType === 'destino' ? $partyId : null,
                 'origen_id'    => $origenId,
                 'destino_id'   => $destinoId,
             ]);

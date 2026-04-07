@@ -183,15 +183,15 @@ $items = $isEdit ? $shipment->items : [ (object)[ 'tipo_paquete' => 'bultos', 'c
                 <label class="font-medium text-gray-700 dark:text-gray-300">Flete a pagar en</label>
                 <div class="flex gap-2 mt-1 items-center">
                     <label class="flex items-center gap-1">
-                        <input type="radio" name="flete_a_pagar_en" value="destino" @checked(old('flete_a_pagar_en',
-                            $isEdit ? ($shipment->flete_a_pagar_en ?? 'destino') : 'destino') === 'destino') class="w-3
-                        h-3" />
-                        <span class="text-gray-800 dark:text-gray-200 font-medium">Destino</span>
+                        <input type="radio" name="flete_a_pagar_en" value="origen" @checked(old('flete_a_pagar_en',
+                            $isEdit ? ($shipment->flete_a_pagar_en ?? 'origen') : 'origen') === 'origen') class="w-3 h-3" />
+                        <span class="text-gray-800 dark:text-gray-200 font-medium">Origen</span>
                     </label>
                     <label class="flex items-center gap-1">
-                        <input type="radio" name="flete_a_pagar_en" value="origen" @checked(old('flete_a_pagar_en',
-                            $isEdit ? ($shipment->flete_a_pagar_en ?? '') : '') === 'origen') class="w-3 h-3" />
-                        <span class="text-gray-600 dark:text-gray-400">Origen</span>
+                        <input type="radio" name="flete_a_pagar_en" value="destino" @checked(old('flete_a_pagar_en',
+                            $isEdit ? ($shipment->flete_a_pagar_en ?? 'origen') : 'origen') === 'destino') class="w-3
+                        h-3" />
+                        <span class="text-gray-600 dark:text-gray-400">Destino</span>
                     </label>
                 </div>
             </div>
@@ -424,6 +424,8 @@ $items = $isEdit ? $shipment->items : [ (object)[ 'tipo_paquete' => 'bultos', 'c
 </form>
 
 <script>
+    window.GlobalContraPct = {{ (float) (\App\Models\Company::find(session('company_id'))?->contra_reembolso_percent ?? 0) }};
+    
     document.addEventListener('DOMContentLoaded', function () {
         const btnPrint = document.getElementById('btn_save_and_print');
         const btnSave = document.querySelector('button[value="save"]');

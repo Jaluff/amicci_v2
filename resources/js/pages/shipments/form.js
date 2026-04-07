@@ -36,7 +36,7 @@
         if ($dest.val() && String($dest.val()) === String(originVal)) {
             $dest.val(null).trigger('change');
         }
-        $dest.off('change.select2-sync').on('change', function () {
+        $dest.off('change.select2-sync').on('change.select2-sync', function () {
             var v = $(this).val();
             if (v && originVal && String(v) === String(originVal)) {
                 $(this).val(null).trigger('change');
@@ -55,7 +55,7 @@
         if ($orig.val() && String($orig.val()) === String(destVal)) {
             $orig.val(null).trigger('change');
         }
-        $orig.off('change.select2-sync').on('change', function () {
+        $orig.off('change.select2-sync').on('change.select2-sync', function () {
             var v = $(this).val();
             if (v && destVal && String(v) === String(destVal)) {
                 $(this).val(null).trigger('change');
@@ -75,7 +75,7 @@
         if ($rec.val() && String($rec.val()) === String(senderVal)) {
             $rec.val(null).trigger('change');
         }
-        $rec.off('change.select2-sync').on('change', function () {
+        $rec.off('change.select2-sync').on('change.select2-sync', function () {
             var v = $(this).val();
             if (v && senderVal && String(v) === String(senderVal)) {
                 $(this).val(null).trigger('change');
@@ -94,7 +94,7 @@
         if ($send.val() && String($send.val()) === String(recVal)) {
             $send.val(null).trigger('change');
         }
-        $send.off('change.select2-sync').on('change', function () {
+        $send.off('change.select2-sync').on('change.select2-sync', function () {
             var v = $(this).val();
             if (v && recVal && String(v) === String(recVal)) {
                 $(this).val(null).trigger('change');
@@ -104,12 +104,12 @@
         });
     }
 
-    // ─── Carga de tarifa del remitente (AJAX) ────────────────────────────────
+    // ─── Carga de tarifa del pagador (AJAX) ────────────────────────────────
     /**
-     * Cuando cambia el remitente, consulta su configuración tarifaria.
+     * Cuando cambia el pagador, consulta su configuración tarifaria.
      * Si tiene tarifa activa, la muestra en el banner y recalcula el flete.
      */
-    function loadSenderTariff(partyId) {
+    function loadTariff(partyId) {
         if (!partyId) {
             tariffSetting = null;
             hideTariffBanner();
@@ -124,11 +124,12 @@
                     tariffSetting = data;
                     showTariffBanner(data);
                 } else {
-                    tariffSetting = null;
+                    tariffSetting = data; // Guardamos igual porque trae IVA y Seguro
                     hideTariffBanner();
                 }
                 // Recalcular flete con la nueva tarifa
                 recalcularFlete();
+                recalcularCargosCliente();
             },
             error: function () {
                 tariffSetting = null;
@@ -146,6 +147,48 @@
 
     function hideTariffBanner() {
         $('#tariff-banner').hide();
+    }
+
+    /**
+     * Calcula los recargos automáticos basados en el cliente o la ruta
+     * (Seguro, Contra-reembolso, IVA)
+     */
+    function recalcularCargosCliente() {
+        var totalValor = 0;
+        $('#items-container .item-row').each(function () {
+            var val = parseFloat($(this).find('[name*="[monto_valor_declarado]"]').val()) || 0;
+            totalValor += val;
+        });
+
+        // Seguro
+        if (tariffSetting && tariffSetting.has_insurance) {
+            var insPct = parseFloat(tariffSetting.insurance_percent) || 0;
+            var seguro = (totalValor * insPct) / 100;
+            $('#seguro').val(seguro.toFixed(2));
+        } else if (tariffSetting) {
+            $('#seguro').val('0.00');
+        }
+
+        // Contra reembolso
+        var isContra = $('input[name="contra_reembolso"]:checked').val() == '1';
+        if (isContra) {
+            var pctCR = window.GlobalContraPct || 0;
+            var montoCR = (totalValor * pctCR) / 100;
+            $('#monto_contra_reembolso').val(montoCR.toFixed(2));
+        } else {
+            $('#monto_contra_reembolso').val('0.00');
+        }
+
+        // IVA percent
+        if (tariffSetting) {
+            var ivaPct = parseFloat(tariffSetting.iva_percent) || 0;
+            $('#iva_percent').val(ivaPct);
+        }
+
+        // Siempre al final actualizar subtotales
+        if (typeof calculateTotals === 'function') {
+            calculateTotals();
+        }
     }
 
     /**
@@ -184,6 +227,8 @@
         if (mode === 'kg') {
             var origenId  = $('#origen_id').val();
             var destinoId = $('#destino_id').val();
+            var payerType = $('input[name="flete_a_pagar_en"]:checked').val() || 'origen';
+            var partyId   = payerType === 'origen' ? $('#remitente_id').val() : $('#destinatario_id').val();
 
             if (!origenId || !destinoId) {
                 $('#tariff-mode-label').text(tariffSetting.billing_mode_label + ' — Esperando origen y destino...');
@@ -203,7 +248,8 @@
                     origen_id: origenId, 
                     destino_id: destinoId, 
                     peso_kg: totalKg,
-                    remitente_id: $('#remitente_id').val() 
+                    party_id: partyId,
+                    payer_type: payerType
                 },
                 success: function (res) {
                     if (res.flete > 0) {
@@ -298,41 +344,71 @@
         $('#origen_id').select2(opts).on('change', syncDestination);
         $('#destino_id').select2(opts).on('change', syncOrigin);
 
-        // Al cambiar origen o destino → recalcular (afecta al modo kg)
+        // Al cambiar origen o destino → recalcular flete
         $('#origen_id, #destino_id').on('change', function () {
             recalcularFlete();
         });
 
-        // Al cambiar remitente → cargar su tarifa y recalcular
-        $('#remitente_id').select2(opts).on('change', function () {
-            syncRecipient();
-            loadSenderTariff($(this).val());
+        // Al cambiar checkbox de contra-reembolso
+        $('input[name="contra_reembolso"]').on('change', function () {
+            recalcularCargosCliente();
         });
 
-        $('#destinatario_id').select2(opts).on('change', syncSender);
+        // Al cambiar remitente → recargar tarifa solo si él paga
+        $('#remitente_id').select2(opts).on('change', function () {
+            // Actualizar opciones del destinatario (sin re-registrar handlers)
+            var senderVal = $(this).val();
+            $('#destinatario_id').find('option').each(function () {
+                $(this).prop('disabled', !!this.value && String(this.value) === String(senderVal));
+            });
+            if (String($('#destinatario_id').val()) === String(senderVal)) {
+                $('#destinatario_id').val(null).trigger('change');
+            }
+
+            if ($('input[name="flete_a_pagar_en"]:checked').val() === 'origen') {
+                loadTariff(senderVal);
+            }
+        });
+
+        // Al cambiar destinatario → recargar tarifa solo si él paga
+        $('#destinatario_id').select2(opts).on('change', function () {
+            // Actualizar opciones del remitente (sin re-registrar handlers)
+            var recVal = $(this).val();
+            $('#remitente_id').find('option').each(function () {
+                $(this).prop('disabled', !!this.value && String(this.value) === String(recVal));
+            });
+            if (String($('#remitente_id').val()) === String(recVal)) {
+                $('#remitente_id').val(null).trigger('change');
+            }
+
+            if ($('input[name="flete_a_pagar_en"]:checked').val() === 'destino') {
+                loadTariff(recVal);
+            }
+        });
+
+        // Al cambiar de pagador → recargar tarifa con el party que corresponda
+        $('input[name="flete_a_pagar_en"]').on('change', function() {
+            var payerType = $(this).val();
+            var payerId = payerType === 'origen' ? $('#remitente_id').val() : $('#destinatario_id').val();
+            loadTariff(payerId);
+        });
 
         syncDestination();
         syncOrigin();
-        syncRecipient();
-        syncSender();
     }
 
     $(document).ready(function () {
         initSelect2();
 
-        // ── Cargar tarifa si ya hay remitente seleccionado (modo edición)
-        var initialSender = $('#remitente_id').val();
-        if (initialSender) {
-            loadSenderTariff(initialSender);
+        // ── Cargar tarifa si ya hay pagador seleccionado (modo edición)
+        var initialPayerOption = $('input[name="flete_a_pagar_en"]:checked').val() || 'origen';
+        var initialPayerId = initialPayerOption === 'origen' ? $('#remitente_id').val() : $('#destinatario_id').val();
+        if (initialPayerId) {
+            loadTariff(initialPayerId);
         }
 
         // ── Calcular totales de importes ──────────────────────────────────
-        function parseNum(v) {
-            var n = parseFloat(String(v).replace(/[,\s]/g, ''));
-            return isNaN(n) ? 0 : n;
-        }
-
-        function calculateTotals() {
+        window.calculateTotals = function() { // Exponer globalmente para recalcularCargosCliente
             var flete                = parseNum($('#flete').val());
             var seguro               = parseNum($('#seguro').val());
             var monto_contra_reembolso = parseNum($('#monto_contra_reembolso').val());
@@ -347,10 +423,15 @@
             $('#subtotal').val(subtotal.toFixed(2));
             $('#iva_monto').val(tax.toFixed(2));
             $('#total').val(total.toFixed(2));
+        };
+
+        function parseNum(v) {
+            var n = parseFloat(String(v).replace(/[,\s]/g, ''));
+            return isNaN(n) ? 0 : n;
         }
 
         $('#flete, #seguro, #monto_contra_reembolso, #retencion_mercaderia, #otros_cargos, #iva_percent')
-            .on('input change', calculateTotals);
+            .on('input change', window.calculateTotals);
 
         calculateTotals();
 
@@ -358,6 +439,7 @@
         // (cantidad, tipo_paquete, peso, volumen, valor declarado)
         $(document).on('input change', '#items-container [name*="[cantidad]"], #items-container [name*="[tipo_paquete]"], #items-container [name*="[peso]"], #items-container [name*="[volumen]"], #items-container [name*="[monto_valor_declarado]"]', function () {
             recalcularFlete();
+            recalcularCargosCliente(); // recalcula porque cambió valor declarado
         });
 
         // ── Agregar / quitar ítems ────────────────────────────────────────
@@ -370,6 +452,7 @@
             if (rows.length <= 1) return;
             $(this).closest('.item-row').remove();
             // Re-indexar nombres
+            // Re-indexar nombres...
             $('#items-container .item-row').each(function (i) {
                 $(this).find('[name^="items["]').each(function () {
                     var name = $(this).attr('name');
@@ -379,6 +462,7 @@
                 });
             });
             recalcularFlete();
+            recalcularCargosCliente();
         });
 
         // ── Validaciones al enviar ────────────────────────────────────────

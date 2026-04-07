@@ -95,6 +95,7 @@
                     id="dispatches-table" data-url="{{ route('dispatches.datatable') }}">
                     <thead class="bg-gray-50 dark:bg-gray-900">
                         <tr class="text-left">
+                            <th class="p-4 font-semibold border-b dark:border-gray-600">Fecha</th>
                             <th class="p-4 font-semibold border-b dark:border-gray-600">Número</th>
                             <th class="p-4 font-semibold border-b dark:border-gray-600">Conductor</th>
                             <th class="p-4 font-semibold border-b dark:border-gray-600">Origen - Destino</th>

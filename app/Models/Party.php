@@ -26,6 +26,9 @@ class Party extends Model
         'document',
         'document_type',
         'tax_status',
+        'iva_percent',
+        'has_insurance',
+        'insurance_percent',
     ];
 
     /* protected static function booted()

@@ -84,4 +84,9 @@ class Shipment extends Model
     {
         return $this->belongsTo(Company::class);
     }
+
+    public function transportRoute()
+    {
+        return $this->belongsTo(TransportRoute::class, 'transport_route_id');
+    }
 }

@@ -23,8 +23,8 @@ $(function () {
             }
         },
         columns: [
-            { data: 'numero', name: 'shipments.numero', responsivePriority: 1 },
             { data: 'fecha', name: 'shipments.fecha', responsivePriority: 2 },
+            { data: 'numero', name: 'shipments.numero', responsivePriority: 1 },
             { data: 'origen_nombre', name: 'origen.nombre', defaultContent: '-', responsivePriority: 6 },
             { data: 'destino_nombre', name: 'destino.nombre', defaultContent: '-', responsivePriority: 6 },
             { data: 'remitente_destinatario', name: 'remitente_destinatario', orderable: false, searchable: false, responsivePriority: 7 },

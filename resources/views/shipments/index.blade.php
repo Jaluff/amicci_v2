@@ -98,8 +98,8 @@
                     style="width:100%">
                     <thead class="bg-gray-50 dark:bg-gray-900">
                         <tr class="text-left">
-                            <th>Número</th>
                             <th>Fecha</th>
+                            <th>Número</th>
                             <th>Origen</th>
                             <th>Destino</th>
                             <th>Remitente / Destinatario</th>

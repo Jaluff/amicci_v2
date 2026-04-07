@@ -176,26 +176,19 @@ class GuiaImporteService
      */
     private function resolverSetting(Shipment $shipment, int $tariffTableId): ?PartyTariffSetting
     {
-        // Intentar con el remitente primero
-        if ($shipment->remitente_id) {
-            $setting = PartyTariffSetting::where('party_id', $shipment->remitente_id)
-                ->active()
-                ->first();
+        $payerId = null;
 
-            if ($setting) {
-                return $setting;
-            }
+        if ($shipment->flete_a_pagar_en === 'destino') {
+            $payerId = $shipment->destinatario_id;
+        } else {
+            // Default to origen
+            $payerId = $shipment->remitente_id;
         }
 
-        // Luego intentar con el destinatario
-        if ($shipment->destinatario_id) {
-            $setting = PartyTariffSetting::where('party_id', $shipment->destinatario_id)
+        if ($payerId) {
+            return PartyTariffSetting::where('party_id', $payerId)
                 ->active()
                 ->first();
-
-            if ($setting) {
-                return $setting;
-            }
         }
 
         return null;

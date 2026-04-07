@@ -69,6 +69,7 @@ table.dataTable thead td {
     padding: 0.6rem 0.75rem;
     font-weight: 600;
     letter-spacing: 0.02em;
+    font-size: 0.8rem;
 }
 
 /* Celdas */
@@ -76,6 +77,7 @@ table.dataTable tbody td {
     padding: 0.5rem 0.75rem;
     color: #374151;
     border-top: 1px solid #e5e7eb;
+    font-size: 0.8rem;
 }
 
 /* Filas alternadas */
@@ -399,6 +401,7 @@ html.dark .dt-button-collection .dt-button.active {
 .dark table.dataTable tbody td {
     color: #d1d5db;
     border-top: 1px solid #374151;
+    font-size: 0.8rem;
 }
 
 /* Paginación */

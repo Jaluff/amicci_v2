@@ -124,6 +124,10 @@ Route::middleware(['auth', 'role:admin|supervisor'])->group(function () {
 
     Route::get('users/{user}/permissions', [\App\Http\Controllers\UserPermissionController::class , 'show'])->name('users.permissions.show');
     Route::put('users/{user}/permissions', [\App\Http\Controllers\UserPermissionController::class , 'update'])->name('users.permissions.update');
+
+    // Reportes
+    Route::get('/reports/dispatches', [\App\Http\Controllers\DispatchReportController::class, 'index'])->name('reports.dispatches.index');
+    Route::get('/reports/dispatches/datatable', [\App\Http\Controllers\DispatchReportController::class, 'datatable'])->name('reports.dispatches.datatable');
 });
 
 require __DIR__ . '/auth.php';

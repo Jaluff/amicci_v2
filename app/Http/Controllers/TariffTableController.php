@@ -87,6 +87,7 @@ class TariffTableController extends Controller
             'valid_from'   => 'required|date',
             'valid_until'  => 'nullable|date|after:valid_from',
             'is_active'    => 'boolean',
+            'contra_reembolso_percent' => 'nullable|numeric|min:0|max:100',
 
             // Tramos de peso (deben siempre enviarse al menos uno)
             'brackets'              => 'required|array|min:1',
@@ -104,6 +105,7 @@ class TariffTableController extends Controller
             'valid_from'   => $validated['valid_from'],
             'valid_until'  => $validated['valid_until'] ?? null,
             'is_active'    => $request->boolean('is_active', true),
+            'contra_reembolso_percent' => $validated['contra_reembolso_percent'] ?? 0,
         ]);
 
         // Insertar todos los tramos enviados
@@ -143,6 +145,7 @@ class TariffTableController extends Controller
             'valid_from'   => 'required|date',
             'valid_until'  => 'nullable|date|after:valid_from',
             'is_active'    => 'boolean',
+            'contra_reembolso_percent' => 'nullable|numeric|min:0|max:100',
 
             'brackets'               => 'required|array|min:1',
             'brackets.*.weight_from' => 'required|integer|min:1',
@@ -159,6 +162,7 @@ class TariffTableController extends Controller
             'valid_from'   => $validated['valid_from'],
             'valid_until'  => $validated['valid_until'] ?? null,
             'is_active'    => $request->boolean('is_active', true),
+            'contra_reembolso_percent' => $validated['contra_reembolso_percent'] ?? 0,
         ]);
 
         // Reemplazar los tramos: borrar todos y reinsertar

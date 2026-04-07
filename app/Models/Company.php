@@ -15,6 +15,7 @@ class Company extends Model
         'last_shipment_number',
         'last_route_number',
         'last_dispatch_number',
+        'contra_reembolso_percent',
     ];
 
     public function users()

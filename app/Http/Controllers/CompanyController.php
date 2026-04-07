@@ -79,6 +79,7 @@ class CompanyController extends Controller
             'last_shipment_number' => ['required', 'integer', 'min:0'],
             'last_dispatch_number' => ['required', 'integer', 'min:0'],
             'last_route_number' => ['required', 'integer', 'min:0'],
+            'contra_reembolso_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
 
             // Billing / Legal Profile
             'legal_name' => ['nullable', 'string', 'max:255'],
@@ -112,6 +113,7 @@ class CompanyController extends Controller
             'last_shipment_number' => $validated['last_shipment_number'],
             'last_dispatch_number' => $validated['last_dispatch_number'],
             'last_route_number' => $validated['last_route_number'],
+            'contra_reembolso_percent' => $validated['contra_reembolso_percent'] ?? 0,
 
             'legal_name' => $validated['legal_name'] ?? null,
             'cuit' => $validated['cuit'] ?? null,

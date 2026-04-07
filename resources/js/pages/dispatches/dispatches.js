@@ -25,6 +25,7 @@ const DispatchModule = (function ($) {
                 }
             },
             columns: [
+                { data: 'fecha', name: 'created_at' },
                 { data: 'dispatch_number', name: 'dispatch_number' },
                 {
                     data: 'driver.name',
