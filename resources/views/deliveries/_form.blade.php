@@ -52,24 +52,19 @@
         @error('location_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
     </div>
 
-    <div>
+    <div class="relative">
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Repartidor</label>
-        <div class="flex gap-2">
-            <select name="deliverer_id" id="deliverer_id"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white"
-                required>
-                <option value="">Seleccione repartidor</option>
-                @foreach($deliverers as $deliverer)
-                <option value="{{ $deliverer->id }}" {{ old('deliverer_id', $delivery->deliverer_id ?? null) ==
-                    $deliverer->id ? 'selected' : '' }}>
-                    {{ $deliverer->name }} {{ $deliverer->dni ? '(DNI: ' . $deliverer->dni . ')' : '' }}
-                </option>
-                @endforeach
-            </select>
-            <button type="button" onclick="document.getElementById('deliverer-modal').classList.remove('hidden')" class="mt-1 px-3 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition" title="Nuevo Repartidor">
-                +
-            </button>
-        </div>
+        <button type="button" onclick="document.getElementById('deliverer-modal').classList.remove('hidden')" class="absolute right-0 top-0 font-bold text-2xl text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 leading-none" title="Nuevo Repartidor" style="margin-top: -2px;">+</button>
+        <select name="deliverer_id" id="deliverer_id"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white"
+            required>
+            <option value="">Seleccione repartidor</option>
+            @foreach($deliverers as $deliverer)
+            <option value="{{ $deliverer->id }}" {{ old('deliverer_id', $delivery->deliverer_id ?? null) == $deliverer->id ? 'selected' : '' }}>
+                {{ $deliverer->name }} {{ $deliverer->dni ? '(DNI: ' . $deliverer->dni . ')' : '' }}
+            </option>
+            @endforeach
+        </select>
         @error('deliverer_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
     </div>
 

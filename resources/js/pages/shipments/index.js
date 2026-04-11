@@ -5,6 +5,8 @@
 import $ from 'jquery';
 
 $(function () {
+    $('.select2').select2({ width: '100%' });
+
     if (!$('#shipmentsTable').length) return;
 
     $('#shipmentsTable').DataTable({

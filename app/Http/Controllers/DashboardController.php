@@ -8,6 +8,7 @@ use App\Models\Deliverer;
 use App\Models\Delivery;
 use App\Models\Dispatch;
 use App\Models\Driver;
+use App\Models\Invoice;
 use App\Models\Party;
 use App\Models\Shipment;
 use App\Models\TransportRoute;
@@ -193,6 +194,51 @@ class DashboardController extends Controller
                 'edit_url'  => route('dispatches.edit', $dp->id),
             ]);
 
+        // ── SECCIÓN 4: FACTURACIÓN (solo admin/supervisor) ─────────
+        $billingStats    = null;
+        $billingChart    = null;
+        $canSeeBilling   = auth()->user()?->hasRole(['admin', 'supervisor']);
+
+        if ($canSeeBilling) {
+            $invoiceQ = Invoice::withoutGlobalScopes();
+
+            $mesInicio = now()->startOfMonth();
+            $mesFin    = now()->endOfMonth();
+
+            $totalFacturado   = (clone $invoiceQ)->whereBetween('fecha_factura', [$mesInicio, $mesFin])->sum('total');
+            $totalCobrado     = (clone $invoiceQ)->whereBetween('fecha_factura', [$mesInicio, $mesFin])->where('cobrada', true)->sum('total');
+            $totalPendiente   = $totalFacturado - $totalCobrado;
+            $guiasSinFacturar = Shipment::withoutGlobalScopes()->whereNull('invoice_id')->whereNull('deleted_at')->count();
+
+            // Gráfico: últimos 6 meses — Facturado vs Cobrado
+            $meses = collect();
+            for ($i = 5; $i >= 0; $i--) {
+                $mes = now()->subMonths($i);
+                $meses->push([
+                    'label'    => $mes->translatedFormat('M Y'),
+                    'inicio'   => $mes->copy()->startOfMonth(),
+                    'fin'      => $mes->copy()->endOfMonth(),
+                ]);
+            }
+
+            $billingChart = [
+                'labels'    => $meses->pluck('label')->values(),
+                'facturado' => $meses->map(fn($m) =>
+                    (clone $invoiceQ)->whereBetween('fecha_factura', [$m['inicio'], $m['fin']])->sum('total')
+                )->values(),
+                'cobrado'   => $meses->map(fn($m) =>
+                    (clone $invoiceQ)->where('cobrada', true)->whereBetween('fecha_factura', [$m['inicio'], $m['fin']])->sum('total')
+                )->values(),
+            ];
+
+            $billingStats = [
+                'total_facturado'    => $totalFacturado,
+                'total_cobrado'      => $totalCobrado,
+                'total_pendiente'    => $totalPendiente,
+                'guias_sin_facturar' => $guiasSinFacturar,
+            ];
+        }
+
         return response()->json([
             'kpi' => [
                 // Flujo de guías
@@ -228,6 +274,8 @@ class DashboardController extends Controller
             'active_deliveries_list' => $activeDeliveriesList->values(),
             'active_routes_list'     => $activeRoutesList->values(),
             'active_dispatches_list' => $activeDispatchesList->values(),
+            'billing'                => $billingStats,
+            'billing_chart'          => $billingChart,
         ]);
     }
 }

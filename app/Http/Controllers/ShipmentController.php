@@ -20,7 +20,8 @@ class ShipmentController extends Controller
     public function index()
     {
         $ubicaciones = Ubicacion::orderBy('nombre')->get();
-        return view('shipments.index', compact('ubicaciones'));
+        $parties = Party::withoutGlobalScope('company')->orderBy('name')->get();
+        return view('shipments.index', compact('ubicaciones', 'parties'));
     }
 
     public function datatable(Request $request)

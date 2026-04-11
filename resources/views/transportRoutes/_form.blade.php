@@ -99,8 +99,8 @@ $route->dispatch->seal_number))
 
 <div class="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
     <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">Guías (Shipments) Asignadas</h3>
-        @if(!isset($route) || $route->status === 'Cargada')
+        <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">Guías Asignadas</h3>
+        @if(!isset($route) || !$route->exists || $route->status === 'Cargada')
         <button type="button"
             class="btn-open-shipments-modal bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 font-medium py-1.5 px-3 rounded text-sm transition-colors cursor-pointer">
             + Seleccionar Guías

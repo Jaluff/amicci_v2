@@ -33,18 +33,18 @@ class BigDataSeeder extends Seeder
 
         $companies = Company::all();
         $ubicaciones = Ubicacion::all();
-        $drivers = Driver::all();
-        $deliverers = Deliverer::all();
+        // $drivers = Driver::all();
+        // $deliverers = Deliverer::all();
 
         if ($companies->isEmpty() || $ubicaciones->isEmpty()) {
             $this->command->error('Debe haber empresas y ubicaciones para ejecutar este seeder.');
             return;
         }
 
-        // 2. Crear 200 Clientes
-        $this->command->info('Creando 200 clientes...');
+        // 2. Crear 20 Clientes
+        $this->command->info('Creando 20 clientes...');
         foreach ($companies as $company) {
-            Party::factory()->count(100)->create([
+            Party::factory()->count(10)->create([
                 'company_id' => $company->id
             ]);
         }
@@ -52,51 +52,51 @@ class BigDataSeeder extends Seeder
         $allParties = Party::all();
         $allBranches = Branch::all();
 
-        // 3. Crear 5000 Guías (Shipments)
-        $this->command->info('Creando 5000 guías...');
-        for ($i = 0; $i < 5000; $i++) {
-            $company = $companies->random();
-            $branches = Branch::where('company_id', $company->id)->get();
-            $branch = $branches->random();
+        // 3. Crear 5 Guías (Shipments)
+        // $this->command->info('Creando 5 guías...');
+        // for ($i = 0; $i < 5; $i++) {
+        //     $company = $companies->random();
+        //     $branches = Branch::where('company_id', $company->id)->get();
+        //     $branch = $branches->random();
             
-            $origen = $ubicaciones->random();
-            $destino = $ubicaciones->where('id', '!=', $origen->id)->random() ?? $ubicaciones->random();
+        //     $origen = $ubicaciones->random();
+        //     $destino = $ubicaciones->where('id', '!=', $origen->id)->random() ?? $ubicaciones->random();
             
-            $remitente = $allParties->where('company_id', $company->id)->random();
-            $destinatario = $allParties->where('company_id', $company->id)->where('id', '!=', $remitente->id)->random() ?? $remitente;
+        //     $remitente = $allParties->where('company_id', $company->id)->random();
+        //     $destinatario = $allParties->where('company_id', $company->id)->where('id', '!=', $remitente->id)->random() ?? $remitente;
 
-            $flete = rand(500, 8000);
-            $total = $flete * 1.21;
+        //     $flete = rand(500, 8000);
+        //     $total = $flete * 1.21;
 
-            $shipment = Shipment::create([
-                'company_id' => $company->id,
-                'branch_id' => $branch->id,
-                'numero' => $company->prefix . '-FA' . str_pad((string)($i + 1), 8, '0', STR_PAD_LEFT),
-                'fecha' => now()->subDays(rand(0, 30))->format('Y-m-d'),
-                'origen_id' => $origen->id,
-                'destino_id' => $destino->id,
-                'remitente_id' => $remitente->id,
-                'destinatario_id' => $destinatario->id,
-                'ubicacion_actual' => 'Dto origen',
-                'flete' => $flete,
-                'total' => $total,
-                'subtotal' => $flete,
-                'iva_monto' => $total - $flete,
-            ]);
+        //     $shipment = Shipment::create([
+        //         'company_id' => $company->id,
+        //         'branch_id' => $branch->id,
+        //         'numero' => $company->prefix . '-'. $branch->code .'-'.str_pad((string)($i + 1), 8, '0', STR_PAD_LEFT),
+        //         'fecha' => now()->subDays(rand(0, 30))->format('Y-m-d'),
+        //         'origen_id' => $origen->id,
+        //         'destino_id' => $destino->id,
+        //         'remitente_id' => $remitente->id,
+        //         'destinatario_id' => $destinatario->id,
+        //         'ubicacion_actual' => 'Dto origen',
+        //         'flete' => $flete,
+        //         'total' => $total,
+        //         'subtotal' => $flete,
+        //         'iva_monto' => $total - $flete,
+        //     ]);
 
-            DB::table('shipment_items')->insert([
-                'shipment_id' => $shipment->id,
-                'cantidad' => rand(1, 10),
-                'tipo_paquete' => 'bultos',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
+        //     DB::table('shipment_items')->insert([
+        //         'shipment_id' => $shipment->id,
+        //         'cantidad' => rand(1, 10),
+        //         'tipo_paquete' => 'bultos',
+        //         'created_at' => now(),
+        //         'updated_at' => now(),
+        //     ]);
+        // }
 
         $availableShipments = Shipment::all();
 
         // 4. Crear 2 Rutas
-        $this->command->info('Creando 2 rutas...');
+        /* $this->command->info('Creando 2 rutas...');
         for ($i = 0; $i < 2; $i++) {
             $company = $companies->random();
             $branch = Branch::where('company_id', $company->id)->get()->random();
@@ -122,10 +122,10 @@ class BigDataSeeder extends Seeder
             foreach ($guíasParaRuta as $s) {
                 $s->update(['transport_route_id' => $route->id, 'ubicacion_actual' => 'En transito']);
             }
-        }
+        } */
 
         // 5. Crear 3 Despachos
-        $this->command->info('Creando 3 despachos...');
+      /*   $this->command->info('Creando 3 despachos...');
         $availableRoutes = TransportRoute::all();
         for ($i = 0; $i < 3; $i++) {
             $company = $companies->random();
@@ -155,10 +155,10 @@ class BigDataSeeder extends Seeder
             foreach ($rutasParaDespacho as $r) {
                 $r->update(['dispatch_id' => $dispatch->id]);
             }
-        }
+        } */
 
         // 6. Crear 5 Repartos
-        $this->command->info('Creando 5 repartos...');
+        /* $this->command->info('Creando 5 repartos...');
         for ($i = 0; $i < 5; $i++) {
             $company = $companies->random();
             $branch = Branch::where('company_id', $company->id)->get()->random();
@@ -191,7 +191,7 @@ class BigDataSeeder extends Seeder
                 'guide_count' => $guíasParaReparto->count(),
                 'package_count' => $guíasParaReparto->count() * 2 
             ]);
-        }
+        } */
         
         $this->command->info('Seeder finalizado con éxito.');
     }

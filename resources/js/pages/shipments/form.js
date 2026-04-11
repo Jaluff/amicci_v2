@@ -481,5 +481,55 @@
             }
             return true;
         });
+
+        // ─── Modal Rápido de Nuevo Cliente ────────────────────────────────────
+        var $quickPartyModal = $('#quick-party-modal');
+        var $quickPartyForm = $('#quick-party-form');
+        var currentQuickPartyTarget = null; // Guardará si fue remitente_id o destinatario_id
+
+        $('.btn-quick-party').on('click', function() {
+            currentQuickPartyTarget = $(this).data('target');
+            $quickPartyForm[0].reset();
+            $quickPartyModal.removeClass('hidden');
+        });
+
+        $('#btn-close-quick-party, #backdrop-quick-party').on('click', function() {
+            $quickPartyModal.addClass('hidden');
+            currentQuickPartyTarget = null;
+        });
+
+        $quickPartyForm.on('submit', function(e) {
+            e.preventDefault();
+            var $submitBtn = $(this).find('button[type="submit"]');
+            var originalText = $submitBtn.text();
+            
+            $submitBtn.prop('disabled', true).text('Guardando...');
+
+            $.ajax({
+                url: '/parties/ajax-store',
+                method: 'POST',
+                data: $quickPartyForm.serialize(),
+                success: function(response) {
+                    if (response.success && response.party) {
+                        var newOption = new Option(response.party.name, response.party.id, true, true);
+                        $(currentQuickPartyTarget).append(newOption).trigger('change');
+                        
+                        window.toastr.success('Cliente creado correctamente');
+                        $quickPartyModal.addClass('hidden');
+                    }
+                },
+                error: function(xhr) {
+                    var msg = 'Ocurrió un error al crear el cliente.';
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        msg = Object.values(xhr.responseJSON.errors)[0][0];
+                    }
+                    window.toastr.error(msg);
+                },
+                complete: function() {
+                    $submitBtn.prop('disabled', false).text(originalText);
+                }
+            });
+        });
+
     });
 })();

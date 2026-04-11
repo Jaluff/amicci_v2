@@ -52,8 +52,7 @@ $(document).ready(function () {
             { data: 'vigencia',        name: 'vigencia', orderable: false },
             { data: 'estado',          name: 'estado', orderable: false, className: 'text-center' },
             { data: 'acciones',        name: 'acciones', orderable: false, searchable: false, className: 'text-center' }
-        ],
-        language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' }
+        ]
     });
 });
 </script>

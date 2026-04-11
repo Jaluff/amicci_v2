@@ -19,9 +19,6 @@ class PartyFactory extends Factory
             'document_type' => $this->faker->randomElement(['CUIT', 'DNI']),
             'email' => $this->faker->unique()->safeEmail(),
             'phone' => $this->faker->phoneNumber(),
-            'address' => $this->faker->address(),
-            'city' => $this->faker->city(),
-            'province' => $this->faker->state(),
             'tax_status' => $this->faker->randomElement(['Responsable Inscripto', 'Monotributo', 'Exento']),
         ];
     }

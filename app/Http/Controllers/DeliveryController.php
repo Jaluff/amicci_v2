@@ -52,15 +52,41 @@ class DeliveryController extends Controller
             $query->where('status', $request->estado);
         }
 
+        $isAdminOrSupervisor = auth()->user()->hasAnyRole(['admin', 'Supervisor']);
+
         return DataTables::of($query->orderByDesc('deliveries.created_at'))
-            ->addColumn('acciones', function ($row) {
+            ->addColumn('acciones', function ($row) use ($isAdminOrSupervisor) {
             $editUrl = route('deliveries.edit', $row->id);
             $deleteUrl = route('deliveries.destroy', $row->id);
             $csrf = csrf_token();
             $confirm = 'return confirm(\'¿Eliminar este reparto?\')';
+            
+            $sm = $row->stateMachine();
+            $currentStatus = $sm->currentStatus();
+            $availableTransitions = $sm->transitions()[$currentStatus] ?? [];
+            
+            $btnConfig = [
+                'En reparto' => [
+                    'label' => '🚛 En Reparto',
+                    'class' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
+                    'confirm' => '¿Confirmar que el reparto inicia?',
+                ],
+                'Finalizado' => [
+                    'label' => '✅ Finalizado',
+                    'class' => 'bg-green-600 hover:bg-green-700 text-white',
+                    'confirm' => '¿Confirmar finalizar?',
+                ],
+            ];
+
+            $statusButtons = "";
+            foreach ($availableTransitions as $transition) {
+                $cfg = $btnConfig[$transition] ?? ['label' => $transition, 'class' => 'bg-gray-600 text-white', 'confirm' => null];
+                $confAttr = $cfg['confirm'] ? "data-confirm='{$cfg['confirm']}'" : "";
+                $statusButtons .= "<button type='button' class='inline-flex items-center gap-1 px-2.5 py-1.5 mb-1 sm:mb-0 rounded-md font-bold text-xs shadow-sm transition-all {$cfg['class']}' data-model-type='delivery' data-model-id='{$row->id}' data-transition='{$transition}' {$confAttr} title='{$cfg['label']}'>{$cfg['label']}</button>";
+            }
+
             $deleteForm = "";
-            $deleteForm = "";
-            if ($row->shipments_count == 0 && $row->status === 'Listo') {
+            if ($row->shipments_count == 0 && $currentStatus === \App\StateMachines\DeliveryStateMachine::READY && $isAdminOrSupervisor) {
                 $deleteForm = "
                     <form action='{$deleteUrl}' method='POST' onsubmit='{$confirm}' class='inline m-0'>
                         <input type='hidden' name='_token' value='{$csrf}'>
@@ -71,11 +97,14 @@ class DeliveryController extends Controller
                         </form>";
             }
 
-            return "<div class='flex items-center gap-2'>
-                        <a href='{$editUrl}' title='Editar' class='inline-flex items-center justify-center p-2 rounded-md bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/40 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-800/60 dark:hover:text-blue-300 transition-colors'>
-                        <svg xmlns='http://www.w3.org/2000/svg' class='w-4 h-4' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/><path d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'/></svg>
-                    </a>
-                    {$deleteForm}
+            return "<div class='flex items-center gap-2 flex-wrap'>
+                        {$statusButtons}
+                        <div class='flex items-center gap-1'>
+                            <a href='{$editUrl}' title='Editar' class='inline-flex items-center justify-center p-2 rounded-md bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/40 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-800/60 dark:hover:text-blue-300 transition-colors'>
+                            <svg xmlns='http://www.w3.org/2000/svg' class='w-4 h-4' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/><path d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'/></svg>
+                        </a>
+                        {$deleteForm}
+                        </div>
                     </div>";
         })
             ->addColumn('problemas', function ($row) {

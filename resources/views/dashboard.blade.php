@@ -284,6 +284,39 @@
             </div>
         </div>
 
+        {{-- KPIs FACTURACIÓN: solo admin/supervisor (condicionado por JS) --}}
+        <div id="billing-section" class="hidden">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="inline-block w-1 h-4 rounded-full bg-green-500"></span>
+                <h2 class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">Facturación — Mes Actual</h2>
+                <a href="{{ route('billing.invoices') }}" class="ml-auto text-[9px] text-indigo-500 hover:underline">Ver Facturas →</a>
+            </div>
+            <div class="flex items-stretch justify-between gap-2.5 w-full overflow-x-auto pb-1">
+                <div class="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 px-2 py-3 shadow-sm hover:shadow transition text-center min-w-[140px]">
+                    <span id="k-facturado" class="text-xl font-bold tabular-nums text-gray-800 dark:text-gray-100 animate-pulse leading-none block">--</span>
+                    <p class="text-[9px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mt-1.5">Total Facturado</p>
+                </div>
+                <div class="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-green-200 dark:border-green-800 px-2 py-3 shadow-sm hover:shadow transition text-center min-w-[140px]">
+                    <span id="k-cobrado" class="text-xl font-bold tabular-nums text-green-600 dark:text-green-400 animate-pulse leading-none block">--</span>
+                    <p class="text-[9px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mt-1.5">Cobrado</p>
+                </div>
+                <div class="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-amber-200 dark:border-amber-800 px-2 py-3 shadow-sm hover:shadow transition text-center min-w-[140px]">
+                    <span id="k-pendiente" class="text-xl font-bold tabular-nums text-amber-600 dark:text-amber-400 animate-pulse leading-none block">--</span>
+                    <p class="text-[9px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mt-1.5">Pendiente de Cobro</p>
+                </div>
+                <div class="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-indigo-200 dark:border-indigo-800 px-2 py-3 shadow-sm hover:shadow transition text-center min-w-[140px]">
+                    <span id="k-sin-facturar" class="text-xl font-bold tabular-nums text-indigo-600 dark:text-indigo-400 animate-pulse leading-none block">--</span>
+                    <p class="text-[9px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mt-1.5">Guías sin Facturar</p>
+                </div>
+            </div>
+
+            {{-- Gráfico barras: Facturado vs Cobrado (6 meses) --}}
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-3 flex flex-col mt-3">
+                <p class="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1">Facturado vs Cobrado &mdash; Últimos 6 meses</p>
+                <div id="chart-billing" class="flex-1 min-h-[200px] -mx-1"></div>
+            </div>
+        </div>
+
     </div>
 </div>
 @endsection
@@ -303,7 +336,7 @@ var STATUS_COLORS = {
     'Con problemas': '#ef4444'
 };
 
-var apexDonut = null, apexLine = null, apexBar = null, apexHBar = null;
+var apexDonut = null, apexLine = null, apexBar = null, apexHBar = null, apexBilling = null;
 var tableData = {};
 
 function isDark()     { return document.documentElement.classList.contains('dark'); }
@@ -376,6 +409,7 @@ function loadStats() {
         renderBar(data);
         renderHBar(data);
         renderTables(data);
+        renderBilling(data);
     });
 }
 
@@ -477,6 +511,38 @@ function renderTables(data) {
     paginate(data.active_routes_list, 1, 'tbl-routes', 'pag-routes', function(r) {
         return '<tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors"><td class="px-3 py-1.5 font-mono font-bold text-indigo-600 dark:text-indigo-400 text-[11px]">' + r.numero + '</td><td class="px-3 py-1.5 text-gray-600 dark:text-gray-300 text-[11px]">' + r.origen + '</td><td class="px-3 py-1.5 text-gray-500 dark:text-gray-400 text-[11px]">' + r.destino + '</td><td class="px-3 py-1.5 text-center font-semibold text-gray-700 dark:text-gray-200 text-[11px]">' + r.guias + '</td></tr>';
     }, 'Sin rutas en viaje', 4);
+}
+
+function fmt(n) {
+    return '$ ' + parseFloat(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function renderBilling(data) {
+    if (!data.billing) return; // No es admin/supervisor
+    document.getElementById('billing-section').classList.remove('hidden');
+
+    document.getElementById('k-facturado').textContent    = fmt(data.billing.total_facturado);
+    document.getElementById('k-cobrado').textContent      = fmt(data.billing.total_cobrado);
+    document.getElementById('k-pendiente').textContent    = fmt(data.billing.total_pendiente);
+    document.getElementById('k-sin-facturar').textContent = data.billing.guias_sin_facturar;
+
+    if (apexBilling) apexBilling.destroy();
+    apexBilling = new ApexCharts(document.getElementById('chart-billing'), {
+        series: [
+            { name: 'Facturado', data: data.billing_chart.facturado },
+            { name: 'Cobrado',   data: data.billing_chart.cobrado }
+        ],
+        chart: { type: 'bar', height: 210, background: 'transparent', toolbar: { show: false }, animations: { enabled: true, speed: 600 } },
+        colors: ['#6366f1', '#22c55e'],
+        dataLabels: { enabled: false },
+        plotOptions: { bar: { borderRadius: 3, columnWidth: '55%', grouped: true } },
+        xaxis: { categories: data.billing_chart.labels, labels: { style: { fontSize: '9px', colors: labelColor() } }, axisBorder: { show: false }, axisTicks: { show: false } },
+        yaxis: { labels: { style: { fontSize: '9px', colors: labelColor() }, formatter: function(v) { return '$ ' + Math.round(v).toLocaleString('es-AR'); } } },
+        grid: { borderColor: gridColor(), strokeDashArray: 3, xaxis: { lines: { show: false } }, padding: { left: 2, right: 4 } },
+        legend: { position: 'top', horizontalAlign: 'right', fontSize: '10px', labels: { colors: labelColor() }, markers: { width: 16, height: 3, radius: 1 }, itemMargin: { horizontal: 6 } },
+        tooltip: { theme: isDark() ? 'dark' : 'light', shared: true, intersect: false, y: { formatter: function(v) { return fmt(v); } } }
+    });
+    apexBilling.render();
 }
 
 document.getElementById('btn-apply-filter').addEventListener('click', function() {

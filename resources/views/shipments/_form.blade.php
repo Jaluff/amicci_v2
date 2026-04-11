@@ -18,29 +18,6 @@ $items = $isEdit ? $shipment->items : [ (object)[ 'tipo_paquete' => 'bultos', 'c
         .dark #shipment-form select {
             color: #f8fafc;
         }
-
-        /* Size and padding for Select2 single selection to match native selects */
-        #shipment-form .select2-container--default .select2-selection--single {
-            height: 2.5rem !important;
-            padding: 0.375rem 0.5rem !important;
-            border-radius: 0.375rem !important;
-            border: 1px solid #d1d5db !important;
-            background: #ffffff !important;
-            color: #0f172a !important;
-            font-size: 1rem !important;
-            line-height: 1.5rem !important;
-        }
-
-        .dark #shipment-form .select2-container--default .select2-selection--single {
-            border-color: #374151 !important;
-            background: #0f172a !important;
-            color: #f8fafc !important;
-        }
-
-        /* Ensure rendered text uses same color */
-        #shipment-form .select2-selection__rendered {
-            color: inherit !important;
-        }
     </style>
     <!-- SECCIÓN 1: INFORMACIÓN GENERAL -->
     <div class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
@@ -118,25 +95,25 @@ $items = $isEdit ? $shipment->items : [ (object)[ 'tipo_paquete' => 'bultos', 'c
                     @endforeach
                 </select>
             </div>
-            <div>
-                <label class=" font-medium text-gray-700 dark:text-gray-300">Remitente *</label>
+            <div class="relative">
+                <label class="font-medium text-gray-700 dark:text-gray-300">Remitente *</label>
+                <button type="button" class="btn-quick-party absolute right-0 top-0 font-bold text-2xl text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 leading-none" data-target="#remitente_id" title="Nuevo Remitente" style="margin-top: -2px;">+</button>
                 <select name="remitente_id" id="remitente_id"
-                    class="w-full py-2 px-2  mt-1 rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900"
+                    class="w-full py-2 px-2 mt-1 rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900"
                     required>
                     @foreach($parties as $p)
-                    <option value="{{ $p->id }}" @selected($isEdit && ($shipment->remitente_id ?? $shipment->sender_id)
-                        == $p->id)>{{ $p->name }}</option>
+                    <option value="{{ $p->id }}" @selected($isEdit && ($shipment->remitente_id ?? $shipment->sender_id) == $p->id)>{{ $p->name }}</option>
                     @endforeach
                 </select>
             </div>
-            <div>
-                <label class=" font-medium text-gray-700 dark:text-gray-300">Destinatario *</label>
+            <div class="relative">
+                <label class="font-medium text-gray-700 dark:text-gray-300">Destinatario *</label>
+                <button type="button" class="btn-quick-party absolute right-0 top-0 font-bold text-2xl text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 leading-none" data-target="#destinatario_id" title="Nuevo Destinatario" style="margin-top: -2px;">+</button>
                 <select name="destinatario_id" id="destinatario_id"
-                    class="w-full py-2 px-2  mt-1 rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900"
+                    class="w-full py-2 px-2 mt-1 rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900"
                     required>
                     @foreach($parties as $p)
-                    <option value="{{ $p->id }}" @selected($isEdit && ($shipment->destinatario_id ??
-                        $shipment->recipient_id) == $p->id)>{{ $p->name }}</option>
+                    <option value="{{ $p->id }}" @selected($isEdit && ($shipment->destinatario_id ?? $shipment->recipient_id) == $p->id)>{{ $p->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -422,6 +399,8 @@ $items = $isEdit ? $shipment->items : [ (object)[ 'tipo_paquete' => 'bultos', 'c
         </button>
     </div>
 </form>
+
+@include('shipments._party_modal')
 
 <script>
     window.GlobalContraPct = {{ (float) (\App\Models\Company::find(session('company_id'))?->contra_reembolso_percent ?? 0) }};

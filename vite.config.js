@@ -18,7 +18,10 @@ export default defineConfig({
                 'resources/js/pages/drivers/index.js',
                 'resources/js/pages/deliverers/index.js',
                 'resources/js/pages/branches/index.js',
-                'resources/js/pages/reports/dispatches.js'
+                'resources/js/pages/reports/dispatches.js',
+                'resources/js/pages/billing/index.js',
+                'resources/js/pages/billing/create.js',
+                'resources/js/pages/billing/invoices.js'
             ],
             refresh: true,
         }),

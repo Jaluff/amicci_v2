@@ -151,20 +151,7 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-<style>
-/* Pequeño ajuste visual a los botones de DataTables para q coincidan un poco con Tailwind */
-.dt-buttons .dt-button {
-    background: #4f46e5;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 5px 10px;
-}
-.dt-button-collection .dt-button {
-    background: white;
-    color: #333;
-}
-</style>
+
 
 @vite('resources/js/pages/reports/dispatches.js')
 @endsection

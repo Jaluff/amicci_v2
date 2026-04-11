@@ -65,9 +65,12 @@
                     <div>
                         <label for="filter_cliente"
                             class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cliente</label>
-                        <input type="text" id="filter_cliente"
-                            class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-                            placeholder="Nombre...">
+                        <select id="filter_cliente" class="select2 w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                            <option value="">Todos</option>
+                            @foreach($parties as $party)
+                                <option value="{{ $party->name }}">{{ $party->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div>
                         <label for="filter_ubicacion"

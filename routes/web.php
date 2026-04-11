@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\TransportRouteController;
@@ -57,6 +58,7 @@ Route::middleware(['auth', 'company'])->group(function () {
     Route::delete('/shipments/{shipment}', [ShipmentController::class , 'destroy'])->name('shipments.destroy');
 
     // Clientes (Remitentes y Destinatarios)
+    Route::post('/parties/ajax-store', [\App\Http\Controllers\PartyController::class , 'ajaxStore'])->name('parties.ajax-store');
     Route::get('/parties/datatable', [\App\Http\Controllers\PartyController::class , 'datatable'])->name('parties.datatable');
     Route::get('/parties/{party}/tariff-setting', [\App\Http\Controllers\PartyController::class , 'tariffSetting'])->name('parties.tariff-setting');
     Route::resource('parties', \App\Http\Controllers\PartyController::class)->except(['show']);
@@ -115,6 +117,22 @@ Route::middleware(['auth', 'company'])->group(function () {
     // Cuadros Tarifarios — ABM con gestión de tramos de peso
     Route::get('/tariff-tables/datatable', [\App\Http\Controllers\TariffTableController::class, 'datatable'])->name('tariff-tables.datatable');
     Route::resource('tariff-tables', \App\Http\Controllers\TariffTableController::class)->except(['show']);
+    // Facturación
+    Route::get('/billing', [InvoiceController::class, 'index'])->name('billing.index');
+    Route::get('/billing/datatable', [InvoiceController::class, 'datatable'])->name('billing.datatable');
+    Route::get('/billing/invoices', [InvoiceController::class, 'invoicesIndex'])->name('billing.invoices');
+    Route::get('/billing/invoices/datatable', [InvoiceController::class, 'invoicesDatatable'])->name('billing.invoices-datatable');
+    Route::get('/billing/create', [InvoiceController::class, 'create'])->name('billing.create');
+    Route::get('/billing/available-shipments', [InvoiceController::class, 'availableShipments'])->name('billing.available-shipments');
+    Route::post('/billing', [InvoiceController::class, 'store'])->name('billing.store');
+    Route::get('/billing/{invoice}', [InvoiceController::class, 'show'])->name('billing.show');
+    Route::post('/billing/{invoice}/pay', [InvoiceController::class, 'markAsPaid'])->name('billing.pay');
+
+    // Edición de facturas — solo admin
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/billing/{invoice}/edit', [InvoiceController::class, 'edit'])->name('billing.edit');
+        Route::put('/billing/{invoice}', [InvoiceController::class, 'update'])->name('billing.update');
+    });
 });
 
 

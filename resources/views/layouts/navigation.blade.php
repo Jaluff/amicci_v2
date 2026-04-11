@@ -74,7 +74,7 @@
                     <x-dropdown align="left" width="48">
                         <x-slot name="trigger">
                             <button
-                                class="inline-flex items-center px-1 pt-1 h-full border-b-2 {{ request()->routeIs('reports.*') ? 'border-indigo-400 dark:border-indigo-600 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700' }} text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
+                                class="inline-flex items-center px-1 pt-1 h-full border-b-2 {{ request()->routeIs('reports.*') || request()->routeIs('billing.*') ? 'border-indigo-400 dark:border-indigo-600 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700' }} text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
                                 <div>{{ __('Administración') }}</div>
                                 <div class="ms-1">
                                     <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
@@ -91,7 +91,7 @@
                             <x-dropdown-link :href="route('reports.dispatches.index')">
                                 {{ __('Reporte de Guías') }}
                             </x-dropdown-link>
-                            <x-dropdown-link href="#">
+                            <x-dropdown-link :href="route('billing.index')" :active="request()->routeIs('billing.*')">
                                 {{ __('Facturación') }}
                             </x-dropdown-link>
                         </x-slot>
@@ -326,7 +326,7 @@
                     <x-responsive-nav-link :href="route('reports.dispatches.index')" :active="request()->routeIs('reports.dispatches.*')">
                         {{ __('Reporte de Guías') }}
                     </x-responsive-nav-link>
-                    <x-responsive-nav-link href="#">
+                    <x-responsive-nav-link :href="route('billing.index')" :active="request()->routeIs('billing.*')">
                         {{ __('Facturación') }}
                     </x-responsive-nav-link>
                 </div>

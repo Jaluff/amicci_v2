@@ -129,6 +129,48 @@ class PartyController extends Controller
         return redirect()->route('parties.index')->with('success', 'Cliente creado correctamente.');
     }
 
+    public function ajaxStore(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:100',
+            'email' => 'nullable|email|max:255',
+            'document_type' => 'nullable|string|max:50',
+            'document' => 'nullable|string|max:100',
+            'tax_status' => 'nullable|string|max:100',
+            'iva_percent' => 'nullable|numeric|min:0|max:100',
+            'has_insurance' => 'nullable|in:true,false,1,0',
+            'insurance_percent' => 'nullable|numeric|min:0|max:100',
+        ]);
+
+        $party = Party::create([
+            'name' => $validated['name'],
+            'document_type' => $validated['document_type'] ?? null,
+            'document' => $validated['document'] ?? null,
+            'tax_status' => $validated['tax_status'] ?? null,
+            'iva_percent' => $validated['iva_percent'] ?? 0,
+            'has_insurance' => filter_var($validated['has_insurance'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'insurance_percent' => $validated['insurance_percent'] ?? null,
+            'company_id' => session('company_id'),
+        ]);
+
+        // Crear dirección principal para alojar email y teléfono
+        $party->addresses()->create([
+            'type' => 'Principal',
+            'phone' => $validated['phone'] ?? null,
+            'email' => $validated['email'] ?? null,
+            'is_primary' => true,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'party' => [
+                'id' => $party->id,
+                'name' => $party->name
+            ]
+        ]);
+    }
+
     public function edit(Party $party)
     {
         $party->load(['addresses', 'activeTariffSetting']);

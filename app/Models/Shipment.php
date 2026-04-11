@@ -9,6 +9,7 @@ use App\Models\Traits\HasActivityLogs;
 use App\StateMachines\ShipmentStateMachine;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Shipment extends Model
@@ -19,17 +20,19 @@ class Shipment extends Model
 
     protected $casts = [
         'transport_route_id' => 'integer',
-        'fecha' => 'date',
-        'fecha_entrega' => 'date',
-        'cobrada' => 'boolean',
-        'contra_reembolso' => 'boolean',
-        'delivery_id' => 'integer',
+        'invoice_id'         => 'integer',
+        'fecha'              => 'date',
+        'fecha_entrega'      => 'date',
+        'cobrada'            => 'boolean',
+        'contra_reembolso'   => 'boolean',
+        'delivery_id'        => 'integer',
     ];
 
     protected $fillable = [
-        'transport_route_id', 'delivery_id', 'branch_id', 'numero', 'fecha', 'origen_id', 'destino_id', 'remitente_id', 'destinatario_id',
+        'transport_route_id', 'delivery_id', 'invoice_id', 'branch_id', 'numero', 'fecha',
+        'origen_id', 'destino_id', 'remitente_id', 'destinatario_id',
         'tipo_flete', 'cobrada', 'contra_reembolso',
-        'numero_factura', 'flete_a_pagar_en', 'ubicacion_id', 'fecha_entrega', 'turno_entrega',
+        'flete_a_pagar_en', 'ubicacion_id', 'fecha_entrega', 'turno_entrega',
         'ubicacion_actual', 'route_sheet_id',
         'flete', 'seguro', 'monto_contra_reembolso', 'retencion_mercaderia', 'otros_cargos',
         'subtotal', 'iva_monto', 'total', 'notas',
@@ -85,8 +88,13 @@ class Shipment extends Model
         return $this->belongsTo(Company::class);
     }
 
-    public function transportRoute()
+    public function transportRoute(): BelongsTo
     {
         return $this->belongsTo(TransportRoute::class, 'transport_route_id');
+    }
+
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class);
     }
 }
