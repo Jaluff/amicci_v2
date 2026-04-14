@@ -29,6 +29,7 @@ class Party extends Model
         'iva_percent',
         'has_insurance',
         'insurance_percent',
+        'company_id',
     ];
 
     /* protected static function booted()
