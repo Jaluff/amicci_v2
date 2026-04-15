@@ -37,7 +37,7 @@
      * Cuando cambia el pagador, consulta su configuración tarifaria.
      * Si tiene tarifa activa, la muestra en el banner y recalcula el flete.
      */
-    function loadTariff(partyId) {
+    function loadTariff(partyId, preventRecalculate = false) {
         if (!partyId) {
             tariffSetting = null;
             hideTariffBanner();
@@ -55,9 +55,11 @@
                     tariffSetting = data; // Guardamos igual porque trae IVA y Seguro
                     hideTariffBanner();
                 }
-                // Recalcular flete con la nueva tarifa
-                recalcularFlete();
-                recalcularCargosCliente();
+                // Recalcular flete con la nueva tarifa (solo si no se previene)
+                if (!preventRecalculate) {
+                    recalcularFlete();
+                    recalcularCargosCliente();
+                }
             },
             error: function () {
                 tariffSetting = null;
@@ -81,7 +83,7 @@
      * Calcula los recargos automáticos basados en el cliente o la ruta
      * (Seguro, Contra-reembolso, IVA)
      */
-    function recalcularCargosCliente() {
+    function recalcularCargosCliente(preventOverwrite = false) {
         var totalValor = 0;
         $('#items-container .item-row').each(function () {
             var val = parseFloat($(this).find('[name*="[monto_valor_declarado]"]').val()) || 0;
@@ -93,7 +95,7 @@
             var insPct = parseFloat(tariffSetting.insurance_percent) || 0;
             var seguro = (totalValor * insPct) / 100;
             $('#seguro').val(seguro.toFixed(2));
-        } else if (tariffSetting) {
+        } else if (tariffSetting && !preventOverwrite) {
             $('#seguro').val('0.00');
         }
 
@@ -108,7 +110,7 @@
         }
 
         // IVA percent
-        if (tariffSetting) {
+        if (tariffSetting && !preventOverwrite) {
             var ivaPct = parseFloat(tariffSetting.iva_percent) || 0;
             $('#iva_percent').val(ivaPct);
         }
@@ -124,8 +126,8 @@
      * Para modo 'kg' hace AJAX al servidor (necesita la escala de tramos).
      * Para el resto calcula en el cliente directamente.
      */
-    function recalcularFlete() {
-        if (!tariffSetting || !tariffSetting.has_tariff) return;
+    function recalcularFlete(preventOverwrite = false) {
+        if (!tariffSetting || !tariffSetting.has_tariff || preventOverwrite) return;
 
         var mode = tariffSetting.billing_mode;
 
@@ -313,10 +315,13 @@
         initSelect2();
 
         // ── Cargar tarifa si ya hay pagador seleccionado (modo edición)
+        var isEdit = $('#shipment-form').data('is-edit') === true;
         var initialPayerOption = $('input[name="flete_a_pagar_en"]:checked').val() || 'origen';
         var initialPayerId = initialPayerOption === 'origen' ? $('#remitente_id').val() : $('#destinatario_id').val();
+        
         if (initialPayerId) {
-            loadTariff(initialPayerId);
+            // Pasamos true para NO sobrescribir los valores que ya vienen de la DB al cargar
+            loadTariff(initialPayerId, isEdit);
         }
 
         // ── Calcular totales de importes ──────────────────────────────────

@@ -33,6 +33,21 @@ class UpdatePartyRequest extends FormRequest
             'addresses.*.phone' => 'nullable|string|max:100',
             'addresses.*.email' => 'nullable|email|max:255',
             'addresses.*.is_primary' => 'nullable',
+
+            // Tariff settings
+            'tariff' => 'nullable|array',
+            'tariff.billing_mode' => 'nullable|string|max:50',
+            'tariff.minimum_charge' => 'nullable|numeric|min:0',
+            'tariff.rate_per_ton_custom' => 'nullable|numeric|min:0',
+            'tariff.rate_per_m3_custom' => 'nullable|numeric|min:0',
+            'tariff.rate_per_bulto' => 'nullable|numeric|min:0',
+            'tariff.minimum_per_bulto' => 'nullable|numeric|min:0',
+            'tariff.rate_per_pallet' => 'nullable|numeric|min:0',
+            'tariff.minimum_per_pallet' => 'nullable|numeric|min:0',
+            'tariff.declared_value_pct' => 'nullable|numeric|min:0',
+            'tariff.valid_from' => 'nullable|date',
+            'tariff.valid_until' => 'nullable|date',
+            'tariff.notes' => 'nullable|string',
         ];
     }
 }

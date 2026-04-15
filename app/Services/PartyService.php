@@ -56,6 +56,9 @@ class PartyService
             // Actualizar configuración tarifaria
             if (!empty($data['tariff']['billing_mode'])) {
                 $this->saveTariffSetting($party, $data['tariff']);
+            } elseif (isset($data['tariff'])) {
+                // Si viene el array tariff pero sin billing_mode, es porque se desmarcó el checkbox
+                $party->tariffSettings()->delete();
             }
 
             return $party;

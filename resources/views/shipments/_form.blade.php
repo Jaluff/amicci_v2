@@ -15,7 +15,7 @@
     ];
 @endphp
 
-<form id="shipment-form" method="POST"
+<form id="shipment-form" method="POST" data-is-edit="{{ $isEdit ? 'true' : 'false' }}"
     action="{{ $isEdit ? route('shipments.update', $shipment) : route('shipments.store') }}" class="space-y-4">
     @csrf
     <!-- Local styles to normalize select and Select2 appearance inside this form -->
