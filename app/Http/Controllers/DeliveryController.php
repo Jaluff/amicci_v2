@@ -128,7 +128,12 @@ class DeliveryController extends Controller
             ->orderBy('code')
             ->get();
 
-        return view('deliveries.create', compact('deliverers', 'ubicaciones', 'branches'));
+        $existingPlates = Delivery::whereNotNull('vehicle_plate')
+            ->where('vehicle_plate', '!=', '')
+            ->distinct()
+            ->pluck('vehicle_plate');
+
+        return view('deliveries.create', compact('deliverers', 'ubicaciones', 'branches', 'existingPlates'));
     }
 
     public function store(StoreDeliveryRequest $request)
@@ -156,7 +161,12 @@ class DeliveryController extends Controller
             ->orderBy('code')
             ->get();
 
-        return view('deliveries.edit', compact('delivery', 'deliverers', 'ubicaciones', 'branches'));
+        $existingPlates = Delivery::whereNotNull('vehicle_plate')
+            ->where('vehicle_plate', '!=', '')
+            ->distinct()
+            ->pluck('vehicle_plate');
+
+        return view('deliveries.edit', compact('delivery', 'deliverers', 'ubicaciones', 'branches', 'existingPlates'));
     }
 
     public function update(UpdateDeliveryRequest $request, Delivery $delivery)

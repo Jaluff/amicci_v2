@@ -35,11 +35,11 @@
     <input type="hidden" name="status" value="{{ $delivery->status ?? 'Listo' }}">
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
     <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Ubicación del Reparto</label>
         <select name="location_id" id="location_id"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white select2"
             required>
             <option value="">Seleccione ubicación</option>
             @foreach($ubicaciones as $ubicacion)
@@ -54,9 +54,9 @@
 
     <div class="relative">
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Repartidor</label>
-        <button type="button" onclick="document.getElementById('deliverer-modal').classList.remove('hidden')" class="absolute right-0 top-0 font-bold text-2xl text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 leading-none" title="Nuevo Repartidor" style="margin-top: -2px;">+</button>
+        <button type="button" onclick="document.getElementById('deliverer-modal').classList.remove('hidden')" class="absolute right-0 top-0 font-bold text-2xl text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 leading-none" title="Nuevo Repartidor" style="margin-top: -2px; z-index: 10;">+</button>
         <select name="deliverer_id" id="deliverer_id"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white select2"
             required>
             <option value="">Seleccione repartidor</option>
             @foreach($deliverers as $deliverer)
@@ -66,6 +66,22 @@
             @endforeach
         </select>
         @error('deliverer_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+    </div>
+
+    <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Patente (Opcional)</label>
+        <select name="vehicle_plate" id="vehicle_plate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white select2-tags">
+            <option value=""></option>
+            @foreach($existingPlates as $plate)
+                <option value="{{ $plate }}" @selected(old('vehicle_plate', $delivery->vehicle_plate ?? '') == $plate)>
+                    {{ $plate }}
+                </option>
+            @endforeach
+            @if($delivery->vehicle_plate && !$existingPlates->contains($delivery->vehicle_plate))
+                <option value="{{ $delivery->vehicle_plate }}" selected>{{ $delivery->vehicle_plate }}</option>
+            @endif
+        </select>
+        @error('vehicle_plate') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
     </div>
 
     <div>
@@ -285,6 +301,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 errorDiv.innerText = 'Error de conexión. Intente nuevamente.';
                 errorDiv.classList.remove('hidden');
             });
+        });
+    }
+
+    // Inicializar Select2 para campos estándar y con tags
+    if (typeof $ !== 'undefined') {
+        $('.select2').select2({
+            width: '100%'
+        });
+
+        $('.select2-tags').select2({
+            tags: true,
+            placeholder: 'Seleccione o escriba una patente',
+            allowClear: true,
+            width: '100%'
         });
     }
 });

@@ -26,7 +26,7 @@ use App\Models\TariffTable;
  *   'volumen'         → rate_per_m3_custom * volumen_total_m3
  *   'bultos'          → rate_per_bulto * total_bultos
  *   'pallets'         → rate_per_pallet * total_pallets
- *   'valor_declarado' → declared_value_pct % del valor_declarado_total
+ *   'valor_declarado' → rate por mil ( / 1000 ) del valor_declarado_total
  *
  * En todos los modos se aplica el minimum_charge si el resultado es menor.
  */
@@ -123,7 +123,7 @@ class GuiaImporteService
                 return $bultoFinal + $palletFinal;
             })(),
 
-            // POR VALOR DECLARADO: % del valor declarado total
+            // POR VALOR DECLARADO: cálculo por mil del valor declarado total
             'valor_declarado' => $this->calcularPorValorDeclarado(
                 (float) ($setting->declared_value_pct ?? 0),
                 $totalValorDeclarado
@@ -263,17 +263,17 @@ class GuiaImporteService
     }
 
     /**
-     * Calcula el flete como porcentaje del valor declarado.
-     * Fórmula: valor_declarado * (pct / 100)
+     * Calcula el flete sobre el valor declarado (cálculo por mil).
+     * Fórmula: valor_declarado * (tasa / 1000)
      *
-     * @param  float  $pct  Porcentaje (ej: 0.5000 = 0.5%)
+     * @param  float  $tasa  Tasa por mil (ej: 8 = $8 por cada $1000)
      */
-    private function calcularPorValorDeclarado(float $pct, float $valorDeclarado): float
+    private function calcularPorValorDeclarado(float $tasa, float $valorDeclarado): float
     {
-        if ($valorDeclarado <= 0 || $pct <= 0) {
+        if ($valorDeclarado <= 0 || $tasa <= 0) {
             return 0.0;
         }
 
-        return $valorDeclarado * ($pct / 100);
+        return $valorDeclarado * ($tasa / 1000);
     }
 }

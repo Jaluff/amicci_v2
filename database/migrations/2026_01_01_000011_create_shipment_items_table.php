@@ -17,7 +17,7 @@ return new class extends Migration {
             $table->smallInteger('cantidad')->default(1);
             $table->string('numero_remito')->nullable();
             $table->decimal('peso', 10, 2)->default(0);
-            $table->decimal('volumen', 10, 3)->default(0);
+            $table->decimal('volumen', 10, 1)->default(0);
             $table->decimal('monto_valor_declarado', 12, 2)->default(0);
             $table->decimal('monto_seguro_item', 12, 2)->default(0);
             $table->string('referencia_recepcion')->nullable();

@@ -26,6 +26,7 @@ class Shipment extends Model
         'cobrada'            => 'boolean',
         'contra_reembolso'   => 'boolean',
         'delivery_id'        => 'integer',
+        'iva_percent'        => 'float',
     ];
 
     protected $fillable = [
@@ -35,7 +36,7 @@ class Shipment extends Model
         'flete_a_pagar_en', 'ubicacion_id', 'fecha_entrega', 'turno_entrega',
         'ubicacion_actual', 'route_sheet_id',
         'flete', 'seguro', 'monto_contra_reembolso', 'retencion_mercaderia', 'otros_cargos',
-        'subtotal', 'iva_monto', 'total', 'notas',
+        'subtotal', 'iva_monto', 'iva_percent', 'total', 'notas',
     ];
 
     protected static function booted()

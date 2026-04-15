@@ -85,11 +85,13 @@ class ShipmentService
             (float) ($shipment->retencion_mercaderia ?? $shipment->retention_mercaderia ?? 0) +
             (float) ($shipment->otros_cargos ?? $shipment->other_charges ?? 0);
 
-        $tax = $subtotal * 0.21;
+        $ivaPercent = (float) ($shipment->iva_percent ?? 21);
+        $tax = $subtotal * ($ivaPercent / 100);
 
         $shipment->update([
             'subtotal' => $subtotal,
             'iva_monto' => $tax,
+            'iva_percent' => $ivaPercent,
             'total' => $subtotal + $tax
         ]);
     }

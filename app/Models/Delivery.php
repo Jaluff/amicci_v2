@@ -22,6 +22,7 @@ class Delivery extends Model
         'branch_id',
         'delivery_number',
         'deliverer_id',
+        'vehicle_plate',
         'location_id',
         'guide_count',
         'package_count',

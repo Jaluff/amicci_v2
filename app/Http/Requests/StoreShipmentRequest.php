@@ -26,9 +26,9 @@ class StoreShipmentRequest extends FormRequest
             'fecha'             => 'required|date',
             'branch_id'         => 'nullable|integer|exists:branches,id',
             'origen_id' => 'nullable|integer|exists:ubicaciones,id',
-            'destino_id' => 'nullable|integer|exists:ubicaciones,id|different:origen_id',
+            'destino_id' => 'nullable|integer|exists:ubicaciones,id',
             'remitente_id' => 'nullable|integer|exists:parties,id',
-            'destinatario_id' => 'nullable|integer|exists:parties,id|different:remitente_id',
+            'destinatario_id' => 'nullable|integer|exists:parties,id',
 
             'numero_factura' => 'nullable|string',
             'ubicacion_actual' => 'nullable|in:Dto origen,En transito,Dto destino,En reparto,Entregado',
@@ -43,6 +43,7 @@ class StoreShipmentRequest extends FormRequest
             'otros_cargos' => 'numeric|min:0',
             'subtotal' => 'numeric|min:0',
             'iva_monto' => 'numeric|min:0',
+            'iva_percent' => 'nullable|numeric|min:0',
             'total' => 'numeric|min:0',
             'notas' => 'nullable|string',
             'items' => 'required|array|min:1',
@@ -66,8 +67,6 @@ class StoreShipmentRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'destino_id.different' => 'El destino debe ser distinto al origen.',
-            'destinatario_id.different' => 'El destinatario debe ser distinto al remitente.',
         ];
     }
 }

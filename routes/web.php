@@ -146,6 +146,9 @@ Route::middleware(['auth', 'role:admin|supervisor'])->group(function () {
     // Reportes
     Route::get('/reports/dispatches', [\App\Http\Controllers\DispatchReportController::class, 'index'])->name('reports.dispatches.index');
     Route::get('/reports/dispatches/datatable', [\App\Http\Controllers\DispatchReportController::class, 'datatable'])->name('reports.dispatches.datatable');
+
+    // Ubicaciones
+    Route::resource('ubicaciones', \App\Http\Controllers\UbicacionController::class)->except(['show', 'create', 'edit']);
 });
 
 require __DIR__ . '/auth.php';

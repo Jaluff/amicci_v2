@@ -19,6 +19,7 @@ class UpdateDeliveryRequest extends FormRequest
         return [
             'location_id' => ['required', 'exists:ubicaciones,id'],
             'deliverer_id' => ['required', 'exists:deliverers,id'],
+            'vehicle_plate' => ['nullable', 'string', 'max:20'],
             'load_date' => ['nullable', 'date'],
             'status' => ['required', 'in:Listo,En reparto,Finalizado'],
             'shipments' => ['nullable', 'array'],

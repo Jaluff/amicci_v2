@@ -8,7 +8,7 @@ use Illuminate\Database\Seeder;
 class UbicacionSeeder extends Seeder
 {
     /**
-     * Ubicaciones para origen y destino en guías, rutas y despachos.
+     * Run the database seeds.
      */
     public function run(): void
     {

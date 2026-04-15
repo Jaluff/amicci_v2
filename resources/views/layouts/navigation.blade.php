@@ -129,6 +129,9 @@
                             <x-dropdown-link :href="route('tariff-tables.index')">
                                 {{ __('Tarifas') }}
                             </x-dropdown-link>
+                            <x-dropdown-link :href="route('ubicaciones.index')">
+                                {{ __('Ubicaciones') }}
+                            </x-dropdown-link>
                         </x-slot>
                     </x-dropdown>
                 </div>
@@ -356,6 +359,9 @@
                     </x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('tariff-tables.index')" :active="request()->routeIs('tariff-tables.*')">
                         {{ __('Tarifas') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('ubicaciones.index')" :active="request()->routeIs('ubicaciones.*')">
+                        {{ __('Ubicaciones') }}
                     </x-responsive-nav-link>
                 </div>
             </div>

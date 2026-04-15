@@ -66,9 +66,9 @@ $addr = $isEdit ? $party->primaryAddress : null;
                     </div>
                 </div>
 
-                <div>
+                <div class="text-center">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">¿Tiene Seguro?</label>
-                    <div class="mt-2 flex items-center gap-4">
+                    <div class="mt-2 flex items-center justify-center gap-4">
                         <label class="inline-flex items-center">
                             <input type="radio" x-model="hasInsurance" value="true" name="has_insurance" class="text-indigo-600 focus:ring-indigo-500 text-sm">
                             <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Sí</span>
@@ -81,11 +81,11 @@ $addr = $isEdit ? $party->primaryAddress : null;
                 </div>
 
                 <div x-show="hasInsurance" x-transition>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Porcentaje de Seguro (%)</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Porcentaje de Seguro (TASA X 1000)</label>
                     <div class="relative mt-1">
                         <input type="number" step="0.01" min="0" max="100" name="insurance_percent" value="{{ old('insurance_percent', $party->insurance_percent ?? '') }}"
                             class="pr-8 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 text-xs">%</span>
+                        <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 text-xs">‰</span>
                     </div>
                 </div>
             </div>
@@ -176,8 +176,7 @@ $addr = $isEdit ? $party->primaryAddress : null;
                     <div>
                         <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">Provincia</label>
                         <select :name="`addresses[${index}][state]`" x-model="addr.state"
-                            class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-                            required>
+                            class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                             <option value="">Seleccionar...</option>
                             @foreach(['Mendoza', 'San Juan', 'San Luis', 'Buenos Aires', 'CABA', 'Córdoba', 'Santa Fe',
                             'Neuquén', 'Ruta Externa'] as $p)

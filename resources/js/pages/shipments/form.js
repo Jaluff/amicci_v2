@@ -27,82 +27,10 @@
     };
 
     // ─── Sincronización origen/destino ───────────────────────────────────────
-    function syncDestination() {
-        var originVal = $('#origen_id').val();
-        var $dest = $('#destino_id');
-        $dest.find('option').each(function () {
-            $(this).prop('disabled', !!this.value && String(this.value) === String(originVal));
-        });
-        if ($dest.val() && String($dest.val()) === String(originVal)) {
-            $dest.val(null).trigger('change');
-        }
-        $dest.off('change.select2-sync').on('change.select2-sync', function () {
-            var v = $(this).val();
-            if (v && originVal && String(v) === String(originVal)) {
-                $(this).val(null).trigger('change');
-                return;
-            }
-            syncOrigin();
-        });
-    }
-
-    function syncOrigin() {
-        var destVal = $('#destino_id').val();
-        var $orig = $('#origen_id');
-        $orig.find('option').each(function () {
-            $(this).prop('disabled', !!this.value && String(this.value) === String(destVal));
-        });
-        if ($orig.val() && String($orig.val()) === String(destVal)) {
-            $orig.val(null).trigger('change');
-        }
-        $orig.off('change.select2-sync').on('change.select2-sync', function () {
-            var v = $(this).val();
-            if (v && destVal && String(v) === String(destVal)) {
-                $(this).val(null).trigger('change');
-                return;
-            }
-            syncDestination();
-        });
-    }
+    /* Logic removed to allow same origin and destination */
 
     // ─── Sincronización remitente/destinatario ───────────────────────────────
-    function syncRecipient() {
-        var senderVal = $('#remitente_id').val();
-        var $rec = $('#destinatario_id');
-        $rec.find('option').each(function () {
-            $(this).prop('disabled', !!this.value && String(this.value) === String(senderVal));
-        });
-        if ($rec.val() && String($rec.val()) === String(senderVal)) {
-            $rec.val(null).trigger('change');
-        }
-        $rec.off('change.select2-sync').on('change.select2-sync', function () {
-            var v = $(this).val();
-            if (v && senderVal && String(v) === String(senderVal)) {
-                $(this).val(null).trigger('change');
-                return;
-            }
-            syncSender();
-        });
-    }
-
-    function syncSender() {
-        var recVal = $('#destinatario_id').val();
-        var $send = $('#remitente_id');
-        $send.find('option').each(function () {
-            $(this).prop('disabled', !!this.value && String(this.value) === String(recVal));
-        });
-        if ($send.val() && String($send.val()) === String(recVal)) {
-            $send.val(null).trigger('change');
-        }
-        $send.off('change.select2-sync').on('change.select2-sync', function () {
-            var v = $(this).val();
-            if (v && recVal && String(v) === String(recVal)) {
-                $(this).val(null).trigger('change');
-                return;
-            }
-            syncRecipient();
-        });
-    }
+    /* Logic removed to allow same sender and recipient */
 
     // ─── Carga de tarifa del pagador (AJAX) ────────────────────────────────
     /**
@@ -341,8 +269,8 @@
 
     // ─── Init ─────────────────────────────────────────────────────────────────
     function initSelect2() {
-        $('#origen_id').select2(opts).on('change', syncDestination);
-        $('#destino_id').select2(opts).on('change', syncOrigin);
+        $('#origen_id').select2(opts);
+        $('#destino_id').select2(opts);
 
         // Al cambiar origen o destino → recalcular flete
         $('#origen_id, #destino_id').on('change', function () {
@@ -356,15 +284,7 @@
 
         // Al cambiar remitente → recargar tarifa solo si él paga
         $('#remitente_id').select2(opts).on('change', function () {
-            // Actualizar opciones del destinatario (sin re-registrar handlers)
             var senderVal = $(this).val();
-            $('#destinatario_id').find('option').each(function () {
-                $(this).prop('disabled', !!this.value && String(this.value) === String(senderVal));
-            });
-            if (String($('#destinatario_id').val()) === String(senderVal)) {
-                $('#destinatario_id').val(null).trigger('change');
-            }
-
             if ($('input[name="flete_a_pagar_en"]:checked').val() === 'origen') {
                 loadTariff(senderVal);
             }
@@ -372,15 +292,7 @@
 
         // Al cambiar destinatario → recargar tarifa solo si él paga
         $('#destinatario_id').select2(opts).on('change', function () {
-            // Actualizar opciones del remitente (sin re-registrar handlers)
             var recVal = $(this).val();
-            $('#remitente_id').find('option').each(function () {
-                $(this).prop('disabled', !!this.value && String(this.value) === String(recVal));
-            });
-            if (String($('#remitente_id').val()) === String(recVal)) {
-                $('#remitente_id').val(null).trigger('change');
-            }
-
             if ($('input[name="flete_a_pagar_en"]:checked').val() === 'destino') {
                 loadTariff(recVal);
             }
@@ -393,8 +305,8 @@
             loadTariff(payerId);
         });
 
-        syncDestination();
-        syncOrigin();
+        /* syncDestination(); */
+        /* syncOrigin(); */
     }
 
     $(document).ready(function () {
@@ -467,18 +379,6 @@
 
         // ── Validaciones al enviar ────────────────────────────────────────
         $('#shipment-form').on('submit', function () {
-            var origin = $('#origen_id').val();
-            var dest   = $('#destino_id').val();
-            if (origin && dest && String(origin) === String(dest)) {
-                window.toastr.warning('El destino debe ser distinto al origen.');
-                return false;
-            }
-            var sender = $('#remitente_id').val();
-            var rec    = $('#destinatario_id').val();
-            if (sender && rec && String(sender) === String(rec)) {
-                window.toastr.warning('El destinatario debe ser distinto al remitente.');
-                return false;
-            }
             return true;
         });
 

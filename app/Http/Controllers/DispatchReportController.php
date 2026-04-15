@@ -119,7 +119,37 @@ class DispatchReportController extends Controller
             ->editColumn('items_sum_peso', fn($row) => number_format($row->items_sum_peso, 2, ',', '.'))
             ->editColumn('items_sum_volumen', fn($row) => number_format($row->items_sum_volumen, 2, ',', '.'))
             ->editColumn('items_sum_monto_valor_declarado', fn($row) => '$ ' . number_format($row->items_sum_monto_valor_declarado, 2, ',', '.'))
-            ->rawColumns(['selection'])
+            ->addColumn('ubicacion_actual', function ($row) {
+                $colores = [
+                    'Dto origen' => 'dt-badge-indigo',
+                    'En transito' => 'dt-badge-yellow',
+                    'Dto destino' => 'dt-badge-blue',
+                    'En reparto' => 'dt-badge-orange',
+                    'Entregado' => 'dt-badge-green',
+                    'Con problemas' => 'dt-badge-red',
+                ];
+                $estado = $row->ubicacion_actual ?? '-';
+                $color = $colores[$estado] ?? 'dt-badge-gray';
+
+                if ($estado === 'En reparto' && $row->delivery_id) {
+                    $url = route('deliveries.edit', $row->delivery_id);
+                    $num = htmlspecialchars($row->delivery?->delivery_number ?? 'S/N');
+                    return "<div class='dt-status-stacked'>
+                                <a href='{$url}' class='dt-badge {$color} dt-badge-link'>{$estado}</a>
+                                <a href='{$url}' class='text-[9px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline'>#{$num}</a>
+                            </div>";
+                } elseif ($estado === 'En transito' && $row->transport_route_id) {
+                    $url = route('routes.edit', $row->transport_route_id);
+                    $num = htmlspecialchars($row->transportRoute?->route_number ?? 'S/N');
+                    return "<div class='dt-status-stacked'>
+                                <a href='{$url}' class='dt-badge {$color} dt-badge-link'>{$estado}</a>
+                                <a href='{$url}' class='text-[9px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline'>#{$num}</a>
+                            </div>";
+                }
+
+                return "<span class='dt-badge {$color}'>{$estado}</span>";
+            })
+            ->rawColumns(['selection', 'ubicacion_actual'])
             ->make(true);
     }
 }

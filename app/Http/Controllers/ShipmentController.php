@@ -34,6 +34,10 @@ class ShipmentController extends Controller
             'shipments.flete',
             'shipments.total',
             'shipments.ubicacion_actual',
+            'shipments.delivery_id',
+            'shipments.transport_route_id',
+            'deliveries.delivery_number',
+            'transport_routes.route_number',
             'origen.nombre as origen_nombre',
             'destino.nombre as destino_nombre',
             'remitente.name as remitente_nombre',
@@ -45,6 +49,8 @@ class ShipmentController extends Controller
             ->leftJoin('ubicaciones as destino', 'shipments.destino_id', '=', 'destino.id')
             ->leftJoin('parties as remitente', 'shipments.remitente_id', '=', 'remitente.id')
             ->leftJoin('parties as destinatario', 'shipments.destinatario_id', '=', 'destinatario.id')
+            ->leftJoin('deliveries', 'shipments.delivery_id', '=', 'deliveries.id')
+            ->leftJoin('transport_routes', 'shipments.transport_route_id', '=', 'transport_routes.id')
             ->whereNull('shipments.deleted_at')
             ->withCount(['problems as has_active_problem' => function ($q) {
             $q->where('is_active', true);
@@ -133,15 +139,32 @@ class ShipmentController extends Controller
             $estado = $row->ubicacion_actual ?? '-';
             $color = $colores[$estado] ?? 'dt-badge-gray';
 
+            $content = "";
             if ($estado === 'Con problemas') {
                 $numero = htmlspecialchars($row->numero ?? '', ENT_QUOTES);
-                return "<span class='dt-badge {$color} animate-pulse cursor-pointer btn-open-spm'
+                $content = "<span class='dt-badge {$color} animate-pulse cursor-pointer btn-open-spm'
                     data-shipment-id='{$row->id}'
                     data-shipment-numero='{$numero}'
                     title='Ver / Resolver problema'>{$estado}</span>";
+            } elseif ($estado === 'En reparto' && $row->delivery_id) {
+                $url = route('deliveries.edit', $row->delivery_id);
+                $num = htmlspecialchars($row->delivery_number ?? 'S/N');
+                $content = "<div class='dt-status-stacked'>
+                                <a href='{$url}' class='dt-badge {$color} dt-badge-link'>{$estado}</a>
+                                <a href='{$url}' class='text-[9px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline'>#{$num}</a>
+                            </div>";
+            } elseif ($estado === 'En transito' && $row->transport_route_id) {
+                $url = route('routes.edit', $row->transport_route_id);
+                $num = htmlspecialchars($row->route_number ?? 'S/N');
+                $content = "<div class='dt-status-stacked'>
+                                <a href='{$url}' class='dt-badge {$color} dt-badge-link'>{$estado}</a>
+                                <a href='{$url}' class='text-[9px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline'>#{$num}</a>
+                            </div>";
+            } else {
+                $content = "<span class='dt-badge {$color}'>{$estado}</span>";
             }
 
-            return "<span class='dt-badge {$color}'>{$estado}</span>";
+            return $content;
         })
             ->addColumn('remitente_destinatario', function ($row) {
                 return '<div class="text-xs">' .
@@ -175,7 +198,7 @@ class ShipmentController extends Controller
         $validated['contra_reembolso'] = $request->boolean('contra_reembolso');
 
         // Limpiar separadores de miles en campos numéricos
-        $numericFields = ['flete', 'seguro', 'monto_contra_reembolso', 'retencion_mercaderia', 'otros_cargos', 'subtotal', 'iva_monto', 'total'];
+        $numericFields = ['flete', 'seguro', 'monto_contra_reembolso', 'retencion_mercaderia', 'otros_cargos', 'subtotal', 'iva_monto', 'iva_percent', 'total'];
         foreach ($numericFields as $field) {
             if (isset($validated[$field]) && is_string($validated[$field])) {
                 $validated[$field] = (float)str_replace(',', '', $validated[$field]);
@@ -220,7 +243,7 @@ class ShipmentController extends Controller
         $validated['contra_reembolso'] = $request->boolean('contra_reembolso');
 
         // Limpiar separadores de miles en campos numéricos
-        $numericFields = ['flete', 'seguro', 'monto_contra_reembolso', 'retencion_mercaderia', 'otros_cargos', 'subtotal', 'iva_monto', 'total'];
+        $numericFields = ['flete', 'seguro', 'monto_contra_reembolso', 'retencion_mercaderia', 'otros_cargos', 'subtotal', 'iva_monto', 'iva_percent', 'total'];
         foreach ($numericFields as $field) {
             if (isset($validated[$field]) && is_string($validated[$field])) {
                 $validated[$field] = (float)str_replace(',', '', $validated[$field]);

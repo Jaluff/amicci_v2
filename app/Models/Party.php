@@ -29,7 +29,6 @@ class Party extends Model
         'iva_percent',
         'has_insurance',
         'insurance_percent',
-        'company_id',
     ];
 
     /* protected static function booted()
@@ -42,10 +41,7 @@ class Party extends Model
      });
      } */
 
-    public function company()
-    {
-        return $this->belongsTo(Company::class);
-    }
+
 
     /**
      * Todas las configuraciones tarifarias del cliente (puede tener varias para distintas rutas).
