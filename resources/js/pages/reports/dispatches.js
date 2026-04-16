@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
             { data: "flete_a_pagar_en", name: "flete_a_pagar_en" },
             { data: "cobrada", name: "cobrada" },
             { data: "remitos", name: "remitos", orderable: false, searchable: false },
-            { data: "ubicacion_actual", name: "ubicacion_actual" },
+            { data: "ubicacion_actual", name: "ubicacion_actual", className: "text-center" },
             { data: "items_sum_cantidad", name: "items_sum_cantidad", searchable: false },
             { data: "items_sum_peso", name: "items_sum_peso", searchable: false },
             { data: "items_sum_volumen", name: "items_sum_volumen", searchable: false },

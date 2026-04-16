@@ -41,8 +41,9 @@ $(function () {
                 responsivePriority: 5,
                 orderable: true,
                 searchable: true,
+                className: 'text-center',
             },
-            { data: 'acciones', name: 'acciones', orderable: false, searchable: false, responsivePriority: 1 },
+            { data: 'acciones', name: 'acciones', orderable: false, searchable: false, responsivePriority: 1, className: 'text-center' },
         ],
         order: [[0, 'desc']],
     });
