@@ -278,7 +278,7 @@
                         </div>
                         <div>
                             <label class="font-medium text-gray-600 dark:text-gray-400 block mb-0.5 text-xs">Peso</label>
-                            <x-text-input type="number" step="1" name="items[{{ $index }}][peso]"
+                            <x-text-input type="number" step="0.01" name="items[{{ $index }}][peso]"
                                 value="{{ $item->peso ?? 0 }}" class="w-full py-1.5 px-1 text-sm" />
                         </div>
                         <div>
@@ -510,12 +510,12 @@
             </div>
             <div>
                 <label class="font-medium text-gray-600 dark:text-gray-400 block mb-0.5 text-xs">Peso</label>
-                <x-text-input type="number" step="1" name="items[__INDEX__][peso]" value="0"
+                <x-text-input type="number" step="0.01" name="items[__INDEX__][peso]" value="0"
                     class="w-full py-1.5 px-1 text-sm" />
             </div>
             <div>
                 <label class="font-medium text-gray-600 dark:text-gray-400 block mb-0.5 text-xs">Vol</label>
-                <x-text-input type="number" step="1" name="items[__INDEX__][volumen]" value="0"
+                <x-text-input type="number" step="0.01" name="items[__INDEX__][volumen]" value="0"
                     class="w-full py-1.5 px-1 text-sm" />
             </div>
             <div>
