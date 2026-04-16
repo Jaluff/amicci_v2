@@ -417,7 +417,7 @@ $addr = $isEdit ? $party->primaryAddress : null;
                        :class="mode==='valor_declarado' ? 'border-amber-400 bg-amber-50 dark:bg-amber-900/30' : 'border-gray-200 dark:border-gray-700 hover:border-amber-300'">
                     <input type="radio" x-model="mode" value="valor_declarado" class="mt-0.5 text-amber-500 focus:ring-amber-500">
                     <div class="flex-1 min-w-0">
-                        <span class="font-medium text-gray-800 dark:text-gray-200 text-sm">Por Valor Declarado (%)</span>
+                        <span class="font-medium text-gray-800 dark:text-gray-200 text-sm">Por Valor Declarado (TASA X 1000)</span>
                         <div x-show="mode==='valor_declarado'" class="mt-2 flex flex-wrap items-start gap-3">
                             <div>
                                 <div class="relative w-44">
@@ -425,9 +425,9 @@ $addr = $isEdit ? $party->primaryAddress : null;
                                            value="{{ $tsDeclaredPct }}" placeholder="Ej: 0.5"
                                            :required="mode==='valor_declarado'"
                                            class="pr-8 w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 text-sm focus:border-amber-500 focus:ring-amber-500">
-                                    <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 text-xs">%</span>
+                                    <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 text-xs">‰</span>
                                 </div>
-                                <p class="text-xs text-gray-400 mt-1">Ej: 0.5 = 0,5% del valor declarado</p>
+                                <p class="text-xs text-gray-400 mt-1">Ej: 8 = $8 por cada $1000 del valor declarado</p>
                             </div>
                             <div class="relative w-44">
                                 <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 text-xs">Mínimo $</span>

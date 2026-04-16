@@ -93,7 +93,7 @@
         // Seguro
         if (tariffSetting && tariffSetting.has_insurance) {
             var insPct = parseFloat(tariffSetting.insurance_percent) || 0;
-            var seguro = (totalValor * insPct) / 100;
+            var seguro = (totalValor * insPct) / 1000;
             $('#seguro').val(seguro.toFixed(2));
         } else if (tariffSetting && !preventOverwrite) {
             $('#seguro').val('0.00');
@@ -237,7 +237,7 @@
                 break;
 
             case 'valor_declarado':
-                flete = totalValor * (tariffSetting.declared_value_pct / 100);
+                flete = totalValor * (tariffSetting.declared_value_pct / 1000);
                 if (tariffSetting.minimum_charge > 0 && flete < tariffSetting.minimum_charge) {
                     flete = tariffSetting.minimum_charge;
                 }
