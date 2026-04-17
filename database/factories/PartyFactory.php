@@ -13,7 +13,6 @@ class PartyFactory extends Factory
     public function definition(): array
     {
         return [
-            'company_id' => Company::first()?->id ?? 1,
             'name' => $this->faker->company(),
             'document' => $this->faker->regexify('[0-9]{8,11}'),
             'document_type' => $this->faker->randomElement(['CUIT', 'DNI']),

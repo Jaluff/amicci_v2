@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Scopes\CompanyScope;
 use App\Traits\HasAddresses;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -30,16 +29,6 @@ class Party extends Model
         'has_insurance',
         'insurance_percent',
     ];
-
-    /* protected static function booted()
-     {
-     static::addGlobalScope(new CompanyScope);
-     static::creating(function ($model) {
-     if (session()->has('company_id')) {
-     $model->company_id = session('company_id');
-     }
-     });
-     } */
 
 
 

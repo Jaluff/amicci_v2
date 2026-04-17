@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Company;
 use App\Models\Party;
-use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Seeder;
 
 class PartySeeder extends Seeder
@@ -78,12 +77,11 @@ class PartySeeder extends Seeder
         ];
 
         foreach ($parties as $data) {
-            Party::withoutGlobalScope(CompanyScope::class)->firstOrCreate(
+            Party::firstOrCreate(
                 [
-                    'company_id' => $company->id,
                     'name' => $data['name'],
                 ],
-                array_merge($data, ['company_id' => $company->id])
+                $data
             );
         }
     }

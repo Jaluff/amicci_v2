@@ -12,8 +12,6 @@ return new class extends Migration {
     {
         Schema::create('parties', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
-
             $table->string('name');
             $table->string('phone', 50)->nullable();
             $table->string('phone_secondary', 50)->nullable();
