@@ -15,6 +15,26 @@
     // ─── Configuración tarifaria cargada del remitente ──────────────────────
     var tariffSetting = null;
 
+    /**
+     * Limpia y parsea un valor a float.
+     * Maneja signos de moneda, espacios y comas/puntos.
+     */
+    function parseNum(v) {
+        if (!v) return 0;
+        // Eliminar todo lo que no sea dígito, coma o punto
+        var clean = String(v).replace(/[^0-9,.]/g, '');
+        // Si hay coma y punto, asumimos formato 1.234,56 -> quitar puntos, cambiar coma por punto
+        if (clean.includes(',') && clean.includes('.')) {
+            clean = clean.replace(/\./g, '').replace(/,/g, '.');
+        } 
+        // Si solo hay coma y está al final (decimal), cambiar por punto
+        else if (clean.includes(',') && clean.indexOf(',') > clean.indexOf('.') ) {
+            clean = clean.replace(/,/g, '.');
+        }
+        var n = parseFloat(clean);
+        return isNaN(n) ? 0 : n;
+    }
+
     // ─── Select2 opts ────────────────────────────────────────────────────────
     var opts = {
         placeholder: 'Buscar...',
@@ -86,17 +106,17 @@
     function recalcularCargosCliente(preventOverwrite = false) {
         var totalValor = 0;
         $('#items-container .item-row').each(function () {
-            var val = parseFloat($(this).find('[name*="[monto_valor_declarado]"]').val()) || 0;
-            totalValor += val;
+            var valStr = $(this).find('[name*="[monto_valor_declarado]"]').val();
+            totalValor += parseNum(valStr);
         });
 
         // Seguro
         if (tariffSetting && tariffSetting.has_insurance) {
             var insPct = parseFloat(tariffSetting.insurance_percent) || 0;
             var seguro = (totalValor * insPct) / 1000;
-            $('#seguro').val(seguro.toFixed(2));
+            $('#seguro').val(seguro.toFixed(2)).trigger('change');
         } else if (tariffSetting && !preventOverwrite) {
-            $('#seguro').val('0.00');
+            $('#seguro').val('0.00').trigger('change');
         }
 
         // Contra reembolso
@@ -104,20 +124,20 @@
         if (isContra) {
             var pctCR = window.GlobalContraPct || 0;
             var montoCR = (totalValor * pctCR) / 100;
-            $('#monto_contra_reembolso').val(montoCR.toFixed(2));
+            $('#monto_contra_reembolso').val(montoCR.toFixed(2)).trigger('change');
         } else {
-            $('#monto_contra_reembolso').val('0.00');
+            $('#monto_contra_reembolso').val('0.00').trigger('change');
         }
 
         // IVA percent
         if (tariffSetting && !preventOverwrite) {
             var ivaPct = parseFloat(tariffSetting.iva_percent) || 0;
-            $('#iva_percent').val(ivaPct);
+            $('#iva_percent').val(ivaPct).trigger('change');
         }
 
         // Siempre al final actualizar subtotales
-        if (typeof calculateTotals === 'function') {
-            calculateTotals();
+        if (typeof window.calculateTotals === 'function') {
+            window.calculateTotals();
         }
     }
 
@@ -342,10 +362,6 @@
             $('#total').val(total.toFixed(2));
         };
 
-        function parseNum(v) {
-            var n = parseFloat(String(v).replace(/[,\s]/g, ''));
-            return isNaN(n) ? 0 : n;
-        }
 
         $('#flete, #seguro, #monto_contra_reembolso, #retencion_mercaderia, #otros_cargos, #iva_percent')
             .on('input change', window.calculateTotals);

@@ -78,8 +78,12 @@ class RolesAndAdminSeeder extends Seeder
 
 
         // Asignarle la empresa al admin si no la tiene
-        if (!$adminUser->companies()->where('company_id', $company->id)->exists()) {
-            $adminUser->companies()->attach($company->id);
+        $companies = Company::all();
+        foreach ($companies as $company) {
+            if (!$adminUser->companies()->where('company_id', $company->id)->exists()) {
+                $adminUser->companies()->attach($company->id);
+            }
+
         }
 
         // Asignarle la empresa al supervisor si no la tiene
@@ -98,6 +102,7 @@ class RolesAndAdminSeeder extends Seeder
             $operatorUser->branches()->attach($branch->id);
         }
 
+        
         // El supervisor tiene ambas sucursales
         $branches = \App\Models\Branch::where('company_id', $company->id)->get();
         foreach ($branches as $b) {
@@ -105,6 +110,12 @@ class RolesAndAdminSeeder extends Seeder
                 $supervisorUser->branches()->attach($b->id);
             }
         }
-
+        // El Administrador tiene ambas sucursales
+        $branches = \App\Models\Branch::where('company_id', $company->id)->get();
+        foreach ($branches as $b) {
+            if (!$adminUser->branches()->where('branch_id', $b->id)->exists()) {
+                $adminUser->branches()->attach($b->id);
+            }
+        }
     }
 }

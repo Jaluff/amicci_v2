@@ -217,7 +217,10 @@ class DeliveryController extends Controller
         }
 
         if ($request->filled('location_id')) {
-            $query->where('shipments.destino_id', $request->location_id);
+            $name = \App\Models\Ubicacion::find($request->location_id)?->nombre;
+            if ($name) {
+                $query->where('destino.nombre', 'LIKE', '%' . $name . '%');
+            }
         }
 
         return DataTables::of($query)

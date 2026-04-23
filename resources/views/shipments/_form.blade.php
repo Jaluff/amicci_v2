@@ -32,17 +32,11 @@
     <!-- SECCIÓN 1: INFORMACIÓN GENERAL -->
     <div class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
         <h3 class="font-bold text-gray-800 dark:text-white mb-3">📋 INFORMACIÓN GENERAL</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+            @php
+                $userBranch = $branches->first();
+            @endphp
             @if(!$isEdit)
-                <div>
-                    <label class="font-medium text-gray-700 dark:text-yellow-300 block">N° Guía *</label>
-                    <x-text-input id="numero" name="numero" type="text" value="{{ old('numero', '') }}"
-                        class="w-full py-2 px-2 mt-0.5 rounded border-gray-300 dark:border-gray-700" placeholder="GU-001"
-                        readonly />
-                </div>
-                @php
-                    $userBranch = $branches->first();
-                @endphp
                 <div>
                     <label class="font-medium text-gray-700 dark:text-gray-300 block">Sucursal</label>
                     @if($branches->count() > 1)

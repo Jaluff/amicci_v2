@@ -14,9 +14,9 @@ class UbicacionSeeder extends Seeder
     {
         $ubicaciones = [
             'Buenos Aires',
+            'Mendoza Este',
+            'Mendoza Sur',
             'Mendoza',
-            'San Juan',
-            'San Luis',
         ];
 
         foreach ($ubicaciones as $nombre) {

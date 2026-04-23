@@ -52,10 +52,16 @@ class TransportRouteController extends Controller
             ->whereNull('shipments.transport_route_id');
 
         if ($request->filled('origin_id')) {
-            $query->where('shipments.origen_id', $request->origin_id);
+            $name = \App\Models\Ubicacion::find($request->origin_id)?->nombre;
+            if ($name) {
+                $query->where('origen.nombre', 'LIKE', '%' . $name . '%');
+            }
         }
         if ($request->filled('destination_id')) {
-            $query->where('shipments.destino_id', $request->destination_id);
+            $name = \App\Models\Ubicacion::find($request->destination_id)?->nombre;
+            if ($name) {
+                $query->where('destino.nombre', 'LIKE', '%' . $name . '%');
+            }
         }
 
         return \Yajra\DataTables\Facades\DataTables::of($query)

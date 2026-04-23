@@ -129,16 +129,26 @@ class DispatchController extends Controller
 
     public function availableRoutes(Request $request): JsonResponse
     {
-        $query = TransportRoute::with(['origin', 'destination'])
+        $query = TransportRoute::query()
+            ->select('transport_routes.*')
+            ->leftJoin('ubicaciones as origen', 'transport_routes.origin_id', '=', 'origen.id')
+            ->leftJoin('ubicaciones as destino', 'transport_routes.destination_id', '=', 'destino.id')
+            ->with(['origin', 'destination'])
             ->withCount('shipments')
             ->where('status', 'Cargada')
             ->whereNull('dispatch_id');
 
         if ($request->filled('origin_id')) {
-            $query->where('origin_id', $request->origin_id);
+            $name = \App\Models\Ubicacion::find($request->origin_id)?->nombre;
+            if ($name) {
+                $query->where('origen.nombre', 'LIKE', '%' . $name . '%');
+            }
         }
         if ($request->filled('destination_id')) {
-            $query->where('destination_id', $request->destination_id);
+            $name = \App\Models\Ubicacion::find($request->destination_id)?->nombre;
+            if ($name) {
+                $query->where('destino.nombre', 'LIKE', '%' . $name . '%');
+            }
         }
 
         return DataTables::of($query)

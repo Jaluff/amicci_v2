@@ -44,9 +44,7 @@ class BigDataSeeder extends Seeder
         // 2. Crear 20 Clientes
         $this->command->info('Creando 20 clientes...');
         foreach ($companies as $company) {
-            Party::factory()->count(10)->create([
-                'company_id' => $company->id
-            ]);
+            Party::factory()->count(20)->create();
         }
 
         $allParties = Party::all();
