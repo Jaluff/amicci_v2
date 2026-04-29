@@ -5,7 +5,9 @@
     
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Crear Nuevo Despacho</h2>
+                <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                    Crear Nuevo Despacho
+                </h2>
                 <a href="{{ route('dispatches.index') }}"
                     class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
                     &larr; Volver
@@ -24,6 +26,7 @@
 
             <form action="{{ route('dispatches.store') }}" method="POST" id="dispatch-form">
                 @csrf
+
                 @include('dispatches._form', ['dispatch' => new \App\Models\Dispatch()])
             </form>
         </div>

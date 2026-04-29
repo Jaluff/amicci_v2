@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Models\Traits\HasProblems;
@@ -18,8 +20,6 @@ class Dispatch extends Model
     protected string $stateMachineClass = DispatchStateMachine::class;
 
     protected $fillable = [
-        'company_id',
-        'branch_id',
         'dispatch_number',
         'origin_id',
         'destination_id',
@@ -35,41 +35,27 @@ class Dispatch extends Model
         'cost' => 'decimal:2',
     ];
 
-    protected static function booted(): void
-    {
-        static::addGlobalScope(new \App\Models\Scopes\CompanyScope);
-        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
 
-        static::creating(function ($model) {
-            if (!$model->company_id) {
-                $model->company_id = session('company_id');
-            }
-        });
-    }
-
-    public function branch(): BelongsTo
-    {
-        return $this->belongsTo(Branch::class);
-    }
-
-    public function company(): BelongsTo
-    {
-        return $this->belongsTo(Company::class);
-    }
 
     public function driver(): BelongsTo
     {
         return $this->belongsTo(Driver::class);
     }
 
+    /**
+     * Sucursal de origen (punto operativo).
+     */
     public function origin(): BelongsTo
     {
-        return $this->belongsTo(Ubicacion::class , 'origin_id');
+        return $this->belongsTo(Branch::class, 'origin_id');
     }
 
+    /**
+     * Sucursal de destino (punto operativo).
+     */
     public function destination(): BelongsTo
     {
-        return $this->belongsTo(Ubicacion::class , 'destination_id');
+        return $this->belongsTo(Branch::class, 'destination_id');
     }
 
     public function routes(): HasMany
@@ -79,6 +65,6 @@ class Dispatch extends Model
 
     public function shipments(): HasManyThrough
     {
-        return $this->hasManyThrough(Shipment::class , TransportRoute::class);
+        return $this->hasManyThrough(Shipment::class, TransportRoute::class);
     }
 }

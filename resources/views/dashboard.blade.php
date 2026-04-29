@@ -17,8 +17,16 @@
                 </p>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
-                <div
-                    class="flex items-center gap-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5">
+                <div class="flex items-center gap-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5">
+                    <span class="text-[11px] text-gray-500 dark:text-gray-400">Empresa</span>
+                    <select id="filter-company" class="text-[11px] bg-transparent text-gray-700 dark:text-white outline-none">
+                        <option value="">Todas</option>
+                        @foreach($userCompanies as $company)
+                        <option value="{{ $company->id }}">{{ $company->prefix }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="flex items-center gap-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5">
                     <span class="text-[11px] text-gray-500 dark:text-gray-400">Desde</span>
                     <input type="date" id="filter-from"
                         class="text-[11px] bg-transparent text-gray-700 dark:text-white outline-none w-28">
@@ -351,7 +359,11 @@ function stopPulse() {
 function getParams() {
     var from = document.getElementById('filter-from').value;
     var to   = document.getElementById('filter-to').value;
-    return (from && to) ? '?from=' + from + '&to=' + to : '';
+    var company = document.getElementById('filter-company').value;
+    var params = [];
+    if (from && to) { params.push('from=' + from); params.push('to=' + to); }
+    if (company) { params.push('company_id=' + company); }
+    return params.length ? '?' + params.join('&') : '';
 }
 
 // Paginacion generica
@@ -392,24 +404,39 @@ function paginate(allRows, page, tbodyId, pagContainerId, renderRowFn, emptyMsg,
 
 function loadStats() {
     fetch(STATS_URL + getParams(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-    .then(function(res) { return res.json(); })
+    .then(function(res) { 
+        if (!res.ok) throw new Error('Error en el servidor: ' + res.status);
+        return res.json(); 
+    })
     .then(function(data) {
+        if (!data || !data.kpi) {
+            console.error('Datos del Dashboard incompletos:', data);
+            return;
+        }
         var k = data.kpi;
-        document.getElementById('k-rutas-viaje').textContent = k.rutas_en_viaje;
-        document.getElementById('k-desp-viaje').textContent  = k.despachos_en_viaje;
-        document.getElementById('k-repartos').textContent    = k.repartos_en_curso;
-        document.getElementById('k-problemas').textContent   = k.guias_con_problemas;
+        document.getElementById('k-rutas-viaje').textContent = k.rutas_en_viaje || 0;
+        document.getElementById('k-desp-viaje').textContent  = k.despachos_en_viaje || 0;
+        document.getElementById('k-repartos').textContent    = k.repartos_en_curso || 0;
+        document.getElementById('k-problemas').textContent   = k.guias_con_problemas || 0;
         stopPulse();
 
         document.getElementById('last-refresh').textContent =
             'actualizado ' + new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
 
-        renderDonut(data);
-        renderLine(data);
-        renderBar(data);
-        renderHBar(data);
-        renderTables(data);
-        renderBilling(data);
+        try {
+            renderDonut(data);
+            renderLine(data);
+            renderBar(data);
+            renderHBar(data);
+            renderTables(data);
+            renderBilling(data);
+        } catch (e) {
+            console.error('Error al renderizar gráficos:', e);
+        }
+    })
+    .catch(function(err) {
+        console.error('Error al cargar estadísticas:', err);
+        stopPulse();
     });
 }
 
@@ -556,7 +583,13 @@ document.getElementById('btn-apply-filter').addEventListener('click', function()
 document.getElementById('btn-clear-filter').addEventListener('click', function() {
     document.getElementById('filter-from').value = '';
     document.getElementById('filter-to').value   = '';
+    document.getElementById('filter-company').value = '';
     document.getElementById('filter-label').classList.add('hidden');
+    loadStats();
+});
+
+document.getElementById('filter-company').addEventListener('change', function() {
+    document.getElementById('filter-label').classList.remove('hidden');
     loadStats();
 });
 

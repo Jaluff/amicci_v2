@@ -24,6 +24,23 @@ class DeliveryStateMachine extends BaseStateMachine
         ];
     }
 
+    public function canTransitionTo(string $from, string $to): bool
+    {
+        if ($to === self::FINISHED) {
+            // No permitir finalizar si hay guías con problemas activos aún vinculadas.
+            // Deben ser "Devueltas" manualmente a través del modal primero.
+            $hasActiveProblems = $this->model->shipments()
+                ->whereHas('problems', fn($q) => $q->where('is_active', true))
+                ->exists();
+
+            if ($hasActiveProblems) {
+                return false;
+            }
+        }
+
+        return parent::canTransitionTo($from, $to);
+    }
+
     protected function afterTransition(string $from, string $to): void
     {
         if ($from === self::READY && $to === self::ON_DELIVERY) {
@@ -37,9 +54,14 @@ class DeliveryStateMachine extends BaseStateMachine
                 ->update(['ubicacion_actual' => 'Dto destino']);
         }
         elseif ($to === self::FINISHED) {
-            // Finalizar guías del reparto
+            // Finalizar guías del reparto (Solo las que NO fueron devueltas manualmente)
             foreach ($this->model->shipments as $shipment) {
-                // Transicionar la guía a entregado
+                // Si llegamos aquí y hay una con problema activo, la ignoramos (no debería pasar por el canTransitionTo)
+                if ($shipment->hasActiveProblem()) {
+                    continue; 
+                }
+
+                // Transicionar la guía normal a entregado
                 $shipment->update(['ubicacion_actual' => 'Entregado']);
 
                 // Registrar en historial para mantener consistencia
@@ -59,14 +81,6 @@ class DeliveryStateMachine extends BaseStateMachine
                         'status_changed',
                         ['from' => 'En reparto', 'to' => 'Entregado']
                     );
-                }
-
-                // Resolver problemas activos
-                if ($shipment->hasActiveProblem()) {
-                    $problem = $shipment->currentProblem;
-                    if ($problem) {
-                        $problem->update(['is_active' => false]);
-                    }
                 }
             }
         }

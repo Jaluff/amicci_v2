@@ -26,10 +26,10 @@ class TariffTableController extends Controller
      */
     public function datatable()
     {
-        $query = TariffTable::withCount('brackets');
+        $query = TariffTable::with(['origin', 'destination'])->withCount('brackets');
 
         return DataTables::of($query)
-            ->addColumn('ruta', fn($row) => "{$row->origin} → {$row->destination}")
+            ->addColumn('ruta', fn($row) => ($row->origin?->nombre ?? '?') . ' → ' . ($row->destination?->nombre ?? '?'))
             ->addColumn('rate_per_ton_fmt', fn($row) => '$ ' . number_format((float) $row->rate_per_ton, 2, ',', '.'))
             ->addColumn('rate_per_m3_fmt', fn($row) => '$ ' . number_format((float) $row->rate_per_m3, 2, ',', '.'))
             ->addColumn('vigencia', function ($row) {
@@ -70,7 +70,8 @@ class TariffTableController extends Controller
      */
     public function create(): View
     {
-        return view('tariffTables.create');
+        $ubicaciones = \App\Models\Ubicacion::orderBy('nombre')->get();
+        return view('tariffTables.create', compact('ubicaciones'));
     }
 
     /**
@@ -79,14 +80,14 @@ class TariffTableController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name'         => 'required|string|max:255',
-            'origin'       => 'required|string|max:100',
-            'destination'  => 'required|string|max:100',
-            'rate_per_ton' => 'required|numeric|min:0',
-            'rate_per_m3'  => 'required|numeric|min:0',
-            'valid_from'   => 'required|date',
-            'valid_until'  => 'nullable|date|after:valid_from',
-            'is_active'    => 'boolean',
+            'name'           => 'required|string|max:255',
+            'origin_id'      => 'required|exists:ubicaciones,id',
+            'destination_id' => 'required|exists:ubicaciones,id',
+            'rate_per_ton'   => 'required|numeric|min:0',
+            'rate_per_m3'    => 'required|numeric|min:0',
+            'valid_from'     => 'required|date',
+            'valid_until'    => 'nullable|date|after:valid_from',
+            'is_active'      => 'boolean',
             'contra_reembolso_percent' => 'nullable|numeric|min:0|max:100',
 
             // Tramos de peso (deben siempre enviarse al menos uno)
@@ -97,14 +98,14 @@ class TariffTableController extends Controller
         ]);
 
         $table = TariffTable::create([
-            'name'         => $validated['name'],
-            'origin'       => $validated['origin'],
-            'destination'  => $validated['destination'],
-            'rate_per_ton' => $validated['rate_per_ton'],
-            'rate_per_m3'  => $validated['rate_per_m3'],
-            'valid_from'   => $validated['valid_from'],
-            'valid_until'  => $validated['valid_until'] ?? null,
-            'is_active'    => $request->boolean('is_active', true),
+            'name'           => $validated['name'],
+            'origin_id'      => $validated['origin_id'],
+            'destination_id' => $validated['destination_id'],
+            'rate_per_ton'   => $validated['rate_per_ton'],
+            'rate_per_m3'    => $validated['rate_per_m3'],
+            'valid_from'     => $validated['valid_from'],
+            'valid_until'    => $validated['valid_until'] ?? null,
+            'is_active'      => $request->boolean('is_active', true),
             'contra_reembolso_percent' => $validated['contra_reembolso_percent'] ?? 0,
         ]);
 
@@ -127,8 +128,9 @@ class TariffTableController extends Controller
     public function edit(TariffTable $tariffTable): View
     {
         $tariffTable->load('brackets');
+        $ubicaciones = \App\Models\Ubicacion::orderBy('nombre')->get();
 
-        return view('tariffTables.edit', compact('tariffTable'));
+        return view('tariffTables.edit', compact('tariffTable', 'ubicaciones'));
     }
 
     /**
@@ -137,14 +139,14 @@ class TariffTableController extends Controller
     public function update(Request $request, TariffTable $tariffTable): RedirectResponse
     {
         $validated = $request->validate([
-            'name'         => 'required|string|max:255',
-            'origin'       => 'required|string|max:100',
-            'destination'  => 'required|string|max:100',
-            'rate_per_ton' => 'required|numeric|min:0',
-            'rate_per_m3'  => 'required|numeric|min:0',
-            'valid_from'   => 'required|date',
-            'valid_until'  => 'nullable|date|after:valid_from',
-            'is_active'    => 'boolean',
+            'name'           => 'required|string|max:255',
+            'origin_id'      => 'required|exists:ubicaciones,id',
+            'destination_id' => 'required|exists:ubicaciones,id',
+            'rate_per_ton'   => 'required|numeric|min:0',
+            'rate_per_m3'    => 'required|numeric|min:0',
+            'valid_from'     => 'required|date',
+            'valid_until'    => 'nullable|date|after:valid_from',
+            'is_active'      => 'boolean',
             'contra_reembolso_percent' => 'nullable|numeric|min:0|max:100',
 
             'brackets'               => 'required|array|min:1',
@@ -154,14 +156,14 @@ class TariffTableController extends Controller
         ]);
 
         $tariffTable->update([
-            'name'         => $validated['name'],
-            'origin'       => $validated['origin'],
-            'destination'  => $validated['destination'],
-            'rate_per_ton' => $validated['rate_per_ton'],
-            'rate_per_m3'  => $validated['rate_per_m3'],
-            'valid_from'   => $validated['valid_from'],
-            'valid_until'  => $validated['valid_until'] ?? null,
-            'is_active'    => $request->boolean('is_active', true),
+            'name'           => $validated['name'],
+            'origin_id'      => $validated['origin_id'],
+            'destination_id' => $validated['destination_id'],
+            'rate_per_ton'   => $validated['rate_per_ton'],
+            'rate_per_m3'    => $validated['rate_per_m3'],
+            'valid_from'     => $validated['valid_from'],
+            'valid_until'    => $validated['valid_until'] ?? null,
+            'is_active'      => $request->boolean('is_active', true),
             'contra_reembolso_percent' => $validated['contra_reembolso_percent'] ?? 0,
         ]);
 

@@ -21,7 +21,8 @@ class DashboardController extends Controller
 {
     public function index(): View
     {
-        return view('dashboard');
+        $userCompanies = auth()->user()->companies;
+        return view('dashboard', compact('userCompanies'));
     }
 
     public function stats(Request $request): JsonResponse
@@ -34,10 +35,28 @@ class DashboardController extends Controller
             ? \Carbon\Carbon::parse($request->input('to'))->endOfDay()
             : null;
 
-        $shipQ   = Shipment::query();
-        $routeQ  = TransportRoute::query();
-        $dispQ   = Dispatch::query();
-        $delivQ  = Delivery::query();
+        $company_ids = auth()->user()->companies->pluck('id')->toArray();
+        $selected_company_id = $request->input('company_id');
+
+        $baseShipQ   = Shipment::query();
+        $baseRouteQ  = TransportRoute::query();
+        $baseDispQ   = Dispatch::query();
+        $baseDelivQ  = Delivery::query();
+
+        if ($selected_company_id && in_array($selected_company_id, $company_ids)) {
+            $baseShipQ->where('company_id', $selected_company_id);
+            $baseRouteQ->where('company_id', $selected_company_id);
+            $baseDelivQ->where('company_id', $selected_company_id);
+        } else {
+            $baseShipQ->whereIn('company_id', $company_ids);
+            $baseRouteQ->whereIn('company_id', $company_ids);
+            $baseDelivQ->whereIn('company_id', $company_ids);
+        }
+
+        $shipQ   = clone $baseShipQ;
+        $routeQ  = clone $baseRouteQ;
+        $dispQ   = clone $baseDispQ;
+        $delivQ  = clone $baseDelivQ;
 
         if ($from && $to) {
             $shipQ->whereBetween('fecha', [$from, $to]);
@@ -53,8 +72,8 @@ class DashboardController extends Controller
         $guiasEnDestino     = (clone $shipQ)->where('ubicacion_actual', '=', 'Dto destino')->count();
         $guiasEnReparto     = (clone $shipQ)->where('ubicacion_actual', '=', 'En reparto')->count();
         $guiasEntregadas    = (clone $shipQ)->where('ubicacion_actual', '=', 'Entregado')->count();
-        $guiasConProblemas  = (clone $shipQ)->where('ubicacion_actual', '=', 'Con problemas')->count();
-        $guiasHoy           = Shipment::query()->whereNotNull('fecha_entrega')->whereDate('fecha_entrega', today())->count();
+        $guiasConProblemas  = (clone $shipQ)->whereHas('problems', fn($q) => $q->where('is_active', true))->count();
+        $guiasHoy           = (clone $baseShipQ)->whereNotNull('fecha_entrega')->whereDate('fecha_entrega', today())->count();
 
         // ── SECCIÓN 2: OPERACIONES ACTIVAS ─────────────────────────
         $rutasEnViaje       = (clone $routeQ)->where('status', '=', 'En viaje')->count();
@@ -77,7 +96,7 @@ class DashboardController extends Controller
         $barFrom = $from ?? now()->subDays(13)->startOfDay();
         $barTo   = $to   ?? now()->endOfDay();
 
-        $deliveredPerDay = Shipment::query()
+        $deliveredPerDay = (clone $baseShipQ)
             ->whereNotNull('fecha_entrega')
             ->whereBetween('fecha_entrega', [$barFrom, $barTo])
             ->select(DB::raw('DATE(fecha_entrega) as day'), DB::raw('count(*) as total'))
@@ -88,25 +107,25 @@ class DashboardController extends Controller
         $lineFrom = $from ?? now()->subDays(30)->startOfDay();
         $lineTo   = $to   ?? now()->endOfDay();
 
-        $shipmentsPerDay = Shipment::query()
+        $shipmentsPerDay = (clone $baseShipQ)
             ->whereBetween('fecha', [$lineFrom, $lineTo])
             ->select(DB::raw('DATE(fecha) as day'), DB::raw('count(*) as total'))
             ->groupBy('day')->orderBy('day')
             ->pluck('total', 'day');
 
-        $routesPerDay = TransportRoute::query()
+        $routesPerDay = (clone $baseRouteQ)
             ->whereBetween('created_at', [$lineFrom, $lineTo])
             ->select(DB::raw('DATE(created_at) as day'), DB::raw('count(*) as total'))
             ->groupBy('day')->orderBy('day')
             ->pluck('total', 'day');
 
-        $dispatchesPerDay = Dispatch::query()
+        $dispatchesPerDay = (clone $baseDispQ)
             ->whereBetween('created_at', [$lineFrom, $lineTo])
             ->select(DB::raw('DATE(created_at) as day'), DB::raw('count(*) as total'))
             ->groupBy('day')->orderBy('day')
             ->pluck('total', 'day');
 
-        $deliveriesPerDay = Delivery::query()
+        $deliveriesPerDay = (clone $baseDelivQ)
             ->whereBetween('created_at', [$lineFrom, $lineTo])
             ->select(DB::raw('DATE(created_at) as day'), DB::raw('count(*) as total'))
             ->groupBy('day')->orderBy('day')
@@ -135,8 +154,8 @@ class DashboardController extends Controller
             ]);
 
         // ── Guías con problemas (últimas 10) ────────────────────────
-        $problemList = Shipment::query()
-            ->where('ubicacion_actual', '=', 'Con problemas')
+        $problemList = (clone $shipQ)
+            ->whereHas('problems', fn($q) => $q->where('is_active', true))
             ->with(['destination:id,nombre', 'currentProblem'])
             ->orderByDesc('updated_at')
             ->limit(10)->get()
@@ -148,26 +167,26 @@ class DashboardController extends Controller
             ]);
 
         // ── Repartos en curso ────────────────────────────────────────
-        $activeDeliveriesList = Delivery::query()
+        $activeDeliveriesList = (clone $delivQ)
             ->where('status', '=', 'En reparto')
-            ->with(['deliverer:id,name', 'location:id,nombre'])
-            ->withCount(['shipments as guias_con_problema' => fn($q) => $q->where('ubicacion_actual', '=', 'Con problemas')])
+            ->with(['deliverer:id,name', 'location:id,name'])
+            ->withCount(['shipments as guias_con_problema' => fn($q) => $q->whereHas('problems', fn($sq) => $sq->where('is_active', true))])
             ->withCount('shipments')
             ->orderByDesc('created_at')
             ->limit(8)->get()
             ->map(fn($d) => [
                 'numero'        => $d->delivery_number,
                 'repartidor'    => $d->deliverer?->name ?? '-',
-                'ubicacion'     => $d->location?->nombre ?? '-',
+                'ubicacion'     => $d->location?->name ?? '-',
                 'guias'         => $d->shipments_count,
                 'con_problema'  => $d->guias_con_problema,
                 'edit_url'      => route('deliveries.edit', $d->id),
             ]);
 
         // ── Rutas en viaje activas ────────────────────────────────────
-        $activeRoutesList = TransportRoute::query()
+        $activeRoutesList = (clone $routeQ)
             ->where('status', '=', 'En viaje')
-            ->with(['origin:id,nombre', 'destination:id,nombre', 'dispatch'])
+            ->with(['origin:id,name', 'destination:id,name', 'dispatch'])
             ->withCount('shipments')
             ->orderByDesc('created_at')
             ->limit(10)->get()
@@ -179,9 +198,9 @@ class DashboardController extends Controller
             ]);
 
         // ── Despachos en curso ────────────────────────────────────────
-        $activeDispatchesList = Dispatch::query()
+        $activeDispatchesList = (clone $dispQ)
             ->where('status', '=', 'En viaje')
-            ->with(['driver:id,name', 'origin:id,nombre', 'destination:id,nombre'])
+            ->with(['driver:id,name', 'origin:id,name', 'destination:id,name'])
             ->withCount('routes')
             ->orderByDesc('created_at')
             ->limit(10)->get()
@@ -200,7 +219,13 @@ class DashboardController extends Controller
         $canSeeBilling   = auth()->user()?->hasRole(['admin', 'supervisor']);
 
         if ($canSeeBilling) {
-            $invoiceQ = Invoice::withoutGlobalScopes();
+            $baseInvoiceQ = Invoice::query();
+            if ($selected_company_id && in_array($selected_company_id, $company_ids)) {
+                $baseInvoiceQ->where('company_id', $selected_company_id);
+            } else {
+                $baseInvoiceQ->whereIn('company_id', $company_ids);
+            }
+            $invoiceQ = clone $baseInvoiceQ;
 
             $mesInicio = now()->startOfMonth();
             $mesFin    = now()->endOfMonth();
@@ -208,7 +233,7 @@ class DashboardController extends Controller
             $totalFacturado   = (clone $invoiceQ)->whereBetween('fecha_factura', [$mesInicio, $mesFin])->sum('total');
             $totalCobrado     = (clone $invoiceQ)->whereBetween('fecha_factura', [$mesInicio, $mesFin])->where('cobrada', true)->sum('total');
             $totalPendiente   = $totalFacturado - $totalCobrado;
-            $guiasSinFacturar = Shipment::withoutGlobalScopes()->whereNull('invoice_id')->whereNull('deleted_at')->count();
+            $guiasSinFacturar = (clone $baseShipQ)->whereNull('invoice_id')->whereNull('deleted_at')->count();
 
             // Gráfico: últimos 6 meses — Facturado vs Cobrado
             $meses = collect();

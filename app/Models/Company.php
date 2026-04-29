@@ -12,6 +12,7 @@ class Company extends Model
     protected $fillable = [
         'name',
         'prefix',
+        'color',
         'last_shipment_number',
         'last_route_number',
         'last_dispatch_number',
@@ -28,8 +29,31 @@ class Company extends Model
         return $this->hasMany(Shipment::class);
     }
 
-    public function branches()
+    public function branches(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Branch::class);
+    }
+
+    public function transportRoutes(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TransportRoute::class);
+    }
+
+    public function dispatches(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Dispatch::class);
+    }
+
+    public function deliveries(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Delivery::class);
+    }
+
+    /**
+     * Returns a hex color safe to use (fallback to indigo if not set).
+     */
+    public function getColorAttribute(?string $value): string
+    {
+        return $value ?: '#6366f1';
     }
 }

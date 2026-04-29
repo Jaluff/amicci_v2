@@ -11,7 +11,7 @@ class StoreShipmentRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true; // Asumimos que la autorización se maneja por middleware o controller
+        return auth()->user()->companies->contains('id', $this->company_id);
     }
 
     /**
@@ -22,7 +22,7 @@ class StoreShipmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // 'numero' => 'required|string|unique:shipments',
+            'company_id'        => 'required|integer|exists:companies,id',
             'fecha'             => 'required|date',
             'branch_id'         => 'nullable|integer|exists:branches,id',
             'origen_id' => 'nullable|integer|exists:ubicaciones,id',

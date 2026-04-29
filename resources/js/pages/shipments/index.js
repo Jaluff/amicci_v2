@@ -3,6 +3,7 @@
  * Depende de jQuery y DataTables cargados en app.js.
  */
 import $ from 'jquery';
+import { openCompanySelector } from '../../shared/company-selector.js';
 
 $(function () {
     $('.select2').select2({ width: '100%' });
@@ -22,9 +23,19 @@ $(function () {
                 d.numero_documento = $('#filter_numero_documento').val();
                 d.cliente = $('#filter_cliente').val();
                 d.ubicacion = $('#filter_ubicacion').val();
+                d.company_id = $('#filter_company_id').val();
             }
         },
         columns: [
+            { 
+                data: 'empresa', 
+                name: 'companies.prefix', 
+                responsivePriority: 3,
+                render: function(data, type, row) {
+                    const color = row.empresa_color || '#6366f1';
+                    return `<span class="px-2 py-1 rounded-full text-[10px] font-bold text-white shadow-sm" style="background-color: ${color}">${data}</span>`;
+                }
+            },
             { data: 'fecha', name: 'shipments.fecha', responsivePriority: 2 },
             { data: 'numero', name: 'shipments.numero', responsivePriority: 1 },
             { data: 'origen_nombre', name: 'origen.nombre', defaultContent: '-', responsivePriority: 6 },
@@ -58,4 +69,26 @@ $(function () {
             $('#btn-filter').click();
         }
     });
+
+    // Company selector modal — lee datos desde el data-attribute del botón
+    const btn = document.getElementById('btn-nueva-guia');
+    if (btn) {
+        const companies = JSON.parse(btn.dataset.companies || '[]');
+        const createUrl = btn.dataset.url;
+
+        btn.addEventListener('click', () => {
+            if (companies.length === 1) {
+                window.location.href = `${createUrl}?company_id=${companies[0].id}`;
+                return;
+            }
+            openCompanySelector({
+                companies,
+                title: 'Nueva Guía de Transporte',
+                subtitle: '¿Para qué empresa deseas crear la guía?',
+                onSelect: (company) => {
+                    window.location.href = `${createUrl}?company_id=${company.id}`;
+                }
+            });
+        });
+    }
 });

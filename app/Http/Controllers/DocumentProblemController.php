@@ -36,6 +36,11 @@ class DocumentProblemController extends Controller
         $model      = $modelClass::findOrFail($data['model_id']);
 
         DB::transaction(function () use ($data, $model, $modelClass) {
+            // Cancelar todos los problemas anteriores que quedaron abiertos
+            // para este documento. Así el query where('is_active', true) 
+            // funcionará siempre mostrando SOLO si hay un problema realmente actual.
+            $model->problems()->where('is_active', true)->update(['is_active' => false]);
+
             DocumentProblem::create([
                 'documentable_type' => $modelClass,
                 'documentable_id'   => $model->getKey(),
@@ -47,40 +52,20 @@ class DocumentProblemController extends Controller
             if ($data['model_type'] === 'shipment') {
                 /** @var \App\Models\Shipment $model */
                 if ($data['is_active']) {
-                    $model->update(['ubicacion_actual' => 'Con problemas']);
-                } else {
-                    $newStatus = $this->resolveRestoredStatus($model);
-                    $model->update(['ubicacion_actual' => $newStatus]);
-                }
+                    // El usuario prefiere NO desvincular del reparto automáticamente.
+                    // La guía se mantiene en "En reparto" pero con el tag de problema.
+                    $model->logActivity("Problema reportado: {$data['comment']}", 'problem_reported');
+                } 
             }
         });
 
         return response()->json([
             'success'    => true,
             'message'    => $data['is_active']
-                ? 'Problema registrado. La guía fue marcada como "Con problemas".'
-                : 'Problema resuelto. La guía fue restaurada.',
+                ? 'Problema registrado.'
+                : 'Problema resuelto.',
             'has_active' => (bool) $data['is_active'],
-            'new_status' => $data['model_type'] === 'shipment' ? $model->fresh()->ubicacion_actual : null,
         ]);
-    }
-
-    private function resolveRestoredStatus(Shipment $shipment): string
-    {
-        if ($shipment->delivery_id) {
-            return 'En reparto';
-        }
-
-        if ($shipment->transport_route_id) {
-            $routeStatus = $shipment->transportRoute?->status ?? '';
-            return match ($routeStatus) {
-                'En viaje'  => 'En transito',
-                'Entregada' => 'Dto destino',
-                default     => 'Dto destino',
-            };
-        }
-
-        return 'Dto destino';
     }
 
     /**
@@ -120,7 +105,7 @@ class DocumentProblemController extends Controller
         $model      = $modelClass::findOrFail($data['model_id']);
 
         $shipments = $model->shipments()
-            ->where('ubicacion_actual', '=', 'Con problemas')
+            ->whereHas('problems', fn($q) => $q->where('is_active', true))
             ->with(['origin:id,nombre', 'destination:id,nombre', 'currentProblem'])
             ->get()
             ->map(fn($s) => [

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Scopes\CompanyScope;
 use App\Models\Traits\HasProblems;
 use App\Models\Traits\HasStateMachine;
 use App\Models\Traits\HasActivityLogs;
@@ -30,7 +29,7 @@ class Shipment extends Model
     ];
 
     protected $fillable = [
-        'transport_route_id', 'delivery_id', 'invoice_id', 'branch_id', 'numero', 'fecha',
+        'company_id', 'transport_route_id', 'delivery_id', 'invoice_id', 'branch_id', 'numero', 'fecha',
         'origen_id', 'destino_id', 'remitente_id', 'destinatario_id',
         'tipo_flete', 'cobrada', 'contra_reembolso',
         'flete_a_pagar_en', 'ubicacion_id', 'fecha_entrega', 'turno_entrega',
@@ -39,17 +38,10 @@ class Shipment extends Model
         'subtotal', 'iva_monto', 'iva_percent', 'total', 'notas',
     ];
 
-    protected static function booted()
-    {
-        static::addGlobalScope(new CompanyScope);
-        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    // Sin global scopes: el filtrado por empresa se hace de forma explícita
+    // donde sea necesario (ej: facturación, reportes por empresa)
 
-        static::creating(function ($model) {
-            $model->company_id = session('company_id');
-        });
-    }
-
-    public function branch()
+    public function branch(): BelongsTo
     {
         return $this->belongsTo(Branch::class);
     }
@@ -59,32 +51,38 @@ class Shipment extends Model
         return $this->hasMany(ShipmentItem::class);
     }
 
-    public function origin()
+    /**
+     * Ubicación de origen (zona tarifaria).
+     */
+    public function origin(): BelongsTo
     {
-        return $this->belongsTo(Ubicacion::class , 'origen_id');
+        return $this->belongsTo(Ubicacion::class, 'origen_id');
     }
 
-    public function destination()
+    /**
+     * Ubicación de destino (zona tarifaria).
+     */
+    public function destination(): BelongsTo
     {
-        return $this->belongsTo(Ubicacion::class , 'destino_id');
+        return $this->belongsTo(Ubicacion::class, 'destino_id');
     }
 
-    public function sender()
+    public function sender(): BelongsTo
     {
-        return $this->belongsTo(Party::class , 'remitente_id');
+        return $this->belongsTo(Party::class, 'remitente_id');
     }
 
-    public function delivery()
+    public function delivery(): BelongsTo
     {
         return $this->belongsTo(Delivery::class);
     }
 
-    public function recipient()
+    public function recipient(): BelongsTo
     {
-        return $this->belongsTo(Party::class , 'destinatario_id');
+        return $this->belongsTo(Party::class, 'destinatario_id');
     }
 
-    public function company()
+    public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
     }

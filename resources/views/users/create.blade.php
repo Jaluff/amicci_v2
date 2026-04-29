@@ -6,32 +6,33 @@
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
             <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">Crear Usuario</h2>
 
-            <form action="{{ route('users.store') }}" method="POST">
+            <form action="{{ route('users.store') }}" method="POST" autocomplete="off">
                 @csrf
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div>
                         <x-input-label for="name" value="Nombre" />
                         <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name')"
-                            required autofocus />
+                            required autofocus autocomplete="off" />
                     </div>
 
                     <div>
                         <x-input-label for="email" value="Email" />
                         <x-text-input id="email" name="email" type="email" class="mt-1 block w-full"
-                            :value="old('email')" required />
+                            :value="old('email')" required autocomplete="off" />
                     </div>
 
                     <div>
                         <x-input-label for="password" value="Contraseña" />
                         <x-text-input id="password" name="password" type="password" class="mt-1 block w-full"
-                            required />
+                            required autocomplete="new-password" :value="old('password')" />
                     </div>
 
                     <div>
                         <x-input-label for="password_confirmation" value="Confirmar Contraseña" />
                         <x-text-input id="password_confirmation" name="password_confirmation" type="password"
-                            class="mt-1 block w-full" required />
+                            class="mt-1 block w-full" required autocomplete="new-password" :value="old('password_confirmation')" />
+                        <span id="password-match-error" class="text-xs text-red-600 mt-1 hidden">Las contraseñas no coinciden</span>
                     </div>
 
                     <div>
@@ -75,7 +76,7 @@
                                 (is_array(old('branches')) && in_array($branch->id, old('branches'))) ? 'checked' : '' }}
                             class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-emerald-600
                             shadow-sm focus:ring-emerald-500 dark:focus:ring-emerald-600 dark:focus:ring-offset-gray-800">
-                            <span class="ml-2 text-gray-700 dark:text-gray-300">{{ $branch->company->name }} - {{ $branch->name }}</span>
+                            <span class="ml-2 text-gray-700 dark:text-gray-300">{{ $branch->name }}</span>
                         </label>
                         @endforeach
                     </div>
@@ -86,11 +87,33 @@
                         class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 mr-2">
                         Cancelar
                     </a>
-                    <x-primary-button>
+                    <x-primary-button id="submit-btn">
                         Guardar Usuario
                     </x-primary-button>
                 </div>
             </form>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const password = document.getElementById('password');
+                    const confirm = document.getElementById('password_confirmation');
+                    const error = document.getElementById('password-match-error');
+                    const submit = document.getElementById('submit-btn');
+
+                    function checkMatch() {
+                        if (confirm.value && password.value !== confirm.value) {
+                            error.classList.remove('hidden');
+                            confirm.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+                        } else {
+                            error.classList.add('hidden');
+                            confirm.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+                        }
+                    }
+
+                    password.addEventListener('input', checkMatch);
+                    confirm.addEventListener('input', checkMatch);
+                });
+            </script>
         </div>
     </div>
 </div>

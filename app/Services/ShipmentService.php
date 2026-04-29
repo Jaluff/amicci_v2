@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\Shipment;
@@ -12,15 +14,36 @@ class ShipmentService
     {
         return DB::transaction(function () use ($data, $items) {
 
-            $company = Company::lockForUpdate()->findOrFail(session('company_id'));
+            $company = Company::lockForUpdate()->findOrFail($data['company_id']);
 
-            // Numeración por sucursal si se seleccionó una
+            // Numeración por sucursal+empresa via pivot branch_company
             if (!empty($data['branch_id'])) {
-                $branch = \App\Models\Branch::lockForUpdate()->findOrFail($data['branch_id']);
-                $branch->last_shipment_number++;
-                $branch->save();
+                $pivot = DB::table('branch_company')
+                    ->where('branch_id', $data['branch_id'])
+                    ->where('company_id', $company->id)
+                    ->lockForUpdate()
+                    ->first();
 
-                $number = $branch->generateShipmentNumber($company->prefix);
+                if ($pivot) {
+                    $nextNumber = $pivot->last_shipment_number + 1;
+                    DB::table('branch_company')
+                        ->where('branch_id', $data['branch_id'])
+                        ->where('company_id', $company->id)
+                        ->update(['last_shipment_number' => $nextNumber]);
+
+                    $branch = \App\Models\Branch::findOrFail($data['branch_id']);
+                    $number = $branch->generateShipmentNumber($company->prefix, $nextNumber);
+                } else {
+                    // Crear registro de pivot si no existe
+                    DB::table('branch_company')->insert([
+                        'branch_id'            => $data['branch_id'],
+                        'company_id'           => $company->id,
+                        'last_shipment_number' => 1,
+                    ]);
+
+                    $branch = \App\Models\Branch::findOrFail($data['branch_id']);
+                    $number = $branch->generateShipmentNumber($company->prefix, 1);
+                }
             } else {
                 // Fallback: contador legacy de la empresa
                 $company->last_shipment_number++;

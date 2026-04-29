@@ -28,7 +28,7 @@ class UserController extends Controller
     {
         $roles = Role::all();
         $companies = Company::all();
-        $branches = \App\Models\Branch::with('company')->get();
+        $branches = \App\Models\Branch::with('companies')->get();
 
         return view('users.create', compact('roles', 'companies', 'branches'));
     }
@@ -69,7 +69,7 @@ class UserController extends Controller
     {
         $roles = Role::all();
         $companies = Company::all();
-        $branches = \App\Models\Branch::with('company')->get();
+        $branches = \App\Models\Branch::with('companies')->get();
 
         return view('users.edit', compact('user', 'roles', 'companies', 'branches'));
     }

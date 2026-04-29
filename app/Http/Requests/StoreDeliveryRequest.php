@@ -11,13 +11,14 @@ class StoreDeliveryRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return auth()->user()->companies->contains('id', $this->company_id);
     }
 
     public function rules(): array
     {
         return [
-            'location_id' => ['required', 'exists:ubicaciones,id'],
+            'company_id'  => ['required', 'exists:companies,id'],
+            'location_id' => ['required', 'exists:branches,id'],
             'deliverer_id' => ['required', 'exists:deliverers,id'],
             'vehicle_plate' => ['nullable', 'string', 'max:20'],
             'load_date' => ['nullable', 'date'],

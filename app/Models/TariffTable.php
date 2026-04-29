@@ -6,14 +6,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TariffTable extends Model
 {
     protected $fillable = [
         'name',
-        'origin',
-        'destination',
+        'origin_id',
+        'destination_id',
         'rate_per_ton',
         'rate_per_m3',
         'valid_from',
@@ -48,6 +49,22 @@ class TariffTable extends Model
     }
 
     /**
+     * Ubicación de origen (zona tarifaria).
+     */
+    public function origin(): BelongsTo
+    {
+        return $this->belongsTo(Ubicacion::class, 'origin_id');
+    }
+
+    /**
+     * Ubicación de destino (zona tarifaria).
+     */
+    public function destination(): BelongsTo
+    {
+        return $this->belongsTo(Ubicacion::class, 'destination_id');
+    }
+
+    /**
      * Scope para obtener solo los cuadros activos y vigentes a hoy.
      */
     public function scopeActive(Builder $query): Builder
@@ -62,6 +79,9 @@ class TariffTable extends Model
      */
     public function getRouteNameAttribute(): string
     {
-        return "{$this->origin} → {$this->destination}";
+        $originName = $this->origin?->nombre ?? '?';
+        $destName   = $this->destination?->nombre ?? '?';
+
+        return "{$originName} → {$destName}";
     }
 }

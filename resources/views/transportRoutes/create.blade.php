@@ -5,7 +5,12 @@
     
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Crear Nueva Ruta</h2>
+                <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                    Crear Nueva Ruta para 
+                    <span class="px-2 py-0.5 rounded text-white" style="background-color: {{ $selected_company->color }}">
+                        {{ $selected_company->name }}
+                    </span>
+                </h2>
                 <a href="{{ route('routes.index') }}"
                     class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
                     &larr; Volver
@@ -14,6 +19,7 @@
 
             <form action="{{ route('routes.store') }}" method="POST" id="route-form">
                 @csrf
+                <input type="hidden" name="company_id" value="{{ $selected_company->id }}">
                 @include('transportRoutes._form', ['route' => new \App\Models\TransportRoute()])
             </form>
         </div>

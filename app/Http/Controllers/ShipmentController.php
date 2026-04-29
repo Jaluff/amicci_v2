@@ -21,7 +21,8 @@ class ShipmentController extends Controller
     {
         $ubicaciones = Ubicacion::orderBy('nombre')->get();
         $parties = Party::withoutGlobalScope('company')->orderBy('name')->get();
-        return view('shipments.index', compact('ubicaciones', 'parties'));
+        $userCompanies = auth()->user()->companies;
+        return view('shipments.index', compact('ubicaciones', 'parties', 'userCompanies'));
     }
 
     public function datatable(Request $request)
@@ -44,7 +45,10 @@ class ShipmentController extends Controller
             'destinatario.name as destinatario_nombre',
             DB::raw('(SELECT COALESCE(SUM(si.cantidad), 0) FROM shipment_items si WHERE si.shipment_id = shipments.id) as bultos_total'),
             DB::raw('(SELECT COALESCE(SUM(si.monto_valor_declarado), 0) FROM shipment_items si WHERE si.shipment_id = shipments.id) as valor_declarado_total'),
+            'companies.prefix as empresa_prefix',
+            'companies.color as empresa_color',
         ])
+            ->leftJoin('companies', 'shipments.company_id', '=', 'companies.id')
             ->leftJoin('ubicaciones as origen', 'shipments.origen_id', '=', 'origen.id')
             ->leftJoin('ubicaciones as destino', 'shipments.destino_id', '=', 'destino.id')
             ->leftJoin('parties as remitente', 'shipments.remitente_id', '=', 'remitente.id')
@@ -52,9 +56,19 @@ class ShipmentController extends Controller
             ->leftJoin('deliveries', 'shipments.delivery_id', '=', 'deliveries.id')
             ->leftJoin('transport_routes', 'shipments.transport_route_id', '=', 'transport_routes.id')
             ->whereNull('shipments.deleted_at')
-            ->withCount(['problems as has_active_problem' => function ($q) {
-            $q->where('is_active', true);
-        }]);
+            ->withCount([
+                'problems as has_active_problem' => function ($q) {
+                    $q->where('is_active', true);
+                },
+                'problems as has_resolved_problem' => function ($q) {
+                    $q->where('is_active', false);
+                }
+            ])
+            ->whereIn('shipments.company_id', auth()->user()->companies->pluck('id'));
+
+        if ($request->filled('company_id')) {
+            $query->where('shipments.company_id', $request->company_id);
+        }
 
         if ($request->filled('origen_id')) {
             $query->where('shipments.origen_id', $request->origen_id);
@@ -80,16 +94,44 @@ class ShipmentController extends Controller
             $query->where('shipments.numero', 'like', '%' . $request->numero_documento . '%');
         }
         if ($request->filled('ubicacion')) {
-            $query->where('shipments.ubicacion_actual', $request->ubicacion);
+            $ubicacion = $request->ubicacion;
+            if ($ubicacion === 'Con problemas') {
+                $query->whereHas('problems', fn($q) => $q->where('is_active', true));
+            } else {
+                $query->where('shipments.ubicacion_actual', $ubicacion);
+            }
         }
 
         return DataTables::of($query->orderByDesc('shipments.fecha'))
+            ->addColumn('empresa', function ($row) {
+                return "<span class='font-bold text-gray-700 dark:text-gray-300'>{$row->empresa_prefix}</span>";
+            })
             ->addColumn('bultos', function ($row) {
             return (int)($row->bultos_total ?? 0);
         })
             ->addColumn('valor_declarado', function ($row) {
             return '$ ' . number_format($row->valor_declarado_total ?? 0, 2);
         })
+            ->editColumn('numero', function ($row) {
+                $numero = htmlspecialchars($row->numero ?? '', ENT_QUOTES);
+                $html = "<span class='font-mono font-bold text-gray-800 dark:text-gray-200'>{$row->numero}</span>";
+                
+                if ($row->has_active_problem > 0) {
+                    $html .= " <span class='text-red-500 animate-pulse cursor-pointer btn-open-spm ml-1'
+                        data-shipment-id='{$row->id}'
+                        data-shipment-numero='{$numero}'
+                        style='color: #dc2626 !important;'
+                        title='Tiene un problema activo. Click para ver/resolver.'>⚠</span>";
+                } elseif ($row->has_resolved_problem > 0) {
+                    $html .= " <span class='text-green-500 font-bold ml-1 cursor-pointer btn-open-spm' 
+                        data-shipment-id='{$row->id}' 
+                        data-shipment-numero='{$numero}'
+                        style='color: #10b981 !important;'
+                        title='Problema resuelto. Click para ver historial.'>✓</span>";
+                }
+
+                return $html;
+            })
             ->addColumn('acciones', function ($row) {
             $editUrl = route('shipments.edit', $row->id);
             $printUrl = route('shipments.print', $row->id);
@@ -140,13 +182,9 @@ class ShipmentController extends Controller
             $color = $colores[$estado] ?? 'dt-badge-gray';
 
             $content = "";
-            if ($estado === 'Con problemas') {
-                $numero = htmlspecialchars($row->numero ?? '', ENT_QUOTES);
-                $content = "<span class='dt-badge {$color} animate-pulse cursor-pointer btn-open-spm'
-                    data-shipment-id='{$row->id}'
-                    data-shipment-numero='{$numero}'
-                    title='Ver / Resolver problema'>{$estado}</span>";
-            } elseif ($estado === 'En reparto' && $row->delivery_id) {
+            
+            // Build base status badge
+            if ($estado === 'En reparto' && $row->delivery_id) {
                 $url = route('deliveries.edit', $row->delivery_id);
                 $num = htmlspecialchars($row->delivery_number ?? 'S/N');
                 $content = "<div class='dt-status-stacked'>
@@ -172,22 +210,45 @@ class ShipmentController extends Controller
                     '<span class="font-bold text-gray-700 dark:text-gray-300">D:</span> ' . ($row->destinatario_nombre ?? '-') .
                     '</div>';
             })
-            ->rawColumns(['acciones', 'ubicacion_actual', 'remitente_destinatario'])
+            ->rawColumns(['acciones', 'ubicacion_actual', 'remitente_destinatario', 'numero', 'empresa'])
             ->make(true);
     }
 
-    public function create()
+    public function create(Request $request)
     {
+        $user = auth()->user();
+        $companies = $user->companies;
+
+        if ($companies->isEmpty()) {
+            abort(403, 'No tienes ninguna empresa asignada.');
+        }
+
+        $company_id = $request->input('company_id');
+
+        if (!$company_id) {
+            if ($companies->count() === 1) {
+                $company_id = $companies->first()->id;
+            } else {
+                return redirect()->route('shipments.index')->with('error', 'Debes seleccionar una empresa primero.');
+            }
+        } elseif (!$companies->contains('id', $company_id)) {
+            abort(403, 'No tienes permiso para operar en esta empresa.');
+        }
+
         $ubicaciones = Ubicacion::orderBy('nombre')->get();
         $parties     = Party::withoutGlobalScope('company')->orderBy('name')->get();
 
-        $user = auth()->user();
         $branches = \App\Models\Branch::where('active', true)
+            ->whereHas('companies', function ($q) use ($company_id) {
+                $q->where('companies.id', $company_id);
+            })
             ->permitted()
             ->orderBy('code')
             ->get();
 
-        return view('shipments.create', compact('ubicaciones', 'parties', 'branches'));
+        $selected_company = $companies->firstWhere('id', $company_id);
+
+        return view('shipments.create', compact('ubicaciones', 'parties', 'branches', 'selected_company'));
     }
 
     public function store(StoreShipmentRequest $request, ShipmentService $service)
@@ -207,6 +268,12 @@ class ShipmentController extends Controller
 
         $items = $validated['items'];
         $data = collect($validated)->except('items')->toArray();
+        // company_id ya viene en $data gracias al Request validado
+        
+        // Validación extra de seguridad (doble check)
+        if (!auth()->user()->companies->contains('id', $data['company_id'])) {
+            abort(403, 'No tienes permiso para crear guías en esta empresa.');
+        }
 
         $shipmentModel = $service->create($data, $items);
 
@@ -321,15 +388,9 @@ class ShipmentController extends Controller
             return response()->json(['flete' => 0]);
         }
 
-        // Buscar el cuadro tarifario base para esta ruta por nombre (LIKE en ambas direcciones)
-        $tariffTable = \App\Models\TariffTable::where(function ($q) use ($origen) {
-                $q->whereRaw("LOWER(origin) LIKE CONCAT('%', LOWER(?), '%')", [$origen->nombre])
-                  ->orWhereRaw("LOWER(?) LIKE CONCAT('%', LOWER(origin), '%')", [$origen->nombre]);
-            })
-            ->where(function ($q) use ($destino) {
-                $q->whereRaw("LOWER(destination) LIKE CONCAT('%', LOWER(?), '%')", [$destino->nombre])
-                  ->orWhereRaw("LOWER(?) LIKE CONCAT('%', LOWER(destination), '%')", [$destino->nombre]);
-            })
+        // Buscar el cuadro tarifario base para esta ruta por FK
+        $tariffTable = \App\Models\TariffTable::where('origin_id', $origenId)
+            ->where('destination_id', $destinoId)
             ->where('is_active', true)
             ->first();
 

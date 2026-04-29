@@ -43,35 +43,28 @@ class CompanyController extends Controller
     }
 
     /**
-     * Show the active company settings edit form.
+     * List all companies (Admin only).
      */
-    public function edit()
+    public function index()
     {
-        $companyId = session('company_id');
+        $companies = Company::all();
+        return view('company.index', compact('companies'));
+    }
 
-        if (!$companyId) {
-            return redirect()->route('dashboard')->with('error', 'No hay empresa activa seleccionada.');
-        }
-
-        $company = Auth::user()->companies()->findOrFail($companyId);
+    /**
+     * Show the company settings edit form.
+     */
+    public function edit(Company $company)
+    {
         $company->load('addresses'); // Cargar todas las direcciones polimórficas
-
         return view('company.edit', compact('company'));
     }
 
     /**
-     * Update the active company's settings and its primary address.
+     * Update the company's settings and its primary address.
      */
-    public function update(Request $request)
+    public function update(Request $request, Company $company)
     {
-        $companyId = session('company_id');
-
-        if (!$companyId) {
-            return redirect()->route('dashboard')->with('error', 'No hay empresa activa seleccionada.');
-        }
-
-        $company = Auth::user()->companies()->findOrFail($companyId);
-
         $validated = $request->validate([
             // Core Config
             'name' => ['required', 'string', 'max:255'],
@@ -80,6 +73,7 @@ class CompanyController extends Controller
             'last_dispatch_number' => ['required', 'integer', 'min:0'],
             'last_route_number' => ['required', 'integer', 'min:0'],
             'contra_reembolso_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'color' => ['nullable', 'string', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
 
             // Billing / Legal Profile
             'legal_name' => ['nullable', 'string', 'max:255'],
@@ -114,6 +108,7 @@ class CompanyController extends Controller
             'last_dispatch_number' => $validated['last_dispatch_number'],
             'last_route_number' => $validated['last_route_number'],
             'contra_reembolso_percent' => $validated['contra_reembolso_percent'] ?? 0,
+            'color' => $validated['color'] ?? '#6366f1',
 
             'legal_name' => $validated['legal_name'] ?? null,
             'cuit' => $validated['cuit'] ?? null,
@@ -163,6 +158,6 @@ class CompanyController extends Controller
         // Eliminar las que fueron quitadas en el frontend
         $company->addresses()->whereNotIn('id', $existingAddressesIds)->delete();
 
-        return redirect()->route('company.edit')->with('success', "Datos de la empresa '{$company->name}' actualizados correctamente.");
+        return redirect()->route('companies.index')->with('success', "Datos de la empresa '{$company->name}' actualizados correctamente.");
     }
 }
