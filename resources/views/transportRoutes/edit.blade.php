@@ -66,6 +66,7 @@ $canCancel = $route->status === \App\StateMachines\RouteStateMachine::STATUS_CAR
             <form action="{{ route('routes.update', $route) }}" method="POST" id="route-form">
                 @csrf
                 @method('PUT')
+                <input type="hidden" name="company_id" value="{{ $route->company_id }}">
                 @include('transportRoutes._form')
             </form>
         </div>

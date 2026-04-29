@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import { openCompanySelector } from '../../shared/company-selector.js';
 
 const DispatchModule = (function ($) {
     let dataTable;
@@ -37,8 +38,8 @@ const DispatchModule = (function ($) {
                     orderable: false,
                     searchable: false,
                     render: function (data) {
-                        const origen = data.origin ? data.origin.nombre : '-';
-                        const destino = data.destination ? data.destination.nombre : '-';
+                        const origen = data.origin ? data.origin.name : '-';
+                        const destino = data.destination ? data.destination.name : '-';
                         return `${origen} → ${destino}`;
                     }
                 },
@@ -78,7 +79,6 @@ const DispatchModule = (function ($) {
                     }
                 },
                 { data: 'routes_count', name: 'routes_count', defaultContent: '0' },
-                { data: 'problemas', name: 'problemas', orderable: false, searchable: false },
                 { data: 'acciones', name: 'acciones', orderable: false, searchable: false }
             ],
             order: [[0, 'desc']],
@@ -101,4 +101,6 @@ $(document).ready(function () {
             $('#btn-filter').click();
         }
     });
+
+
 });

@@ -4,35 +4,29 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Branch extends Model
 {
     protected $fillable = [
-        'company_id',
         'name',
         'ubicacion_id',
         'code',
-        'last_shipment_number',
         'active',
     ];
 
     protected $casts = [
         'active' => 'boolean',
-        'code' => 'integer',
-        'last_shipment_number' => 'integer',
+        'code'   => 'integer',
     ];
 
-    protected static function booted(): void
-    {
-        static::addGlobalScope(new CompanyScope);
-
-        static::creating(function (self $model): void {
-            $model->company_id = session('company_id');
-        });
-    }
-
+    /**
+     * Scope: filtra las sucursales a las que el usuario tiene acceso.
+     * Admins sin sucursales asignadas ven todas.
+     */
     public function scopePermitted($query)
     {
         $user = auth()->user();
@@ -53,38 +47,60 @@ class Branch extends Model
         return $query->whereRaw('1 = 0');
     }
 
-    public function company()
-    {
-        return $this->belongsTo(Company::class);
-    }
-
-    public function shipments()
-    {
-        return $this->hasMany(Shipment::class);
-    }
-
-    public function ubicacion()
+    /**
+     * Ubicación principal a la que pertenece esta sucursal.
+     */
+    public function ubicacion(): BelongsTo
     {
         return $this->belongsTo(Ubicacion::class, 'ubicacion_id');
     }
 
-    public function users()
+    /**
+     * Todas las zonas tarifarias que agrupa esta sucursal.
+     * Ej: Sucursal Mendoza agrupa "Mendoza", "Mendoza Este", "Mendoza Sur".
+     */
+    public function ubicaciones(): HasMany
+    {
+        return $this->hasMany(Ubicacion::class);
+    }
+
+    /**
+     * Usuarios asignados a esta sucursal.
+     */
+    public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class);
     }
 
     /**
-     * Genera el número de guía para esta sucursal.
-     * Formato: {company.prefix}-{branch.code}-{padded_number}
+     * Empresas asociadas con sus contadores de numeración.
+     */
+    public function companies(): BelongsToMany
+    {
+        return $this->belongsToMany(Company::class, 'branch_company')
+            ->withPivot('last_shipment_number');
+    }
+
+    /**
+     * Guías emitidas desde esta sucursal.
+     */
+    public function shipments(): HasMany
+    {
+        return $this->hasMany(Shipment::class);
+    }
+
+    /**
+     * Genera el número de guía para esta sucursal y empresa.
+     * Formato: {companyPrefix}-{branch.code}-{padded_number}
      * Ej: AM-1-00000001
      */
-    public function generateShipmentNumber(string $companyPrefix): string
+    public function generateShipmentNumber(string $companyPrefix, int $lastNumber): string
     {
         return sprintf(
             '%s-%d-%08d',
             $companyPrefix,
             $this->code,
-            $this->last_shipment_number
+            $lastNumber
         );
     }
 }

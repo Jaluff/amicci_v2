@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Models\Traits\HasProblems;
@@ -18,7 +20,6 @@ class TransportRoute extends Model
 
     protected $fillable = [
         'company_id',
-        'branch_id',
         'dispatch_id',
         'route_number',
         'origin_id',
@@ -26,39 +27,34 @@ class TransportRoute extends Model
         'status',
     ];
 
-    protected static function booted()
+    public function company(): BelongsTo
     {
-        static::addGlobalScope(new \App\Models\Scopes\CompanyScope);
-        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
-
-        static::creating(function ($model) {
-            if (!$model->company_id) {
-                $model->company_id = session('company_id');
-            }
-        });
+        return $this->belongsTo(Company::class);
     }
 
-
-    public function branch(): BelongsTo
+    /**
+     * Sucursal de origen (punto operativo).
+     */
+    public function origin(): BelongsTo
     {
-        return $this->belongsTo(Branch::class);
+        return $this->belongsTo(Branch::class, 'origin_id');
+    }
+
+    /**
+     * Sucursal de destino (punto operativo).
+     */
+    public function destination(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class, 'destination_id');
     }
 
     public function dispatch(): BelongsTo
     {
         return $this->belongsTo(Dispatch::class);
     }
+
     public function shipments(): HasMany
     {
         return $this->hasMany(Shipment::class);
-    }
-    public function origin(): BelongsTo
-    {
-        return $this->belongsTo(Ubicacion::class , 'origin_id');
-    }
-
-    public function destination(): BelongsTo
-    {
-        return $this->belongsTo(Ubicacion::class , 'destination_id');
     }
 }

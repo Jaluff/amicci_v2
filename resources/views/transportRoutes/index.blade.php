@@ -6,23 +6,36 @@
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Gestión de Rutas</h2>
-                <a href="{{ route('routes.create') }}"
+                <button id="btn-crear-ruta"
+                    data-companies="{{ $userCompanies->map->only(['id', 'prefix', 'name', 'color'])->toJson() }}"
+                    data-url="{{ route('routes.create') }}"
                     class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                    Crear Ruta
-                </a>
+                    + Crear Ruta
+                </button>
             </div>
 
             <div
                 class="mb-4 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
                 <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-4 items-end">
                     <div>
+                        <label for="filter_company_id"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Empresa</label>
+                        <select id="filter_company_id"
+                            class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                            <option value="">Todas</option>
+                            @foreach($userCompanies as $company)
+                            <option value="{{ $company->id }}">{{ $company->prefix }} - {{ $company->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
                         <label for="filter_origen_id"
                             class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Origen</label>
                         <select id="filter_origen_id"
                             class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                             <option value="">Todos</option>
-                            @foreach($ubicaciones as $ubicacion)
-                            <option value="{{ $ubicacion->id }}">{{ $ubicacion->nombre }}</option>
+                            @foreach($branches as $branch)
+                            <option value="{{ $branch->id }}">{{ $branch->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -32,8 +45,8 @@
                         <select id="filter_destino_id"
                             class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                             <option value="">Todos</option>
-                            @foreach($ubicaciones as $ubicacion)
-                            <option value="{{ $ubicacion->id }}">{{ $ubicacion->nombre }}</option>
+                            @foreach($branches as $branch)
+                            <option value="{{ $branch->id }}">{{ $branch->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -89,13 +102,13 @@
                     id="routes-table" data-url="{{ route('routes.datatable') }}">
                     <thead class="bg-gray-50 dark:bg-gray-900">
                         <tr class="text-left">
+                            <th class="p-4 font-semibold border-b dark:border-gray-600">Empresa</th>
                             <th class="p-4 font-semibold border-b dark:border-gray-600">Fecha</th>
                             <th class="p-4 font-semibold border-b dark:border-gray-600">Número</th>
                             <th class="p-4 font-semibold border-b dark:border-gray-600">Origen - Destino</th>
                             <th class="p-4 font-semibold border-b dark:border-gray-600">Transporte</th>
                             <th class="p-4 font-semibold border-b dark:border-gray-600">Estado</th>
                             <th class="p-4 font-semibold border-b dark:border-gray-600">Total Guías</th>
-                            <th class="p-4 font-semibold border-b dark:border-gray-600">⚠ Problemas</th>
                             <th class="p-4 font-semibold border-b dark:border-gray-600">Acciones</th>
                         </tr>
                     </thead>

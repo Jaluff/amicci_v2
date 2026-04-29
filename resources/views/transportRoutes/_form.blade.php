@@ -1,26 +1,9 @@
+@php
+    $isEdit = isset($route) && $route->exists;
+@endphp
+
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-    <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Sucursal</label>
-        @php
-            $userBranch = $branches->first();
-            $isEdit = isset($route) && $route->exists;
-        @endphp
-        @if(!$isEdit && $branches->count() > 1)
-            <select name="branch_id" id="branch_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white" required>
-                @foreach($branches as $b)
-                    <option value="{{ $b->id }}" data-ubicacion="{{ $b->ubicacion_id }}" @selected(old('branch_id', $route->branch_id) == $b->id)>
-                        {{ $b->name }}
-                    </option>
-                @endforeach
-            </select>
-        @else
-            <div class="mt-2 text-sm font-semibold text-gray-800 dark:text-gray-200">
-                {{ $route->branch->name ?? $userBranch?->name ?? '—' }}
-            </div>
-            <input type="hidden" name="branch_id" id="branch_id" value="{{ old('branch_id', $route->branch_id ?? $userBranch?->id) }}">
-        @endif
-        @error('branch_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-    </div>
+
 
     @if($isEdit)
     <div>
@@ -43,10 +26,9 @@
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white"
             required>
             <option value="">Seleccione origen</option>
-            @foreach($ubicaciones as $ubicacion)
-            <option value="{{ $ubicacion->id }}" {{ old('origin_id', $route->origin_id) == $ubicacion->id ? 'selected' :
-                '' }}>
-                {{ $ubicacion->nombre }}
+            @foreach($branches as $branch)
+            <option value="{{ $branch->id }}" @selected(old('origin_id', $route->origin_id) == $branch->id)>
+                {{ $branch->name }}
             </option>
             @endforeach
         </select>
@@ -59,10 +41,9 @@
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white"
             required>
             <option value="">Seleccione destino</option>
-            @foreach($ubicaciones as $ubicacion)
-            <option value="{{ $ubicacion->id }}" {{ old('destination_id', $route->destination_id) == $ubicacion->id ?
-                'selected' : '' }}>
-                {{ $ubicacion->nombre }}
+            @foreach($branches as $branch)
+            <option value="{{ $branch->id }}" @selected(old('destination_id', $route->destination_id) == $branch->id)>
+                {{ $branch->name }}
             </option>
             @endforeach
         </select>
@@ -126,6 +107,13 @@ $route->dispatch->seal_number))
                 <tr class="shipment-row" data-id="{{ $shipment->id }}">
                     <td class="p-3 text-sm text-gray-800 dark:text-gray-200">
                         {{ $shipment->numero }}
+                        @if($shipment->hasActiveProblem())
+                            <span class="text-red-600 font-bold ml-1 animate-pulse cursor-pointer btn-open-spm" 
+                                data-shipment-id="{{ $shipment->id }}"
+                                data-shipment-numero="{{ $shipment->numero }}"
+                                style="color: #dc2626 !important;"
+                                title="Tiene un problema reporte activo. Click para ver/resolver.">⚠</span>
+                        @endif
                         <input type="hidden" name="shipments[]" value="{{ $shipment->id }}">
                     </td>
                     <td class="p-3 text-sm text-gray-800 dark:text-gray-200">{{ $shipment->origin->nombre ?? '-' }}</td>

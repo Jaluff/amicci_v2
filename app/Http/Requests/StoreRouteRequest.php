@@ -12,7 +12,7 @@ class StoreRouteRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return auth()->user()->companies->contains('id', $this->company_id);
     }
 
 
@@ -25,8 +25,9 @@ class StoreRouteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'origin_id' => ['required', 'exists:ubicaciones,id'],
-            'destination_id' => ['required', 'exists:ubicaciones,id', 'different:origin_id'],
+            'company_id'     => ['required', 'exists:companies,id'],
+            'origin_id'      => ['required', 'exists:branches,id'],
+            'destination_id' => ['required', 'exists:branches,id', 'different:origin_id'],
             'status' => ['required', 'in:Cargada,Entregada,En viaje,Con problemas'],
 
             'shipments' => ['nullable', 'array'],

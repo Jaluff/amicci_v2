@@ -110,14 +110,26 @@ $(function () {
                 data: function (d) {
                     d.origin_id = $('select[name="origin_id"]').val();
                     d.destination_id = $('select[name="destination_id"]').val();
+                    d.company_id = $('input[name="company_id"]').val();
                 }
             },
             columns: [
                 { data: 'check', name: 'check', orderable: false, searchable: false, className: 'text-center' },
-                { data: 'numero', name: 'shipments.numero' },
+                { 
+                    data: 'numero', 
+                    name: 'shipments.numero',
+                    render: function (data, type, row) {
+                        let html = data;
+                        if (row.has_active_problem > 0) {
+                            html += ' <span class="text-red-500 font-bold ml-1 animate-pulse" title="Problema activo">⚠</span>';
+                        }
+                        return html;
+                    }
+                },
+                { data: 'empresa', name: 'empresa', orderable: false, searchable: false },
                 { data: 'fecha', name: 'shipments.fecha' },
-                { data: 'origen_nombre', name: 'origen.nombre' },
-                { data: 'destino_nombre', name: 'destino.nombre' },
+                { data: 'origen_nombre', name: 'origen_nombre' },
+                { data: 'destino_nombre', name: 'destino_nombre' },
                 {
                     data: 'ubicacion_actual',
                     name: 'shipments.ubicacion_actual',
@@ -197,6 +209,12 @@ $(function () {
                 const destino = $(this).data('destino');
                 const estado = $(this).data('estado');
                 const bultos = $(this).data('bultos');
+                const hasProblem = $(this).data('has-problem') === true || $(this).data('has-problem') === 'true';
+                const problemIcon = hasProblem ? ` <span class="text-red-600 font-bold ml-1 animate-pulse cursor-pointer btn-open-spm" 
+                    data-shipment-id="${id}"
+                    data-shipment-numero="${numero}"
+                    style="color: #dc2626 !important;"
+                    title="Tiene un problema activo. Click para ver.">⚠</span>` : '';
 
                 const coloresMap = {
                     'Dto origen': 'dt-badge-indigo',
@@ -210,7 +228,7 @@ $(function () {
                 const rowHtml = `
                     <tr class="shipment-row hover:bg-gray-50 dark:hover:bg-gray-700 transition" data-id="${id}">
                         <td class="p-3 text-sm text-gray-800 dark:text-gray-200">
-                            ${numero}
+                            ${numero}${problemIcon}
                             <input type="hidden" name="shipments[]" value="${id}">
                         </td>
                         <td class="p-3 text-sm text-gray-800 dark:text-gray-200">${origen}</td>

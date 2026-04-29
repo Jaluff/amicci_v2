@@ -25,6 +25,7 @@
                         <th class="p-2 w-10 text-center"><input type="checkbox" id="check-all-routes"
                                 class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"></th>
                         <th class="p-2 font-semibold text-gray-800 dark:text-gray-200">N° Ruta</th>
+                        <th class="p-2 font-semibold text-gray-800 dark:text-gray-200">Empresa</th>
                         <th class="p-2 font-semibold text-gray-800 dark:text-gray-200">Conductor</th>
                         <th class="p-2 font-semibold text-gray-800 dark:text-gray-200">Origen</th>
                         <th class="p-2 font-semibold text-gray-800 dark:text-gray-200">Destino</th>

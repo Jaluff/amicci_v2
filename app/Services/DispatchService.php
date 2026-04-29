@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\Company;
 use App\Models\Dispatch;
 use App\Models\TransportRoute;
 use Illuminate\Support\Facades\DB;
@@ -15,30 +14,22 @@ class DispatchService
     public function createDispatch(array $data): Dispatch
     {
         return DB::transaction(function () use ($data) {
-            /** @var Company $company */
-            $company = Company::lockForUpdate()->findOrFail(session('company_id'));
+            // Numeración global para despachos (independiente de empresa)
+            $lastDispatch = Dispatch::orderByDesc('id')->first();
+            $nextNumber = ($lastDispatch ? (int) filter_var($lastDispatch->dispatch_number, FILTER_SANITIZE_NUMBER_INT) : 0) + 1;
 
-            $company->last_dispatch_number++;
-            $company->save();
-
-            $data['dispatch_number'] = $company->prefix . '-D' . str_pad(
-                (string)$company->last_dispatch_number,
-                8,
-                '0',
-                STR_PAD_LEFT
-            );
-            $data['company_id'] = $company->id;
+            $data['dispatch_number'] = 'D' . str_pad((string) $nextNumber, 8, '0', STR_PAD_LEFT);
 
             $dispatch = Dispatch::create($data);
 
             // Registrar estado inicial en el historial (creación no pasa por transitionTo)
             \App\Models\StatusHistory::create([
-                'model_type' => Dispatch::class ,
-                'model_id' => $dispatch->id,
-                'from_status' => null,
-                'to_status' => $dispatch->status,
-                'comment' => 'Estado inicial al crear el despacho',
-                'user_id' => \Illuminate\Support\Facades\Auth::id(),
+                'model_type'      => Dispatch::class,
+                'model_id'        => $dispatch->id,
+                'from_status'     => null,
+                'to_status'       => $dispatch->status,
+                'comment'         => 'Estado inicial al crear el despacho',
+                'user_id'         => \Illuminate\Support\Facades\Auth::id(),
                 'transitioned_at' => now(),
             ]);
 
@@ -47,14 +38,13 @@ class DispatchService
             }
 
             return $dispatch->load(['driver', 'origin', 'destination'])->loadCount('routes');
-
         });
     }
 
     public function updateDispatch(Dispatch $dispatch, array $data): Dispatch
     {
         return DB::transaction(function () use ($dispatch, $data) {
-            $newStatus = $data['status'] ?? null;
+            $newStatus     = $data['status'] ?? null;
             $currentStatus = $dispatch->status; // Capturar ANTES de cualquier cambio
 
             // Separar campos de metadata
@@ -83,8 +73,6 @@ class DispatchService
             return $dispatch->load(['driver', 'origin', 'destination'])->loadCount('routes');
         });
     }
-
-
 
     private function assignRoutes(Dispatch $dispatch, array $routeIds): void
     {

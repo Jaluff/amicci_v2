@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Branch;
+use App\Models\Ubicacion;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Yajra\DataTables\Facades\DataTables;
@@ -18,10 +19,8 @@ class BranchController extends Controller
 
     public function datatable()
     {
-        $companyId = session('company_id');
-        $query = Branch::withoutGlobalScopes()
-            ->with('ubicacion')
-            ->where('company_id', $companyId);
+        $query = Branch::query()
+            ->with(['ubicacion', 'companies']);
 
         return DataTables::of($query)
             ->addColumn('acciones', function ($row) {
@@ -44,16 +43,22 @@ class BranchController extends Controller
                     </div>";
             })
             ->addColumn('ubicacion_nombre', fn ($row) => $row->ubicacion?->nombre ?? '—')
+            ->addColumn('last_shipment_number', function ($row) {
+                if ($row->companies->isEmpty()) return '—';
+                return $row->companies->map(function($c) {
+                    return "<span class='font-mono font-bold text-xs'>{$c->prefix}: {$c->pivot->last_shipment_number}</span>";
+                })->implode('<br>');
+            })
             ->addColumn('estado', fn ($row) => $row->active
                 ? "<span class='dt-badge dt-badge-green'>Activa</span>"
                 : "<span class='dt-badge dt-badge-gray'>Inactiva</span>")
-            ->rawColumns(['acciones', 'estado'])
+            ->rawColumns(['acciones', 'estado', 'last_shipment_number'])
             ->make(true);
     }
 
     public function create()
     {
-        $ubicaciones = \App\Models\Ubicacion::orderBy('nombre')->get();
+        $ubicaciones = Ubicacion::orderBy('nombre')->get();
         return view('branches.create', compact('ubicaciones'));
     }
 
@@ -61,7 +66,7 @@ class BranchController extends Controller
     {
         $data = $request->validate([
             'name'         => 'required|string|max:100',
-            'code'         => 'required|integer|min:1|max:99',
+            'code'         => 'required|integer|min:1|max:99|unique:branches,code',
             'ubicacion_id' => 'required|integer|exists:ubicaciones,id',
             'active'       => 'boolean',
         ]);
@@ -75,7 +80,7 @@ class BranchController extends Controller
 
     public function edit(Branch $branch)
     {
-        $ubicaciones = \App\Models\Ubicacion::orderBy('nombre')->get();
+        $ubicaciones = Ubicacion::orderBy('nombre')->get();
         return view('branches.edit', compact('branch', 'ubicaciones'));
     }
 
@@ -83,7 +88,7 @@ class BranchController extends Controller
     {
         $data = $request->validate([
             'name'         => 'required|string|max:100',
-            'code'         => "required|integer|min:1|max:99|unique:branches,code,{$branch->id},id,company_id,{$branch->company_id}",
+            'code'         => "required|integer|min:1|max:99|unique:branches,code,{$branch->id}",
             'ubicacion_id' => 'required|integer|exists:ubicaciones,id',
             'active'       => 'boolean',
         ]);

@@ -111,6 +111,9 @@ $(document).on('submit', '#spm-form', function (e) {
             if (window.$ && $.fn.dataTable) {
                 $.fn.dataTable.tables({ visible: true, api: true }).ajax.reload(null, false);
             }
+
+            // Emitir evento global por si algún módulo necesita limpiar filas (ej. deliveries)
+            $(document).trigger('documentProblemStored', { id: id, isActive: isActive });
         },
         error: function (xhr) {
             alert('Error: ' + (xhr.responseJSON?.message || 'Ocurrió un error.'));

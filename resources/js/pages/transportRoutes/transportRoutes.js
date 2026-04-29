@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import { openCompanySelector } from '../../shared/company-selector.js';
 
 const RouteModule = (function ($) {
     let dataTable;
@@ -22,9 +23,18 @@ const RouteModule = (function ($) {
                     d.fecha_fin = $('#filter_fecha_fin').val();
                     d.numero_documento = $('#filter_numero_documento').val();
                     d.estado = $('#filter_estado').val();
+                    d.company_id = $('#filter_company_id').val();
                 }
             },
             columns: [
+                { 
+                    data: 'empresa', 
+                    name: 'companies.prefix',
+                    render: function(data, type, row) {
+                        const color = row.empresa_color || '#6366f1';
+                        return `<span class="px-2 py-1 rounded-full text-[10px] font-bold text-white shadow-sm" style="background-color: ${color}">${data}</span>`;
+                    }
+                },
                 {
                     data: 'created_at',
                     name: 'created_at',
@@ -40,8 +50,8 @@ const RouteModule = (function ($) {
                     orderable: false,
                     searchable: false,
                     render: function (data) {
-                        const origen = data.origin ? data.origin.nombre : '-';
-                        const destino = data.destination ? data.destination.nombre : '-';
+                        const origen = data.origin ? data.origin.name : '-';
+                        const destino = data.destination ? data.destination.name : '-';
                         return `<strong>${origen}</strong> &rarr; <strong>${destino}</strong>`;
                     }
                 },
@@ -79,7 +89,6 @@ const RouteModule = (function ($) {
                     }
                 },
                 { data: 'shipments_count', name: 'shipments_count', defaultContent: '0' },
-                { data: 'problemas', name: 'problemas', orderable: false, searchable: false },
                 { data: 'acciones', name: 'acciones', orderable: false, searchable: false }
             ],
             order: [[0, 'desc']],
@@ -108,4 +117,23 @@ $(document).ready(function () {
             $('#btn-filter').click();
         }
     });
+
+    // Company selector modal
+    const btn = document.getElementById('btn-crear-ruta');
+    if (btn) {
+        const companies = JSON.parse(btn.dataset.companies || '[]');
+        const createUrl = btn.dataset.url;
+        btn.addEventListener('click', () => {
+            if (companies.length === 1) {
+                window.location.href = `${createUrl}?company_id=${companies[0].id}`;
+                return;
+            }
+            openCompanySelector({
+                companies,
+                title: 'Nueva Ruta de Transporte',
+                subtitle: '¿Para qué empresa deseas crear la ruta?',
+                onSelect: (c) => { window.location.href = `${createUrl}?company_id=${c.id}`; }
+            });
+        });
+    }
 });

@@ -18,6 +18,7 @@
 <form id="shipment-form" method="POST" data-is-edit="{{ $isEdit ? 'true' : 'false' }}"
     action="{{ $isEdit ? route('shipments.update', $shipment) : route('shipments.store') }}" class="space-y-4">
     @csrf
+    <input type="hidden" name="company_id" id="hidden_company_id" value="{{ $isEdit ? $shipment->company_id : ($selected_company->id ?? '') }}">
     <!-- Local styles to normalize select and Select2 appearance inside this form -->
     <style>
         /* native selects in form: ensure readable color in light/dark */
@@ -430,7 +431,7 @@
 @include('shipments._party_modal')
 
 <script>
-    window.GlobalContraPct = {{ (float) (\App\Models\Company::find(session('company_id'))?->contra_reembolso_percent ?? 0) }};
+    window.GlobalContraPct = {{ (float) ($selected_company->contra_reembolso_percent ?? 0) }};
 
     document.addEventListener('DOMContentLoaded', function () {
         const btnPrint = document.getElementById('btn_save_and_print');

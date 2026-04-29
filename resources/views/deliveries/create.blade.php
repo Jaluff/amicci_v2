@@ -4,10 +4,16 @@
 <div class="py-12">
     
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">Crear Nuevo Reparto</h2>
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">
+                Crear Nuevo Reparto para 
+                <span class="px-2 py-0.5 rounded text-white" style="background-color: {{ $selected_company->color }}">
+                    {{ $selected_company->name }}
+                </span>
+            </h2>
 
             <form action="{{ route('deliveries.store') }}" method="POST" id="delivery-form">
                 @csrf
+                <input type="hidden" name="company_id" value="{{ $selected_company->id }}">
                 @include('deliveries._form', ['delivery' => new \App\Models\Delivery()])
             </form>
         </div>

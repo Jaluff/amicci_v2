@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -35,18 +34,7 @@ class Invoice extends Model
         'company_id'    => 'integer',
     ];
 
-    // -------------------------------------------------------------------------
-    // Global Scopes
-    // -------------------------------------------------------------------------
-
-    protected static function booted(): void
-    {
-        static::addGlobalScope(new CompanyScope);
-
-        static::creating(function (self $model): void {
-            $model->company_id = session('company_id');
-        });
-    }
+    // Sin global scopes: el filtrado por empresa se hace de forma explícita
 
     // -------------------------------------------------------------------------
     // Scopes

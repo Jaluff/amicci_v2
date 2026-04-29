@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import { openCompanySelector } from '../../shared/company-selector.js';
 
 const DeliveryModule = (function ($) {
     let dataTable;
@@ -22,9 +23,18 @@ const DeliveryModule = (function ($) {
                     d.fecha_fin = $('#filter_fecha_fin').val();
                     d.numero_documento = $('#filter_numero_documento').val();
                     d.estado = $('#filter_estado').val();
+                    d.company_id = $('#filter_company_id').val();
                 }
             },
             columns: [
+                { 
+                    data: 'empresa', 
+                    name: 'companies.prefix',
+                    render: function(data, type, row) {
+                        const color = row.empresa_color || '#6366f1';
+                        return `<span class="px-2 py-1 rounded-full text-[10px] font-bold text-white shadow-sm" style="background-color: ${color}">${data}</span>`;
+                    }
+                },
                 {
                     data: 'load_date',
                     name: 'load_date',
@@ -35,22 +45,18 @@ const DeliveryModule = (function ($) {
                 },
                 { data: 'delivery_number', name: 'delivery_number' },
                 {
-                    data: null,
-                    name: 'deliverer',
+                    data: 'deliverer.name',
+                    name: 'deliverer.name',
                     orderable: false,
                     searchable: false,
-                    render: function (data) {
-                        return data.deliverer ? data.deliverer.name : '-';
-                    }
+                    defaultContent: '-'
                 },
                 {
-                    data: null,
-                    name: 'location',
+                    data: 'location.name',
+                    name: 'location.name',
                     orderable: false,
                     searchable: false,
-                    render: function (data) {
-                        return data.location ? data.location.nombre : '-';
-                    }
+                    defaultContent: '-'
                 },
                 {
                     data: 'status',
@@ -69,7 +75,6 @@ const DeliveryModule = (function ($) {
                 },
                 { data: 'guide_count', name: 'guide_count', defaultContent: '0' },
                 { data: 'package_count', name: 'package_count', defaultContent: '0' },
-                { data: 'problemas', name: 'problemas', orderable: false, searchable: false },
                 { data: 'acciones', name: 'acciones', orderable: false, searchable: false }
             ],
             order: [[0, 'desc']],
@@ -160,11 +165,27 @@ $(document).ready(function () {
                     if (editIdx > -1) {
                         d.delivery_id = pathParts[editIdx - 1]; // /deliveries/{id}/edit
                     }
+                    d.company_id = $('input[name="company_id"]').val();
                 }
             },
             columns: [
                 { data: 'check', name: 'check', orderable: false, searchable: false, className: 'text-center' },
-                { data: 'numero', name: 'shipments.numero' },
+                { 
+                    data: 'numero', 
+                    name: 'shipments.numero',
+                    render: function (data, type, row) {
+                        let html = data;
+                        if (row.has_active_problem > 0) {
+                            html += ` <span class="text-red-500 font-bold ml-1 cursor-pointer btn-open-spm" 
+                                data-shipment-id="${row.id}" data-shipment-numero="${row.numero}" title="Problema activo">⚠</span>`;
+                        } else if (row.has_resolved_problem > 0) {
+                            html += ` <span class="text-green-500 font-bold ml-1 cursor-pointer btn-open-spm" 
+                                data-shipment-id="${row.id}" data-shipment-numero="${row.numero}" title="Problema resuelto">✓</span>`;
+                        }
+                        return html;
+                    } 
+                },
+                { data: 'empresa', name: 'empresa', orderable: false, searchable: false },
                 { data: 'fecha', name: 'shipments.fecha' },
                 { data: 'origen_nombre', name: 'origen.nombre' },
                 { data: 'destino_nombre', name: 'destino.nombre' },
@@ -252,10 +273,28 @@ $(document).ready(function () {
                 };
                 const coloresStr = coloresMap[estado] || 'dt-badge-gray';
 
+                const hasActiveProblem = $(this).data('has-problem') === true || $(this).data('has-problem') === 'true';
+                const hasResolvedProblem = $(this).data('has-resolved-problem') === true || $(this).data('has-resolved-problem') === 'true';
+                
+                let problemIcon = '';
+                if (hasActiveProblem) {
+                    problemIcon = ` <span class="text-red-600 font-bold ml-1 animate-pulse cursor-pointer btn-open-spm" 
+                        data-shipment-id="${id}"
+                        data-shipment-numero="${numero}"
+                        style="color: #dc2626 !important;"
+                        title="Tiene un problema activo. Click para ver/resolver.">⚠</span>`;
+                } else if (hasResolvedProblem) {
+                    problemIcon = ` <span class="text-green-600 font-bold ml-1 cursor-pointer btn-open-spm" 
+                        data-shipment-id="${id}"
+                        data-shipment-numero="${numero}"
+                        style="color: #10b981 !important;"
+                        title="Problema resuelto. Click para ver historial.">✓</span>`;
+                }
+
                 const rowHtml = `
                     <tr class="shipment-row hover:bg-gray-50 dark:hover:bg-gray-700 transition" data-id="${id}">
                         <td class="p-3 text-sm text-gray-800 dark:text-gray-200">
-                            ${numero}
+                            ${numero}${problemIcon}
                             <input type="hidden" name="shipments[]" value="${id}">
                         </td>
                         <td class="p-3 text-sm text-gray-800 dark:text-gray-200">${origen}</td>
@@ -290,114 +329,123 @@ $(document).ready(function () {
         }
     });
 
-    // === Problemas de Guías Modal ===
-    const spmModal = $('#shipment-problems-modal');
+    // === Escuchar evento de problemas resueltos/creados ===
+    $(document).on('documentProblemStored', function (e, data) {
+        if (dtAvailable) {
+            dtAvailable.ajax.reload(null, false);
+        }
+    });
 
-    $(document).on('click', '.btn-problem-shipment', function () {
-        const row = $(this).closest('tr');
-        const id = $(this).data('id');
-        const numeroText = row.find('td').first().text().trim();
+    // === Lógica de Devoluciones (Aviso de guías con problemas) ===
+    $(document).on('click', '.btn-show-devolutions', function() {
+        const deliveryId = $(this).data('model-id');
+        const $modal = $('#devolution-warning-modal');
+        const $list = $('#devolution-list');
+        const $btnConfirm = $('#btn-confirm-finish-anyway');
 
-        $('#spm-shipment-id').val(id);
-        $('#spm-guia-numero').text(numeroText);
-        $('#spm-comment').val('');
-        $('input[name="spm_active"][value="1"]').prop('checked', true);
-        $('#spm-history').html('<p class="text-center text-gray-500 py-4">Cargando historial...</p>');
+        $list.data('delivery-id', deliveryId); // Guardar para uso en botones internos
+        $list.html('<div class="text-center py-4"><span class="animate-spin inline-block w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full"></span></div>');
+        $btnConfirm.addClass('hidden'); 
+        $modal.removeClass('hidden');
 
-        spmModal.removeClass('hidden');
+        loadDevolutionList(deliveryId);
+    });
 
+    function loadDevolutionList(deliveryId) {
+        const $list = $('#devolution-list');
         $.ajax({
-            url: '/documents/problem',
-            method: 'GET',
-            data: {
-                model_type: 'shipment',
-                model_id: id
-            },
-            success: function (res) {
-                if (res.has_active) {
-                    $('#spm-resolve-radio-label').show();
-                } else {
-                    $('#spm-resolve-radio-label').hide();
-                }
-
-                if (res.history.length === 0) {
-                    $('#spm-history').html('<p class="text-center text-sm text-gray-500 dark:text-gray-400 italic">Sin problemas registrados.</p>');
-                    return;
-                }
-
+            url: '/documents/problem/shipments',
+            data: { model_type: 'delivery', model_id: deliveryId },
+            success: function(response) {
                 let html = '';
-                res.history.forEach(item => {
-                    const date = new Date(item.created_at).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' });
-                    const activeStr = item.is_active ? '<span class="text-red-500 font-semibold">Abierto</span>' : '<span class="text-green-500 font-semibold">Resuelto</span>';
-                    const dotColor = item.is_active ? 'bg-red-500' : 'bg-green-500';
-                    const user = item.user ? item.user.name : 'Sistema';
-
-                    html += `
-                    <div class="flex items-start gap-2 text-sm bg-gray-50 dark:bg-gray-900/30 p-2 rounded">
-                        <span class="mt-1 w-2 h-2 rounded-full flex-shrink-0 ${dotColor}"></span>
-                        <div>
-                            <p class="text-gray-800 dark:text-gray-200">${item.comment}</p>
-                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                                ${user} · ${date} · ${activeStr}
-                            </p>
-                        </div>
-                    </div>`;
-                });
-                $('#spm-history').html(html);
+                if (response.shipments.length === 0) {
+                    html = '<p class="text-center text-gray-500 py-4 font-medium">No hay guías con problemas pendientes en este reparto.</p>';
+                } else {
+                    response.shipments.forEach(s => {
+                        html += `
+                            <div class="flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800 rounded-lg">
+                                <div>
+                                    <span class="font-mono font-bold text-amber-700 dark:text-amber-400">Guía ${s.numero}</span>
+                                    <div class="text-xs text-gray-500 mt-0.5">${s.problema}</div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs text-amber-600 dark:text-amber-500 font-medium italic">A Devolver</span>
+                                    <button type="button" class="btn-return-shipment-now px-2 py-1 bg-red-600 text-white text-xs font-bold rounded hover:bg-red-700 transition" 
+                                        data-shipment-id="${s.id}" title="Quitar del reparto y devolver a Dto Destino">
+                                        Devolver
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                $list.html(html);
             },
-            error: function () {
-                $('#spm-history').html('<p class="text-center text-red-500">Error al cargar historial.</p>');
+            error: function() {
+                $list.html('<p class="text-center text-red-500 py-4">Error al cargar el listado.</p>');
             }
         });
-    });
+    }
 
-    $('.btn-close-spm-modal').on('click', function () {
-        spmModal.addClass('hidden');
-    });
+    $(document).on('click', '.btn-return-shipment-now', function() {
+        const $btn = $(this);
+        const shipmentId = $btn.data('shipment-id');
+        const deliveryId = $('#devolution-list').data('delivery-id');
 
-    $('#spm-form').on('submit', function (e) {
-        e.preventDefault();
-        const id = $('#spm-shipment-id').val();
-        const isActive = $('input[name="spm_active"]:checked').val();
-        const comment = $('#spm-comment').val();
+        if (!confirm('¿Seguro que desea devolver esta guía a depósito y quitarla del reparto?')) return;
 
-        const submitBtn = $(this).find('button[type="submit"]');
-        submitBtn.prop('disabled', true).text('Guardando...');
+        $btn.prop('disabled', true).text('...');
 
         $.ajax({
-            url: '/documents/problem',
+            url: `/deliveries/${deliveryId}/return-shipment/${shipmentId}`,
             method: 'POST',
-            data: {
-                _token: $('meta[name="csrf-token"]').attr('content'),
-                model_type: 'shipment',
-                model_id: id,
-                is_active: isActive,
-                comment: comment
-            },
-            success: function (res) {
-                spmModal.addClass('hidden');
-
-                // Agregamos o quitamos el texto de problema rojo de la fila
-                const theRow = $('#selected-shipments-table').find(`tr[data-id="${id}"]`);
-                if (theRow.length > 0) {
-                    const statusTd = theRow.find('td:eq(3)'); // la celda de estado 
-                    statusTd.find('span.text-red-500').remove(); // limpiamos anterior
-                    if (isActive == '1') {
-                        statusTd.append('<span class="text-red-500 font-bold ml-2 text-xs" data-active-problem="true">(⚠ PROBLEMA)</span>');
-                    }
+            data: { _token: $('meta[name="csrf-token"]').attr('content') },
+            success: function() {
+                // Recargar lista del modal
+                loadDevolutionList(deliveryId);
+                // Recargar tabla principal si existe (index)
+                if ($('#deliveries-table').length) {
+                    $('#deliveries-table').DataTable().ajax.reload(null, false);
                 }
-
-                // Refrescamos datatables si está disponible (por si el status impacta en la tabla master de Repartos)
-                if (dataTable) {
-                    dataTable.ajax.reload(null, false);
+                // Si estamos en edición, mejor recargar la página para limpiar los inputs y la tabla de guías
+                if ($('#delivery-form').length) {
+                    window.location.reload();
                 }
             },
-            error: function (xhr) {
-                alert('Error al reportar problema: ' + (xhr.responseJSON?.message || 'Error desconocido'));
-            },
-            complete: function () {
-                submitBtn.prop('disabled', false).text('Guardar Registro');
+            error: function(xhr) {
+                alert('Error: ' + (xhr.responseJSON?.message || 'No se pudo procesar la devolución.'));
+                $btn.prop('disabled', false).text('Devolver');
             }
         });
     });
+
+    $(document).on('click', '.btn-close-devolution', function() {
+        $('#devolution-warning-modal').addClass('hidden');
+    });
+
+    // Se mantiene la advertencia en EDIT solo si el usuario presiona el botón específico si se agregara, 
+    // pero el usuario pidió quitarlo del flujo de "Finalizar".
+    // Eliminamos la interceptación de #btn-delivery-finish que abría el modal automáticamente.
+
+    // Company selector modal
+    const btn = document.getElementById('btn-crear-reparto');
+    if (btn) {
+        const companies = JSON.parse(btn.dataset.companies || '[]');
+        const createUrl = btn.dataset.url;
+
+        btn.addEventListener('click', () => {
+            if (companies.length === 1) {
+                window.location.href = `${createUrl}?company_id=${companies[0].id}`;
+                return;
+            }
+            openCompanySelector({
+                companies,
+                title: 'Nuevo Reparto',
+                subtitle: '¿Para qué empresa deseas crear el reparto?',
+                onSelect: (company) => {
+                    window.location.href = `${createUrl}?company_id=${company.id}`;
+                }
+            });
+        });
+    }
 });

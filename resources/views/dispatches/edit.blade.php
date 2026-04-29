@@ -106,6 +106,7 @@ $btnConfig = [
             <form action="{{ route('dispatches.update', $dispatch->id) }}" method="POST" id="dispatch-form">
                 @csrf
                 @method('PUT')
+
                 @include('dispatches._form', ['dispatch' => $dispatch])
             </form>
         </div>

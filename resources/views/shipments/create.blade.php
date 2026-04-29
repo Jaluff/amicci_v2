@@ -4,7 +4,12 @@
 <div class="py-12">
     
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-            <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-200">Nueva Guía</h2>
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-200">
+                Nueva Guía para 
+                <span class="px-2 py-0.5 rounded text-white" style="background-color: {{ $selected_company->color }}">
+                    {{ $selected_company->name }}
+                </span>
+            </h2>
             @if($errors->any())
                 <div class="mb-4 p-4 bg-red-100 dark:bg-red-900/30 border border-red-400 text-red-700 dark:text-red-300 rounded">
                     <ul class="list-disc list-inside">

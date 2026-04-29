@@ -12,18 +12,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Debug route
-Route::get('/debug-parties', function () {
-    $parties = \App\Models\Party::withoutGlobalScopes()->get();
-    return response()->json([
-    'session_company_id' => session('company_id'),
-    'party_count' => $parties->count(),
-    'parties' => $parties->pluck(['id', 'company_id', 'name'])->toArray()
-    ]);
-});
+
 
 Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class , 'index'])
-    ->middleware(['auth', 'verified', 'company'])
+    ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -31,19 +23,18 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class , 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class , 'destroy'])->name('profile.destroy');
 
-    // Company selector & switch (sin middleware 'company' para evitar loop)
-    Route::get('/company/select', [CompanyController::class , 'select'])->name('company.select');
-    Route::post('/company/switch', [CompanyController::class , 'switch'])->name('company.switch');
 
-    // Company settings (editar la actual)
-    Route::middleware('role:admin|supervisor')->group(function () {
-        Route::get('/company/settings', [CompanyController::class , 'edit'])->name('company.edit');
-        Route::put('/company/settings', [CompanyController::class , 'update'])->name('company.update');
+
+    // Gestión de Empresas
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
+        Route::get('/companies/{company}/edit', [CompanyController::class, 'edit'])->name('company.edit');
+        Route::put('/companies/{company}', [CompanyController::class, 'update'])->name('company.update');
     });
 });
 
-// Rutas que requieren empresa activa en sesión
-Route::middleware(['auth', 'company'])->group(function () {
+// Rutas que requieren empresa activa (antes sesión, ahora stateless)
+Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/stats', [\App\Http\Controllers\DashboardController::class , 'stats'])->name('dashboard.stats');
 
     Route::get('/shipments', [ShipmentController::class , 'index'])->name('shipments.index');
@@ -104,6 +95,7 @@ Route::middleware(['auth', 'company'])->group(function () {
     Route::get('/deliveries/{delivery}/edit', [\App\Http\Controllers\DeliveryController::class , 'edit'])->name('deliveries.edit');
     Route::put('/deliveries/{delivery}', [\App\Http\Controllers\DeliveryController::class , 'update'])->name('deliveries.update');
     Route::delete('/deliveries/{delivery}', [\App\Http\Controllers\DeliveryController::class , 'destroy'])->name('deliveries.destroy');
+    Route::post('/deliveries/{delivery}/return-shipment/{shipment}', [\App\Http\Controllers\DeliveryController::class , 'returnShipment'])->name('deliveries.return-shipment');
 
     // State Machine — transiciones de estado (aplica a todos los documentos logísticos)
     Route::post('/status/transition', [\App\Http\Controllers\StatusTransitionController::class , 'transition'])->name('status.transition');

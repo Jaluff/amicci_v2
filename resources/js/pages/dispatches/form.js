@@ -104,10 +104,26 @@ $(function () {
             },
             columns: [
                 { data: 'check', name: 'check', orderable: false, searchable: false, className: 'text-center' },
-                { data: 'route_number', name: 'route_number' },
+                { 
+                    data: 'route_number', 
+                    name: 'route_number',
+                    render: function (data, type, row) {
+                        let html = data;
+                        if (row.problem_count > 0) {
+                            html += ` <span class="text-red-500 font-bold ml-1 animate-pulse cursor-pointer problem-badge" 
+                                data-model-type="route" 
+                                data-model-id="${row.id}" 
+                                data-label="Ruta #${data}" 
+                                style="color: #dc2626 !important;"
+                                title="Contiene guías con problemas">⚠</span>`;
+                        }
+                        return html;
+                    }
+                },
+                { data: 'empresa', name: 'empresa', orderable: false, searchable: false },
                 { data: 'driver.name', name: 'driver.name', defaultContent: '-' },
-                { data: 'origen_nombre', name: 'origen.nombre' },
-                { data: 'destino_nombre', name: 'destino.nombre' },
+                { data: 'origen_nombre', name: 'origen_nombre' },
+                { data: 'destino_nombre', name: 'destino_nombre' },
                 {
                     data: 'status',
                     name: 'status',
@@ -181,6 +197,13 @@ $(function () {
                 const destino = $(this).data('destino');
                 const estado = $(this).data('estado');
                 const rutas = $(this).data('rutas');
+                const hasProblem = $(this).data('has-problem') === true || $(this).data('has-problem') === 'true';
+                const problemIcon = hasProblem ? ` <span class="text-red-500 font-bold ml-1 animate-pulse cursor-pointer problem-badge" 
+                    data-model-type="route" 
+                    data-model-id="${id}" 
+                    data-label="Ruta #${numero}" 
+                    style="color: #dc2626 !important;"
+                    title="Contiene guías con problemas">⚠</span>` : '';
 
                 const coloresMap = {
                     'Cargada': 'dt-badge-blue',
@@ -193,7 +216,7 @@ $(function () {
                 const rowHtml = `
                     <tr class="route-row hover:bg-gray-50 dark:hover:bg-gray-700 transition" data-id="${id}">
                         <td class="p-3 text-sm text-gray-800 dark:text-gray-200">
-                            ${numero}
+                            ${numero}${problemIcon}
                             <input type="hidden" name="routes[]" value="${id}">
                         </td>
                         <td class="p-3 text-sm text-gray-800 dark:text-gray-200">${origen}</td>

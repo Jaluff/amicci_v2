@@ -17,7 +17,7 @@ class UpdateDeliveryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'location_id' => ['required', 'exists:ubicaciones,id'],
+            'location_id' => ['required', 'exists:branches,id'],
             'deliverer_id' => ['required', 'exists:deliverers,id'],
             'vehicle_plate' => ['nullable', 'string', 'max:20'],
             'load_date' => ['nullable', 'date'],

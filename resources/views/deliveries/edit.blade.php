@@ -16,6 +16,11 @@ $btnConfig = [
 'class' => 'bg-green-600 hover:bg-green-700 text-white shadow-green-200 dark:shadow-green-900',
 'confirm' => '¿Confirmar que el reparto ha finalizado?',
 ],
+'Listo' => [
+'label' => '🔙 Revertir a Listo',
+'class' => 'bg-gray-600 hover:bg-gray-700 text-white shadow-gray-200 dark:shadow-gray-900',
+'confirm' => '¿Deshacer el inicio de reparto? Esto devolverá las guías a Dto Destino.',
+],
 ];
 $canCancel = $currentStatus === \App\StateMachines\DeliveryStateMachine::READY;
 @endphp
@@ -59,11 +64,20 @@ $canCancel = $currentStatus === \App\StateMachines\DeliveryStateMachine::READY;
                     <button type="button"
                         class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg transition-all duration-150 {{ $cfg['class'] }}"
                         data-model-type="delivery" data-model-id="{{ $delivery->id }}"
-                        data-transition="{{ $transition }}" @if($cfg['confirm']) data-confirm="{{ $cfg['confirm'] }}"
-                        @endif>
+                        data-transition="{{ $transition }}" 
+                        @if($transition === 'Finalizado') id="btn-delivery-finish" @endif
+                        @if($cfg['confirm']) data-confirm="{{ $cfg['confirm'] }}" @endif>
                         {{ $cfg['label'] }}
                     </button>
                     @endforeach
+
+                    @if($delivery->hasActiveProblem())
+                    <button type="button"
+                        class="btn-show-devolutions inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm bg-amber-100 hover:bg-amber-200 text-amber-700 dark:bg-amber-900/40 dark:hover:bg-amber-900/60 dark:text-amber-300 transition shadow-lg"
+                        data-model-id="{{ $delivery->id }}" data-numero="{{ $delivery->delivery_number }}">
+                        <span class="text-amber-500">⚠</span> Ver Devoluciones
+                    </button>
+                    @endif
 
                     @if(count($availableTransitions) === 0)
                     <span class="text-sm text-gray-400 italic">Estado final — sin transiciones</span>
@@ -97,6 +111,7 @@ $canCancel = $currentStatus === \App\StateMachines\DeliveryStateMachine::READY;
             <form action="{{ route('deliveries.update', $delivery->id) }}" method="POST" id="delivery-form">
                 @csrf
                 @method('PUT')
+                <input type="hidden" name="company_id" value="{{ $delivery->company_id }}">
                 @include('deliveries._form', ['delivery' => $delivery])
             </form>
         </div>
@@ -106,6 +121,32 @@ $canCancel = $currentStatus === \App\StateMachines\DeliveryStateMachine::READY;
             @include('partials._problem_widget', ['model' => $delivery, 'modelType' => 'delivery'])
         </div>
 
+    </div>
+</div>
+
+{{-- MODAL DE AVISO: Guías a Devolver --}}
+<div id="devolution-warning-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-[70]">
+    <div class="relative top-20 mx-auto p-6 border w-full max-w-lg shadow-lg rounded-xl bg-white dark:bg-gray-800 dark:border-gray-700">
+        <div class="mb-4">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <span class="text-amber-500">⚠</span> Guías a Devolver
+            </h3>
+            <p class="text-sm text-gray-400 mt-1">Este reparto contiene guías con problemas que no han sido entregadas. Al finalizar, cambiarán a estado <b>"Dto destino"</b> para su gestión en sucursal.</p>
+        </div>
+        
+        <div id="devolution-list" class="space-y-2 mb-6 max-h-60 overflow-y-auto">
+            {{-- Lista dinámica --}}
+        </div>
+
+        <div class="flex justify-end gap-3">
+            <button type="button" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg btn-close-devolution">
+                Revisar Guías
+            </button>
+            <button type="button" id="btn-confirm-finish-anyway" 
+                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg">
+                Finalizar Reparto y Devolver Guías
+            </button>
+        </div>
     </div>
 </div>
 

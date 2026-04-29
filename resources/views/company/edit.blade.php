@@ -27,7 +27,7 @@
             </div>
             @endif
 
-            <form method="POST" action="{{ route('company.update') }}" class="space-y-6">
+            <form method="POST" action="{{ route('company.update', $company) }}" class="space-y-6">
                 @csrf
                 @method('PUT')
 
@@ -44,49 +44,51 @@
                                 d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
                         Parámetros del Sistema
-                    </h3>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    </h3>                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre Comercial
-                                Corto *</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre Comercial Corto *</label>
                             <input type="text" name="name" value="{{ old('name', $company->name) }}"
                                 class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                 required>
                             <span class="text-xs text-gray-500">Este nombre identifica la interfaz de usuario.</span>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Prefijo
-                                (Guías)</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Prefijo (Guías)</label>
                             <input type="text" name="prefix" value="{{ old('prefix', $company->prefix) }}"
                                 class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                         </div>
+                    </div>
 
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Última
-                                Guía</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Color Distintivo</label>
+                            <div class="flex items-center gap-3 mt-1">
+                                <input type="color" name="color" value="{{ old('color', $company->color) }}"
+                                    class="h-10 w-full rounded border border-gray-300 dark:border-gray-700 p-1 bg-white dark:bg-gray-800 cursor-pointer">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Última Guía</label>
                             <input type="number" name="last_shipment_number"
                                 value="{{ old('last_shipment_number', $company->last_shipment_number) }}"
                                 class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                 required>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Última
-                                Ruta</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Última Ruta</label>
                             <input type="number" name="last_route_number"
                                 value="{{ old('last_route_number', $company->last_route_number) }}"
                                 class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                 required>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Último
-                                Despacho</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Último Despacho</label>
                             <input type="number" name="last_dispatch_number"
                                 value="{{ old('last_dispatch_number', $company->last_dispatch_number) }}"
                                 class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                 required>
                         </div>
-                    </div>
+                    </div> </div>
                 </div>
 
                 <!-- 2. Información Legal y Facturación -->

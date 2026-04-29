@@ -103,7 +103,7 @@
                     <x-dropdown align="left" width="48">
                         <x-slot name="trigger">
                             <button
-                                class="inline-flex items-center px-1 pt-1 h-full border-b-2 {{ request()->routeIs('users.*') || request()->routeIs('branches.*') || request()->routeIs('company.edit') || request()->routeIs('tariff-tables.*') ? 'border-indigo-400 dark:border-indigo-600 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700' }} text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
+                                class="inline-flex items-center px-1 pt-1 h-full border-b-2 {{ request()->routeIs('users.*') || request()->routeIs('branches.*') || request()->routeIs('companies.*') || request()->routeIs('company.*') || request()->routeIs('tariff-tables.*') ? 'border-indigo-400 dark:border-indigo-600 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700' }} text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
                                 <div>{{ __('Configuraciones') }}</div>
                                 <div class="ms-1">
                                     <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
@@ -123,7 +123,7 @@
                             <x-dropdown-link :href="route('branches.index')">
                                 {{ __('Sucursales') }}
                             </x-dropdown-link>
-                            <x-dropdown-link :href="route('company.edit')">
+                            <x-dropdown-link :href="route('companies.index')">
                                 {{ __('Datos de Empresa') }}
                             </x-dropdown-link>
                             <x-dropdown-link :href="route('tariff-tables.index')">
@@ -141,64 +141,7 @@
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6 gap-3">
 
-                <!-- Company switcher -->
-                @auth
-                @php $userCompanies = Auth::user()->companies; @endphp
-                @if($userCompanies->count() > 1)
-                <x-dropdown align="right" width="56">
-                    <x-slot name="trigger">
-                        <button
-                            class="inline-flex items-center gap-2 px-3 py-2 border border-gray-200 dark:border-gray-700  leading-4 font-medium rounded-md text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none transition ease-in-out duration-150">
-                            <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                            </svg>
-                            <span>{{ $userCompanies->firstWhere('id', session('company_id'))->name ?? 'Sin empresa'
-                                }}</span>
-                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                        </button>
-                    </x-slot>
-                    <x-slot name="content">
-                        <div class="px-3 py-2  font-semibold text-gray-400 uppercase tracking-wider">Cambiar
-                            empresa</div>
-                        @foreach($userCompanies as $company)
-                        <form method="POST" action="{{ route('company.switch') }}">
-                            @csrf
-                            <input type="hidden" name="company_id" value="{{ $company->id }}">
-                            <button type="submit"
-                                class="w-full text-left flex items-center gap-2 px-4 py-2  text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                                @if(session('company_id') == $company->id)
-                                <svg class="w-4 h-4 text-indigo-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                                @else
-                                <span class="w-4 h-4 shrink-0"></span>
-                                @endif
-                                <span
-                                    class="{{ session('company_id') == $company->id ? 'font-semibold text-indigo-600 dark:text-indigo-400' : '' }}">{{
-                                    $company->name }}</span>
-                            </button>
-                        </form>
-                        @endforeach
-                    </x-slot>
-                </x-dropdown>
-                @elseif($userCompanies->count() === 1)
-                <span
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5  font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 rounded-full border border-indigo-200 dark:border-indigo-700">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                    {{ $userCompanies->first()->name }}
-                </span>
-                @endif
-                @endauth
+
 
                 <!-- Theme Toggle Button -->
                 <div x-data="themeToggle()">
@@ -354,7 +297,7 @@
                     <x-responsive-nav-link :href="route('branches.index')" :active="request()->routeIs('branches.*')">
                         {{ __('Sucursales') }}
                     </x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('company.edit')" :active="request()->routeIs('company.edit')">
+                    <x-responsive-nav-link :href="route('companies.index')" :active="request()->routeIs('companies.*') || request()->routeIs('company.*')">
                         {{ __('Datos de Empresa') }}
                     </x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('tariff-tables.index')" :active="request()->routeIs('tariff-tables.*')">
@@ -375,35 +318,7 @@
                 <div class="font-medium  text-gray-500">{{ Auth::user()->email }}</div>
             </div>
 
-            @auth
-            @php $userCompanies = $userCompanies ?? Auth::user()->companies; @endphp
-            @if($userCompanies->count() > 1)
-            <div class="px-4 pt-3">
-                <p class=" font-semibold text-gray-400 uppercase tracking-wider mb-2">Cambiar empresa</p>
-                <div class="space-y-1">
-                    @foreach($userCompanies as $company)
-                    <form method="POST" action="{{ route('company.switch') }}">
-                        @csrf
-                        <input type="hidden" name="company_id" value="{{ $company->id }}">
-                        <button type="submit"
-                            class="w-full text-left flex items-center gap-2 px-2 py-1.5  rounded {{ session('company_id') == $company->id ? 'text-indigo-600 font-semibold' : 'text-gray-700 dark:text-gray-300' }} hover:bg-gray-100 dark:hover:bg-gray-700">
-                            @if(session('company_id') == $company->id)
-                            <svg class="w-4 h-4 text-indigo-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                            @else
-                            <span class="w-4 h-4 shrink-0"></span>
-                            @endif
-                            {{ $company->name }}
-                        </button>
-                    </form>
-                    @endforeach
-                </div>
-            </div>
-            @endif
-            @endauth
+
 
             <div class="mt-3 space-y-1">
                 <x-responsive-nav-link :href="route('profile.edit')">

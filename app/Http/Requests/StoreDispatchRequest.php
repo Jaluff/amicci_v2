@@ -16,8 +16,9 @@ class StoreDispatchRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'origin_id' => ['required', 'exists:ubicaciones,id'],
-            'destination_id' => ['required', 'exists:ubicaciones,id', 'different:origin_id'],
+
+            'origin_id'      => ['required', 'exists:branches,id'],
+            'destination_id' => ['required', 'exists:branches,id', 'different:origin_id'],
             'driver_id' => ['required', 'exists:drivers,id'],
             'status' => ['required', 'in:Cargado,En viaje,Arribado'],
             'seal_number' => ['nullable', 'string', 'max:255'],
