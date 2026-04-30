@@ -120,7 +120,7 @@
         var isContra = $('input[name="contra_reembolso"]:checked').val() == '1';
         if (isContra) {
             var pctCR = window.GlobalContraPct || 0;
-            var montoCR = (totalValor * pctCR) / 1000;
+            var montoCR = (totalValor * pctCR) / 100;
             $('#monto_contra_reembolso').val(montoCR.toFixed(2)).trigger('change');
         } else {
             $('#monto_contra_reembolso').val('0.00').trigger('change');
