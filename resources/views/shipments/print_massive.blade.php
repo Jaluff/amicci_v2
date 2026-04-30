@@ -76,6 +76,7 @@
             <table class="w-full text-[10px] border-collapse">
                 <thead>
                     <tr class="bg-gray-900 text-white uppercase font-bold">
+                        <th class="p-1 text-center w-10">REC</th>
                         <th class="p-1 text-left">N° Guía</th>
                         <th class="p-1 text-left">Remitente</th>
                         <th class="p-1 text-left">Destinatario</th>
@@ -95,6 +96,9 @@
                         $totalFlete += $shipment->flete;
                     @endphp
                     <tr class="hover:bg-gray-50">
+                        <td class="p-1 text-center">
+                            <div class="w-4 h-4 border border-gray-400 mx-auto rounded-sm"></div>
+                        </td>
                         <td class="p-1 font-bold text-blue-600">{{ $shipment->numero }}</td>
                         <td class="p-1 uppercase text-gray-700 truncate max-w-[200px]">{{ $shipment->sender->name ?? '-' }}</td>
                         <td class="p-1 uppercase text-gray-700 truncate max-w-[200px]">{{ $shipment->recipient->name ?? '-' }}</td>
@@ -105,7 +109,7 @@
                 </tbody>
                 <tfoot>
                     <tr class="font-bold bg-gray-100">
-                        <td colspan="3" class="p-1 text-right uppercase">Totales</td>
+                        <td colspan="4" class="p-1 text-right uppercase">Totales</td>
                         <td class="p-1 text-center">{{ $totalBultos }}</td>
                         <td class="p-1 text-right font-mono">$ {{ number_format($totalFlete, 2, ',', '.') }}</td>
                     </tr>
@@ -114,15 +118,9 @@
         </div>
 
         <!-- Firmas Compactas -->
-        <div class="grid grid-cols-3 gap-8 mt-8">
-            <div class="border-t border-gray-400 text-center pt-1">
-                <span class="text-[9px] text-gray-500 uppercase font-bold">Firma Conductor</span>
-            </div>
-            <div class="border-t border-gray-400 text-center pt-1">
-                <span class="text-[9px] text-gray-500 uppercase font-bold">Despacho Origen</span>
-            </div>
-            <div class="border-t border-gray-400 text-center pt-1">
-                <span class="text-[9px] text-gray-500 uppercase font-bold">Recepción Destino</span>
+        <div class="flex justify-end mt-12">
+            <div class="w-64 border-t border-gray-400 text-center pt-1">
+                <span class="text-[10px] text-gray-500 uppercase font-bold">Firma y Aclaración Recepción Destino</span>
             </div>
         </div>
 
