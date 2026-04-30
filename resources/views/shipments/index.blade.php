@@ -120,7 +120,9 @@
                             <th>Número</th>
                             <th>Remitente</th>
                             <th>Destinatario</th>
-                            <th>Ruta</th>
+                            <th>Origen/Dest</th>
+                            <th>Despacho</th>
+                            <th>Reparto</th>
                             <th>Flete</th>
                             <th>Bultos</th>
                             <th>Valor Decl.</th>

@@ -41,6 +41,8 @@ $(function () {
             { data: 'remitente_upper', name: 'remitente.name', responsivePriority: 3 },
             { data: 'destinatario_upper', name: 'destinatario.name', responsivePriority: 3 },
             { data: 'ruta_corta', name: 'origen.nombre', orderable: false, responsivePriority: 6 },
+            { data: 'despacho', name: 'dispatches.dispatch_number', responsivePriority: 4 },
+            { data: 'reparto', name: 'deliveries.delivery_number', responsivePriority: 4 },
             { data: 'flete', name: 'shipments.flete', responsivePriority: 5 },
             { data: 'bultos', name: 'bultos', orderable: false, searchable: false, responsivePriority: 4 },
             { data: 'valor_declarado', name: 'valor_declarado', orderable: false, searchable: false, visible: true, responsivePriority: 8 },

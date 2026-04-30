@@ -40,6 +40,8 @@ class ShipmentController extends Controller
             'shipments.transport_route_id',
             'deliveries.delivery_number',
             'transport_routes.route_number',
+            'dispatches.dispatch_number',
+            'dispatches.id as dispatch_id',
             'origen.nombre as origen_nombre',
             'destino.nombre as destino_nombre',
             'remitente.name as remitente_nombre',
@@ -56,6 +58,7 @@ class ShipmentController extends Controller
             ->leftJoin('parties as destinatario', 'shipments.destinatario_id', '=', 'destinatario.id')
             ->leftJoin('deliveries', 'shipments.delivery_id', '=', 'deliveries.id')
             ->leftJoin('transport_routes', 'shipments.transport_route_id', '=', 'transport_routes.id')
+            ->leftJoin('dispatches', 'transport_routes.dispatch_id', '=', 'dispatches.id')
             ->whereNull('shipments.deleted_at')
             ->withCount([
                 'problems as has_active_problem' => function ($q) {
@@ -205,6 +208,24 @@ class ShipmentController extends Controller
 
             return $content;
         })
+            ->addColumn('despacho', function ($row) {
+                if (!$row->dispatch_id) return '-';
+                $url = route('dispatches.edit', $row->dispatch_id);
+                $num = $row->dispatch_number ?? $row->dispatch_id;
+                return '<a href="'.$url.'" class="flex items-center gap-1 text-blue-600 dark:text-blue-400 font-bold hover:underline">
+                            <i class="fa-solid fa-truck-fast text-[10px]"></i>
+                            <span>#'.$num.'</span>
+                        </a>';
+            })
+            ->addColumn('reparto', function ($row) {
+                if (!$row->delivery_id) return '-';
+                $url = route('deliveries.edit', $row->delivery_id);
+                $num = $row->delivery_number ?? $row->delivery_id;
+                return '<a href="'.$url.'" class="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-bold hover:underline">
+                            <i class="fa-solid fa-house-chimney text-[10px]"></i>
+                            <span>#'.$num.'</span>
+                        </a>';
+            })
             ->addColumn('remitente_upper', function ($row) {
                 return '<span class="font-bold text-gray-800 dark:text-gray-200">' . mb_strtoupper($row->remitente_nombre ?? '-') . '</span>';
             })
@@ -214,13 +235,12 @@ class ShipmentController extends Controller
             ->addColumn('ruta_corta', function ($row) {
                 $or = mb_strtoupper($row->origen_nombre ?? '-');
                 $ds = mb_strtoupper($row->destino_nombre ?? '-');
-                return "<div class='flex items-center gap-1'>
-                            <span class='px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-700 text-white shadow-sm'>{$or}</span>
-                            <span class='text-gray-400'>→</span>
-                            <span class='px-2 py-0.5 rounded text-[10px] font-bold bg-slate-700 text-white shadow-sm'>{$ds}</span>
+                return "<div class='flex flex-col gap-0.5'>
+                            <span class='px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 text-[9px] font-bold w-fit'>$or</span>
+                            <span class='px-1.5 py-0.5 rounded bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 text-[9px] font-bold w-fit'>$ds</span>
                         </div>";
             })
-            ->rawColumns(['acciones', 'ubicacion_actual', 'remitente_upper', 'destinatario_upper', 'ruta_corta', 'numero', 'empresa'])
+            ->rawColumns(['acciones', 'ubicacion_actual', 'remitente_upper', 'destinatario_upper', 'ruta_corta', 'numero', 'empresa', 'despacho', 'reparto'])
             ->make(true);
     }
 
