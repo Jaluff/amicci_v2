@@ -19,10 +19,10 @@
             <div class="flex items-center gap-2 flex-wrap">
                 <div class="flex items-center gap-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5">
                     <span class="text-[11px] text-gray-500 dark:text-gray-400">Empresa</span>
-                    <select id="filter-company" class="text-[11px] bg-transparent text-gray-700 dark:text-white outline-none">
-                        <option value="">Todas</option>
+                    <select id="filter-company" class="text-[11px] bg-transparent text-gray-700 dark:text-gray-100 dark:bg-gray-800 outline-none">
+                        <option value="" class="dark:bg-gray-800">Todas</option>
                         @foreach($userCompanies as $company)
-                        <option value="{{ $company->id }}">{{ $company->prefix }}</option>
+                        <option value="{{ $company->id }}" class="dark:bg-gray-800">{{ $company->prefix }}</option>
                         @endforeach
                     </select>
                 </div>

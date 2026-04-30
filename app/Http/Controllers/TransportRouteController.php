@@ -281,4 +281,16 @@ class TransportRouteController extends Controller
             'route' => new TransportRouteResource($ruta->loadCount('shipments'))
         ]);
     }
+
+    public function getShipments(TransportRoute $route): JsonResponse
+    {
+        $shipments = $route->shipments()
+            ->with(['origin:id,nombre', 'destination:id,nombre', 'sender:id,name', 'recipient:id,name'])
+            ->withCount(['items as bultos' => function ($q) {
+                $q->select(DB::raw('COALESCE(SUM(cantidad), 0)'));
+            }])
+            ->get();
+
+        return response()->json($shipments);
+    }
 }

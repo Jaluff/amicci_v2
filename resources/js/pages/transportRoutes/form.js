@@ -1,4 +1,3 @@
-import $ from 'jquery';
 
 $(function () {
     const modal = $('#shipments-modal');
@@ -17,6 +16,16 @@ $(function () {
     $('.shipment-row input[name="shipments[]"]').each(function () {
         selectedStorage.add($(this).val());
     });
+
+    function toggleHeaderLock() {
+        const count = selectedStorage.size;
+        const $targets = $('#origin_id, #destination_id');
+        if (count > 0) {
+            $targets.addClass('pointer-events-none bg-gray-100 dark:bg-gray-800 opacity-75').attr('tabindex', '-1');
+        } else {
+            $targets.removeClass('pointer-events-none bg-gray-100 dark:bg-gray-800 opacity-75').removeAttr('tabindex');
+        }
+    }
 
     // Control de selectores de Origen y Destino (para evitar seleccionar el mismo)
     function handleLocationSelects() {
@@ -66,6 +75,7 @@ $(function () {
         updateOptions();
     }
     handleLocationSelects();
+    toggleHeaderLock();
 
     // Abrir Modal
     $('.btn-open-shipments-modal').on('click', function () {
@@ -247,6 +257,7 @@ $(function () {
         });
 
         modal.addClass('hidden');
+        toggleHeaderLock();
     });
 
     // Remover guía de la tabla principal
@@ -260,6 +271,7 @@ $(function () {
         if (tableBody.find('.shipment-row').length === 0) {
             tableBody.append('<tr class="empty-row"><td colspan="5" class="p-4 text-center text-gray-500 text-sm">Aún no se han asignado guías</td></tr>');
         }
+        toggleHeaderLock();
     });
 
 });

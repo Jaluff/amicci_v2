@@ -23,6 +23,23 @@
                             @enderror
                         </div>
 
+                        <div class="mb-4">
+                            <label for="branch_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Sucursal Operativa</label>
+                            <select name="branch_id" id="branch_id" 
+                                class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                required>
+                                <option value="">Seleccionar Sucursal...</option>
+                                @foreach($branches as $branch)
+                                    <option value="{{ $branch->id }}" {{ old('branch_id') == $branch->id ? 'selected' : '' }}>
+                                        {{ $branch->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('branch_id')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <div class="flex items-center gap-2">
                             <button type="submit" id="submitBtn"
                                 class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
@@ -58,6 +75,7 @@
                             <thead class="bg-gray-50 dark:bg-gray-900">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sucursal Operativa</th>
                                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                                 </tr>
                             </thead>
@@ -67,12 +85,16 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                             {{ $ubicacion->nombre }}
                                         </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                            {{ $ubicacion->branch?->name ?? 'No asignada' }}
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div class="flex justify-end gap-3">
                                                 <button type="button" 
                                                     class="edit-btn text-indigo-600 hover:text-indigo-900"
                                                     data-id="{{ $ubicacion->id }}"
                                                     data-nombre="{{ $ubicacion->nombre }}"
+                                                    data-branch-id="{{ $ubicacion->branch_id }}"
                                                     data-url="{{ route('ubicaciones.update', $ubicacion) }}">
                                                     Editar
                                                 </button>
@@ -115,9 +137,11 @@
         $('.edit-btn').on('click', function() {
             const id = $(this).data('id');
             const nombre = $(this).data('nombre');
+            const branchId = $(this).data('branch-id');
             const url = $(this).data('url');
 
             $nombreInput.val(nombre);
+            $('#branch_id').val(branchId);
             $form.attr('action', url);
             $methodField.html('<input type="hidden" name="_method" value="PUT">');
             $formTitle.text('Editar Ubicación');
@@ -132,6 +156,7 @@
 
         $cancelBtn.on('click', function() {
             $nombreInput.val('');
+            $('#branch_id').val('');
             $form.attr('action', originalAction);
             $methodField.empty();
             $formTitle.text('Nueva Ubicación');

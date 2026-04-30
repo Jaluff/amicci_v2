@@ -56,9 +56,9 @@ class DispatchService
             }
 
             // 2. Reasignar rutas SÓLO si el despacho está en "Cargado" (editable)
-            //    Una vez que sale a "En viaje" las rutas ya no se puede cambiar
-            if (isset($data['routes']) && $currentStatus === \App\StateMachines\DispatchStateMachine::STATUS_CARGADO) {
-                $this->assignRoutes($dispatch, $data['routes']);
+            if ($currentStatus === \App\StateMachines\DispatchStateMachine::STATUS_CARGADO) {
+                // Si 'routes' no viene en el request (ej. se quitaron todas), pasamos array vacío
+                $this->assignRoutes($dispatch, $data['routes'] ?? []);
             }
 
             // 3. Cambio de estado vía StateMachine (dispara cascada DESPUÉS de fijar rutas)
@@ -76,8 +76,10 @@ class DispatchService
 
     private function assignRoutes(Dispatch $dispatch, array $routeIds): void
     {
-        // Validar que las rutas estén en estado "Cargada"
+        // Validar que las rutas nuevas a asignar estén en estado "Cargada".
+        // Las que YA pertenecen a este despacho se ignoran en esta validación para permitir actualizaciones de otros campos.
         $invalid = TransportRoute::whereIn('id', $routeIds)
+            ->where('dispatch_id', '!=', $dispatch->id)
             ->where('status', '!=', 'Cargada')
             ->count();
 

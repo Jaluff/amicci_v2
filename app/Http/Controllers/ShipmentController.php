@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreShipmentRequest;
 use App\Http\Requests\UpdateShipmentRequest;
+use App\Models\Dispatch;
 use App\Models\Party;
 use App\Models\Shipment;
 use App\Models\Ubicacion;
@@ -299,7 +300,8 @@ class ShipmentController extends Controller
             ->orderBy('code')
             ->get();
 
-        return view('shipments.edit', compact('shipment', 'ubicaciones', 'parties', 'branches'));
+        $selected_company = $shipment->company;
+        return view('shipments.edit', compact('shipment', 'ubicaciones', 'parties', 'branches', 'selected_company'));
     }
 
     public function update(UpdateShipmentRequest $request, Shipment $shipment, ShipmentService $service)
@@ -360,6 +362,29 @@ class ShipmentController extends Controller
         ]);
 
         return view('shipments.print', compact('shipment'));
+    }
+
+    public function printMassive(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        $dispatchId = $request->input('dispatch_id');
+
+        if (empty($ids)) {
+            return back()->with('error', 'Debe seleccionar al menos una guía.');
+        }
+
+        $shipments = Shipment::whereIn('id', $ids)->with([
+            'origin',
+            'destination',
+            'sender',
+            'recipient',
+            'items',
+            'company.addresses'
+        ])->get();
+
+        $dispatch = $dispatchId ? Dispatch::with(['driver', 'origin', 'destination'])->find($dispatchId) : null;
+
+        return view('shipments.print_massive', compact('shipments', 'dispatch'));
     }
 
     /**

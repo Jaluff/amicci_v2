@@ -23,8 +23,8 @@
     <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Origen</label>
         <select name="origin_id" id="origin_id"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white"
-            required>
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white {{ $isEdit && $route->shipments->count() > 0 ? 'pointer-events-none bg-gray-100 dark:bg-gray-800 opacity-75' : '' }}"
+            required {{ $isEdit && $route->shipments->count() > 0 ? 'tabindex=-1' : '' }}>
             <option value="">Seleccione origen</option>
             @foreach($branches as $branch)
             <option value="{{ $branch->id }}" @selected(old('origin_id', $route->origin_id) == $branch->id)>
@@ -37,9 +37,9 @@
 
     <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Destino</label>
-        <select name="destination_id"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white"
-            required>
+        <select name="destination_id" id="destination_id"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white {{ $isEdit && $route->shipments->count() > 0 ? 'pointer-events-none bg-gray-100 dark:bg-gray-800 opacity-75' : '' }}"
+            required {{ $isEdit && $route->shipments->count() > 0 ? 'tabindex=-1' : '' }}>
             <option value="">Seleccione destino</option>
             @foreach($branches as $branch)
             <option value="{{ $branch->id }}" @selected(old('destination_id', $route->destination_id) == $branch->id)>

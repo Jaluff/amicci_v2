@@ -21,14 +21,18 @@
      */
     function parseNum(v) {
         if (!v) return 0;
-        // Eliminar todo lo que no sea dígito, coma o punto
         var clean = String(v).replace(/[^0-9,.]/g, '');
-        // Si hay coma y punto, asumimos formato 1.234,56 -> quitar puntos, cambiar coma por punto
+        // Si tiene ambos separadores
         if (clean.includes(',') && clean.includes('.')) {
-            clean = clean.replace(/\./g, '').replace(/,/g, '.');
+            // El último que aparezca define el decimal
+            if (clean.lastIndexOf(',') > clean.lastIndexOf('.')) {
+                clean = clean.replace(/\./g, '').replace(/,/g, '.');
+            } else {
+                clean = clean.replace(/,/g, '');
+            }
         } 
-        // Si solo hay coma y está al final (decimal), cambiar por punto
-        else if (clean.includes(',') && clean.indexOf(',') > clean.indexOf('.') ) {
+        // Si solo tiene coma, asumimos que es decimal (formato 1234,56)
+        else if (clean.includes(',')) {
             clean = clean.replace(/,/g, '.');
         }
         var n = parseFloat(clean);
@@ -106,11 +110,12 @@
     function recalcularCargosCliente(preventOverwrite = false) {
         var totalValor = 0;
         $('#items-container .item-row').each(function () {
-            var valStr = $(this).find('[name*="[monto_valor_declarado]"]').val();
+            // Seleccionar por nombre o por clase si tuviera, pero name* es robusto
+            var valStr = $(this).find('input[name*="[monto_valor_declarado]"]').val();
             totalValor += parseNum(valStr);
         });
 
-        // Seguro
+        // Seguro (Depende de Tarifa Cliente)
         if (tariffSetting && tariffSetting.has_insurance) {
             var insPct = parseFloat(tariffSetting.insurance_percent) || 0;
             var seguro = (totalValor * insPct) / 1000;
@@ -119,7 +124,7 @@
             $('#seguro').val('0.00').trigger('change');
         }
 
-        // Contra reembolso
+        // Contra reembolso (Depende de Configuración Empresa - Independiente de Tarifa)
         var isContra = $('input[name="contra_reembolso"]:checked').val() == '1';
         if (isContra) {
             var pctCR = window.GlobalContraPct || 0;
@@ -129,7 +134,7 @@
             $('#monto_contra_reembolso').val('0.00').trigger('change');
         }
 
-        // IVA percent
+        // IVA percent (Depende de Tarifa Cliente o Default)
         if (tariffSetting && !preventOverwrite) {
             var ivaPct = parseFloat(tariffSetting.iva_percent) || 0;
             $('#iva_percent').val(ivaPct).trigger('change');
@@ -281,12 +286,22 @@
         return max + 1;
     }
 
+    function toggleRemoveButtons() {
+        var $rows = $('#items-container .item-row');
+        if ($rows.length <= 1) {
+            $rows.find('.remove-item').addClass('hidden');
+        } else {
+            $rows.find('.remove-item').removeClass('hidden');
+        }
+    }
+
     function addItemRow() {
         var tpl = document.getElementById('item-row-template');
         if (!tpl) return;
         var index = getNextItemIndex();
         var html = tpl.innerHTML.replace(/__INDEX__/g, index);
         $('#items-container').append(html);
+        toggleRemoveButtons();
     }
 
     // ─── Init ─────────────────────────────────────────────────────────────────
@@ -366,7 +381,9 @@
         $('#flete, #seguro, #monto_contra_reembolso, #retencion_mercaderia, #otros_cargos, #iva_percent')
             .on('input change', window.calculateTotals);
 
+        recalcularCargosCliente(isEdit);
         calculateTotals();
+        toggleRemoveButtons();
 
         // ── Recalcular flete al cambiar ítems ────────────────────────────
         // (cantidad, tipo_paquete, peso, volumen, valor declarado)
@@ -381,9 +398,10 @@
         });
 
         $(document).on('click', '.remove-item', function () {
-            var rows = $('#items-container .item-row');
-            if (rows.length <= 1) return;
+            var $rows = $('#items-container .item-row');
+            if ($rows.length <= 1) return;
             $(this).closest('.item-row').remove();
+            toggleRemoveButtons();
             // Re-indexar nombres
             // Re-indexar nombres...
             $('#items-container .item-row').each(function (i) {

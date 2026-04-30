@@ -14,7 +14,7 @@ class UbicacionService
      */
     public function getAll(): Collection
     {
-        return Ubicacion::orderBy('nombre')->get();
+        return Ubicacion::with('branch')->orderBy('nombre')->get();
     }
 
     /**

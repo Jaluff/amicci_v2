@@ -301,7 +301,7 @@
                         </div>
                         <div class="flex items-end">
                             <button type="button"
-                                class="remove-item bg-red-600 hover:bg-red-700 text-white px-2 py-1.5 rounded font-medium whitespace-nowrap w-full text-sm">✕</button>
+                                class="remove-item bg-red-600 hover:bg-red-700 text-white px-2 py-1.5 rounded font-medium whitespace-nowrap w-full text-sm {{ count($items) <= 1 ? 'hidden' : '' }}">✕</button>
                         </div>
                     </div>
                 </div>
@@ -431,7 +431,7 @@
 @include('shipments._party_modal')
 
 <script>
-    window.GlobalContraPct = {{ (float) ($selected_company->contra_reembolso_percent ?? 0) }};
+    window.GlobalContraPct = {{ (float) (old('contra_reembolso_percent', $selected_company->contra_reembolso_percent ?? ($shipment->company->contra_reembolso_percent ?? 0))) }};
 
     document.addEventListener('DOMContentLoaded', function () {
         const btnPrint = document.getElementById('btn_save_and_print');
@@ -530,7 +530,7 @@
             </div>
             <div class="flex items-end">
                 <button type="button"
-                    class="remove-item bg-red-600 hover:bg-red-700 text-white px-2 py-1.5 rounded font-medium whitespace-nowrap w-full text-sm">✕</button>
+                    class="remove-item bg-red-600 hover:bg-red-700 text-white px-2 py-1.5 rounded font-medium whitespace-nowrap w-full text-sm hidden">✕</button>
             </div>
         </div>
     </div>

@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import { openCompanySelector } from '../../shared/company-selector.js';
 
 const DeliveryModule = (function ($) {
@@ -118,6 +117,22 @@ $(document).ready(function () {
     $('.shipment-row input[name="shipments[]"]').each(function () {
         selectedStorage.add($(this).val());
     });
+
+    function toggleHeaderLock() {
+        const count = selectedStorage.size;
+        const $targets = $('#location_id');
+        if (count > 0) {
+            $targets.addClass('pointer-events-none bg-gray-100 dark:bg-gray-800 opacity-75').attr('tabindex', '-1');
+            if ($targets.hasClass('select2-hidden-accessible')) {
+                $targets.next('.select2-container').addClass('pointer-events-none opacity-75');
+            }
+        } else {
+            $targets.removeClass('pointer-events-none bg-gray-100 dark:bg-gray-800 opacity-75').removeAttr('tabindex');
+            if ($targets.hasClass('select2-hidden-accessible')) {
+                $targets.next('.select2-container').removeClass('pointer-events-none opacity-75');
+            }
+        }
+    }
 
     $('.btn-open-shipments-modal').on('click', function () {
         const locationId = $('select[name="location_id"]').val();
@@ -314,6 +329,7 @@ $(document).ready(function () {
         });
 
         modal.addClass('hidden');
+        toggleHeaderLock();
     });
 
     // === Remover Guía de la tabla ===
@@ -327,6 +343,7 @@ $(document).ready(function () {
         if (tableBody.find('.shipment-row').length === 0) {
             tableBody.append('<tr class="empty-row"><td colspan="6" class="p-4 text-center text-gray-500 text-sm">Aún no se han asignado guías</td></tr>');
         }
+        toggleHeaderLock();
     });
 
     // === Escuchar evento de problemas resueltos/creados ===
@@ -448,4 +465,6 @@ $(document).ready(function () {
             });
         });
     }
+
+    toggleHeaderLock();
 });

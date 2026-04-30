@@ -36,7 +36,7 @@ class DispatchStateMachine extends BaseStateMachine
     {
         return [
             self::STATUS_CARGADO => [self::STATUS_EN_VIAJE],
-            self::STATUS_EN_VIAJE => [self::STATUS_ARRIBADO],
+            self::STATUS_EN_VIAJE => [self::STATUS_ARRIBADO, self::STATUS_CARGADO], // Rollback permitido
             self::STATUS_ARRIBADO => [],
         ];
     }
@@ -47,6 +47,7 @@ class DispatchStateMachine extends BaseStateMachine
     {
         // Mapeamos el nuevo estado de Despacho → estado de Ruta
         $routeStatusMap = [
+            self::STATUS_CARGADO  => RouteStateMachine::STATUS_CARGADA,
             self::STATUS_EN_VIAJE => RouteStateMachine::STATUS_EN_VIAJE,
             self::STATUS_ARRIBADO => RouteStateMachine::STATUS_ENTREGADA,
         ];
