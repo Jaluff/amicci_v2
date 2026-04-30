@@ -43,7 +43,7 @@ $(function () {
             { data: 'remitente_destinatario', name: 'remitente_destinatario', orderable: false, searchable: false, responsivePriority: 7 },
             { data: 'flete', name: 'shipments.flete', responsivePriority: 5 },
             { data: 'bultos', name: 'bultos', orderable: false, searchable: false, responsivePriority: 4 },
-            { data: 'valor_declarado', name: 'valor_declarado', orderable: false, searchable: false, visible: false },
+            { data: 'valor_declarado', name: 'valor_declarado', orderable: false, searchable: false, visible: true, responsivePriority: 8 },
             { data: 'total', name: 'shipments.total', responsivePriority: 3 },
             {
                 data: 'ubicacion_actual',
@@ -56,7 +56,7 @@ $(function () {
             },
             { data: 'acciones', name: 'acciones', orderable: false, searchable: false, responsivePriority: 1, className: 'text-center' },
         ],
-        order: [[0, 'desc']],
+        order: [[1, 'desc']],
     });
 
     $('#btn-filter').on('click', function () {

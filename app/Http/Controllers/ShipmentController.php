@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreShipmentRequest;
 use App\Http\Requests\UpdateShipmentRequest;
-use App\Models\Dispatch;
+use App\Models\Dispatch as DispatchModel;
 use App\Models\Party;
 use App\Models\Shipment;
 use App\Models\Ubicacion;
@@ -105,7 +105,7 @@ class ShipmentController extends Controller
 
         return DataTables::of($query->orderByDesc('shipments.fecha'))
             ->addColumn('empresa', function ($row) {
-                return "<span class='font-bold text-gray-700 dark:text-gray-300'>{$row->empresa_prefix}</span>";
+                return $row->empresa_prefix ?? '-';
             })
             ->addColumn('bultos', function ($row) {
             return (int)($row->bultos_total ?? 0);
@@ -382,7 +382,7 @@ class ShipmentController extends Controller
             'company.addresses'
         ])->get();
 
-        $dispatch = $dispatchId ? Dispatch::with(['driver', 'origin', 'destination'])->find($dispatchId) : null;
+        $dispatch = $dispatchId ? DispatchModel::with(['driver', 'origin', 'destination'])->find($dispatchId) : null;
 
         return view('shipments.print_massive', compact('shipments', 'dispatch'));
     }

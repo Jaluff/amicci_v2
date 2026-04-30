@@ -111,11 +111,16 @@ document.addEventListener('alpine:init', () => {
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Origen <span class="text-red-500">*</span>
                 </label>
-                <input type="text" name="origin"
-                    value="{{ old('origin', $tariffTable->origin ?? '') }}"
-                    placeholder="Ej: Buenos Aires"
+                <select name="origin_id" 
                     class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     required>
+                    <option value="">Seleccione origen...</option>
+                    @foreach($ubicaciones as $u)
+                        <option value="{{ $u->id }}" {{ (old('origin_id', $tariffTable->origin_id ?? '') == $u->id) ? 'selected' : '' }}>
+                            {{ $u->nombre }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
 
             {{-- Destino --}}
@@ -123,11 +128,16 @@ document.addEventListener('alpine:init', () => {
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Destino <span class="text-red-500">*</span>
                 </label>
-                <input type="text" name="destination"
-                    value="{{ old('destination', $tariffTable->destination ?? '') }}"
-                    placeholder="Ej: Mendoza Este"
+                <select name="destination_id" 
                     class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     required>
+                    <option value="">Seleccione destino...</option>
+                    @foreach($ubicaciones as $u)
+                        <option value="{{ $u->id }}" {{ (old('destination_id', $tariffTable->destination_id ?? '') == $u->id) ? 'selected' : '' }}>
+                            {{ $u->nombre }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
 
             {{-- Tarifa por Tonelada --}}

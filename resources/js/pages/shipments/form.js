@@ -15,27 +15,19 @@
     // ─── Configuración tarifaria cargada del remitente ──────────────────────
     var tariffSetting = null;
 
-    /**
-     * Limpia y parsea un valor a float.
-     * Maneja signos de moneda, espacios y comas/puntos.
-     */
     function parseNum(v) {
         if (!v) return 0;
-        var clean = String(v).replace(/[^0-9,.]/g, '');
-        // Si tiene ambos separadores
-        if (clean.includes(',') && clean.includes('.')) {
-            // El último que aparezca define el decimal
-            if (clean.lastIndexOf(',') > clean.lastIndexOf('.')) {
-                clean = clean.replace(/\./g, '').replace(/,/g, '.');
+        let s = String(v).replace(/[^0-9,.]/g, '');
+        if (s.includes(',') && s.includes('.')) {
+            if (s.lastIndexOf(',') > s.lastIndexOf('.')) {
+                s = s.replace(/\./g, '').replace(/,/g, '.');
             } else {
-                clean = clean.replace(/,/g, '');
+                s = s.replace(/,/g, '');
             }
-        } 
-        // Si solo tiene coma, asumimos que es decimal (formato 1234,56)
-        else if (clean.includes(',')) {
-            clean = clean.replace(/,/g, '.');
+        } else if (s.includes(',')) {
+            s = s.replace(/,/g, '.');
         }
-        var n = parseFloat(clean);
+        const n = parseFloat(s);
         return isNaN(n) ? 0 : n;
     }
 

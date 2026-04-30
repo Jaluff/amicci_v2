@@ -126,7 +126,6 @@
                             <th>Valor Decl.</th>
                             <th>Total</th>
                             <th>Ubicación</th>
-
                             <th>Acciones</th>
                         </tr>
                     </thead>
