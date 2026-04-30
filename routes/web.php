@@ -132,8 +132,6 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'role:admin|supervisor'])->group(function () {
     Route::resource('users', \App\Http\Controllers\UserController::class)->except(['show']);
 
-    Route::get('users/{user}/permissions', [\App\Http\Controllers\UserPermissionController::class , 'show'])->name('users.permissions.show');
-    Route::put('users/{user}/permissions', [\App\Http\Controllers\UserPermissionController::class , 'update'])->name('users.permissions.update');
 
     // Reportes
     Route::get('/reports/dispatches', [\App\Http\Controllers\DispatchReportController::class, 'index'])->name('reports.dispatches.index');

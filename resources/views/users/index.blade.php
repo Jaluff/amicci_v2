@@ -58,10 +58,6 @@
                                     <button type="submit" class="text-red-600 hover:text-red-900">Eliminar</button>
                                 </form>
                                 @endif
-                                <button type="button" class="btn-edit-permissions text-yellow-600 hover:text-yellow-900"
-                                    data-user-id="{{ $user->id }}">
-                                    Permisos
-                                </button>
                             </td>
                         </tr>
                         @endforeach
@@ -195,7 +191,6 @@
     }
 </style>
 
-@include('users._modal_permissions')
 @endsection
 
 @section('scripts')

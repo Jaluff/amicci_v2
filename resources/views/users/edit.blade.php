@@ -50,6 +50,23 @@
                     </div>
                 </div>
 
+                <div class="mb-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+                    <x-input-label value="Permisos Directos (Adicionales al Rol)" class="mb-2" />
+                    <p class="text-sm text-gray-500 mb-4">Usa esta sección solo si necesitas asignar permisos específicos que no están incluidos en el rol seleccionado.</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        @foreach($permissions as $permission)
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" name="permissions[]" value="{{ $permission->id }}" {{
+                                (is_array(old('permissions')) && in_array($permission->id, old('permissions'))) ||
+                            $user->permissions->contains($permission->id) ? 'checked' : '' }}
+                            class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-blue-600
+                            shadow-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:focus:ring-offset-gray-800">
+                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ $permission->name }}</span>
+                        </label>
+                        @endforeach
+                    </div>
+                </div>
+
                 <div class="mb-6">
                     <x-input-label value="Empresas Asignadas" class="mb-2" />
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
