@@ -1,4 +1,3 @@
-
 $(function () {
     const modal = $('#routes-modal');
     const tableBody = $('#selected-routes-table tbody');
