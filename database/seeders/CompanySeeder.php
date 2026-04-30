@@ -38,6 +38,13 @@ class CompanySeeder extends Seeder
             ['name' => 'Sucursal Mendoza', 'ubicacion_id' => $mendoza?->id]
         );
 
+        // Vincular ubicaciones a sus sucursales (Arquitectura Refactorizada)
+        Ubicacion::whereIn('nombre', ['Buenos Aires', 'Buenos Aires (Cap. Fed.)'])
+            ->update(['branch_id' => $branchBA->id]);
+            
+        Ubicacion::whereIn('nombre', ['Mendoza', 'Mendoza Este', 'Mendoza Sur'])
+            ->update(['branch_id' => $branchMendoza->id]);
+
         // Vincular sucursales a las empresas
         foreach ([$ghiotto, $amicci] as $company) {
             $company->branches()->syncWithoutDetaching([
