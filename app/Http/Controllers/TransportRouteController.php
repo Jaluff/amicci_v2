@@ -64,6 +64,8 @@ class TransportRouteController extends Controller
                 'shipments.ubicacion_actual',
                 'origen.nombre as origen_nombre',
                 'destino.nombre as destino_nombre',
+                'remitente.name as remitente_nombre',
+                'destinatario.name as destinatario_nombre',
                 'companies.prefix as empresa_prefix',
                 'companies.color as empresa_color',
                 DB::raw('(SELECT COALESCE(SUM(si.cantidad), 0) FROM shipment_items si WHERE si.shipment_id = shipments.id) as bultos_total')
@@ -71,6 +73,8 @@ class TransportRouteController extends Controller
             ->join('companies', 'shipments.company_id', '=', 'companies.id')
             ->leftJoin('ubicaciones as origen', 'shipments.origen_id', '=', 'origen.id')
             ->leftJoin('ubicaciones as destino', 'shipments.destino_id', '=', 'destino.id')
+            ->leftJoin('parties as remitente', 'shipments.remitente_id', '=', 'remitente.id')
+            ->leftJoin('parties as destinatario', 'shipments.destinatario_id', '=', 'destinatario.id')
             ->whereNull('shipments.deleted_at')
             ->where('shipments.ubicacion_actual', '=', 'Dto origen')
             ->whereNull('shipments.transport_route_id');
@@ -113,8 +117,8 @@ class TransportRouteController extends Controller
                 return '<input type="checkbox" class="shipment-checkbox w-4 h-4 text-blue-600 rounded focus:ring-blue-500" 
                     value="' . $row->id . '" 
                     data-numero="' . $row->numero . '" 
-                    data-origen="' . $row->origen_nombre . '" 
-                    data-destino="' . $row->destino_nombre . '" 
+                    data-remitente="' . ($row->remitente_nombre ?? '-') . '" 
+                    data-destinatario="' . ($row->destinatario_nombre ?? '-') . '" 
                     data-bultos="' . (int) ($row->bultos_total ?? 0) . '" 
                     data-estado="' . $row->ubicacion_actual . '" 
                     data-has-problem="' . ($row->has_active_problem > 0 ? 'true' : 'false') . '"
@@ -235,9 +239,16 @@ class TransportRouteController extends Controller
 
         $route->load(['shipments' => function ($q) {
             $q->select([
-                'shipments.id', 'shipments.numero', 'shipments.origen_id', 'shipments.destino_id', 'shipments.transport_route_id', 'shipments.ubicacion_actual'
+                'shipments.id', 'shipments.numero', 'shipments.origen_id', 'shipments.destino_id', 
+                'shipments.remitente_id', 'shipments.destinatario_id',
+                'shipments.transport_route_id', 'shipments.ubicacion_actual'
             ])
-                ->with(['origin:id,nombre', 'destination:id,nombre'])
+                ->with([
+                    'origin:id,nombre', 
+                    'destination:id,nombre',
+                    'sender:id,name',
+                    'recipient:id,name'
+                ])
                 ->withCount(['items as bultos' => function ($query) {
                     $query->select(DB::raw('COALESCE(SUM(cantidad), 0)'));
                 }]);

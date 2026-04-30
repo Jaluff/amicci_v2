@@ -137,8 +137,8 @@ $(function () {
                 },
                 { data: 'empresa', name: 'empresa', orderable: false, searchable: false },
                 { data: 'fecha', name: 'shipments.fecha' },
-                { data: 'origen_nombre', name: 'origen_nombre' },
-                { data: 'destino_nombre', name: 'destino_nombre' },
+                { data: 'remitente_nombre', name: 'remitente.name' },
+                { data: 'destinatario_nombre', name: 'destinatario.name' },
                 {
                     data: 'ubicacion_actual',
                     name: 'shipments.ubicacion_actual',
@@ -214,8 +214,8 @@ $(function () {
                 tableBody.find('.empty-row').remove();
 
                 const numero = $(this).data('numero');
-                const origen = $(this).data('origen');
-                const destino = $(this).data('destino');
+                const remitente = $(this).data('remitente');
+                const destinatario = $(this).data('destinatario');
                 const estado = $(this).data('estado');
                 const bultos = $(this).data('bultos');
                 const hasProblem = $(this).data('has-problem') === true || $(this).data('has-problem') === 'true';
@@ -240,8 +240,8 @@ $(function () {
                             ${numero}${problemIcon}
                             <input type="hidden" name="shipments[]" value="${id}">
                         </td>
-                        <td class="p-3 text-sm text-gray-800 dark:text-gray-200">${origen}</td>
-                        <td class="p-3 text-sm text-gray-800 dark:text-gray-200">${destino}</td>
+                        <td class="p-3 text-sm text-gray-800 dark:text-gray-200">${remitente}</td>
+                        <td class="p-3 text-sm text-gray-800 dark:text-gray-200">${destinatario}</td>
                         <td class="p-3 text-sm text-gray-800 dark:text-gray-200">
                             <span class="dt-badge ${coloresStr}">${estado}</span>
                         </td>
