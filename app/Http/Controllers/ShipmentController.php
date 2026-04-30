@@ -205,13 +205,18 @@ class ShipmentController extends Controller
 
             return $content;
         })
-            ->addColumn('remitente_destinatario', function ($row) {
-                return '<div class="text-xs">' .
-                    '<span class="font-bold text-gray-700 dark:text-gray-300">R:</span> ' . ($row->remitente_nombre ?? '-') . '<br>' .
-                    '<span class="font-bold text-gray-700 dark:text-gray-300">D:</span> ' . ($row->destinatario_nombre ?? '-') .
-                    '</div>';
+            ->addColumn('remitente_upper', function ($row) {
+                return '<span class="font-bold text-gray-800 dark:text-gray-200">' . mb_strtoupper($row->remitente_nombre ?? '-') . '</span>';
             })
-            ->rawColumns(['acciones', 'ubicacion_actual', 'remitente_destinatario', 'numero', 'empresa'])
+            ->addColumn('destinatario_upper', function ($row) {
+                return '<span class="font-bold text-gray-800 dark:text-gray-200">' . mb_strtoupper($row->destinatario_nombre ?? '-') . '</span>';
+            })
+            ->addColumn('ruta_corta', function ($row) {
+                $or = $row->origen_nombre ?? '-';
+                $ds = $row->destino_nombre ?? '-';
+                return "<span class='text-xs font-mono bg-gray-100 dark:bg-gray-700 px-1 rounded text-gray-600 dark:text-gray-400'>" . mb_strtoupper($or) . " → " . mb_strtoupper($ds) . "</span>";
+            })
+            ->rawColumns(['acciones', 'ubicacion_actual', 'remitente_upper', 'destinatario_upper', 'ruta_corta', 'numero', 'empresa'])
             ->make(true);
     }
 
