@@ -212,9 +212,13 @@ class ShipmentController extends Controller
                 return '<span class="font-bold text-gray-800 dark:text-gray-200">' . mb_strtoupper($row->destinatario_nombre ?? '-') . '</span>';
             })
             ->addColumn('ruta_corta', function ($row) {
-                $or = $row->origen_nombre ?? '-';
-                $ds = $row->destino_nombre ?? '-';
-                return "<span class='text-xs font-mono bg-gray-100 dark:bg-gray-700 px-1 rounded text-gray-600 dark:text-gray-400'>" . mb_strtoupper($or) . " → " . mb_strtoupper($ds) . "</span>";
+                $or = mb_strtoupper($row->origen_nombre ?? '-');
+                $ds = mb_strtoupper($row->destino_nombre ?? '-');
+                return "<div class='flex items-center gap-1'>
+                            <span class='px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-700 text-white shadow-sm'>{$or}</span>
+                            <span class='text-gray-400'>→</span>
+                            <span class='px-2 py-0.5 rounded text-[10px] font-bold bg-slate-700 text-white shadow-sm'>{$ds}</span>
+                        </div>";
             })
             ->rawColumns(['acciones', 'ubicacion_actual', 'remitente_upper', 'destinatario_upper', 'ruta_corta', 'numero', 'empresa'])
             ->make(true);

@@ -120,7 +120,7 @@
         var isContra = $('input[name="contra_reembolso"]:checked').val() == '1';
         if (isContra) {
             var pctCR = window.GlobalContraPct || 0;
-            var montoCR = (totalValor * pctCR) / 100;
+            var montoCR = (totalValor * pctCR) / 1000;
             $('#monto_contra_reembolso').val(montoCR.toFixed(2)).trigger('change');
         } else {
             $('#monto_contra_reembolso').val('0.00').trigger('change');
@@ -254,7 +254,7 @@
                 break;
 
             case 'valor_declarado':
-                flete = totalValor * (tariffSetting.declared_value_pct / 1000);
+                flete = totalValor * (tariffSetting.declared_value_pct / 100);
                 if (tariffSetting.minimum_charge > 0 && flete < tariffSetting.minimum_charge) {
                     flete = tariffSetting.minimum_charge;
                 }
