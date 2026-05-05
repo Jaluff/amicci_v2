@@ -22,8 +22,8 @@
     <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Ubicación del Reparto</label>
         <select name="location_id" id="location_id"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white select2"
-            required>
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white select2 {{ $isEdit && $delivery->shipments->count() > 0 ? 'pointer-events-none bg-gray-100 dark:bg-gray-800 opacity-75' : '' }}"
+            required {{ $isEdit && $delivery->shipments->count() > 0 ? 'tabindex=-1' : '' }}>
             <option value="">Seleccione ubicación</option>
             @foreach($branches as $branch)
             <option value="{{ $branch->id }}" @selected(old('location_id', $delivery->location_id ?? null) == $branch->id)>

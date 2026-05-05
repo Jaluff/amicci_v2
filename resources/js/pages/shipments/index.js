@@ -38,12 +38,14 @@ $(function () {
             },
             { data: 'fecha', name: 'shipments.fecha', responsivePriority: 2 },
             { data: 'numero', name: 'shipments.numero', responsivePriority: 1 },
-            { data: 'origen_nombre', name: 'origen.nombre', defaultContent: '-', responsivePriority: 6 },
-            { data: 'destino_nombre', name: 'destino.nombre', defaultContent: '-', responsivePriority: 6 },
-            { data: 'remitente_destinatario', name: 'remitente_destinatario', orderable: false, searchable: false, responsivePriority: 7 },
+            { data: 'remitente_upper', name: 'remitente.name', responsivePriority: 3 },
+            { data: 'destinatario_upper', name: 'destinatario.name', responsivePriority: 3 },
+            { data: 'ruta_corta', name: 'origen.nombre', orderable: false, responsivePriority: 6 },
+            { data: 'despacho', name: 'dispatches.dispatch_number', responsivePriority: 4 },
+            { data: 'reparto', name: 'deliveries.delivery_number', responsivePriority: 4 },
             { data: 'flete', name: 'shipments.flete', responsivePriority: 5 },
             { data: 'bultos', name: 'bultos', orderable: false, searchable: false, responsivePriority: 4 },
-            { data: 'valor_declarado', name: 'valor_declarado', orderable: false, searchable: false, visible: false },
+            { data: 'valor_declarado', name: 'valor_declarado', orderable: false, searchable: false, visible: true, responsivePriority: 8 },
             { data: 'total', name: 'shipments.total', responsivePriority: 3 },
             {
                 data: 'ubicacion_actual',
@@ -56,7 +58,7 @@ $(function () {
             },
             { data: 'acciones', name: 'acciones', orderable: false, searchable: false, responsivePriority: 1, className: 'text-center' },
         ],
-        order: [[0, 'desc']],
+        order: [[1, 'desc']],
     });
 
     $('#btn-filter').on('click', function () {

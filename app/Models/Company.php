@@ -29,9 +29,10 @@ class Company extends Model
         return $this->hasMany(Shipment::class);
     }
 
-    public function branches(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function branches(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
-        return $this->hasMany(Branch::class);
+        return $this->belongsToMany(Branch::class, 'branch_company')
+            ->withPivot('last_shipment_number');
     }
 
     public function transportRoutes(): \Illuminate\Database\Eloquent\Relations\HasMany

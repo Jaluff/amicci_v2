@@ -14,6 +14,7 @@ class UbicacionSeeder extends Seeder
     {
         $ubicaciones = [
             'Buenos Aires',
+            'Buenos Aires (Cap. Fed.)',
             'Mendoza Este',
             'Mendoza Sur',
             'Mendoza',

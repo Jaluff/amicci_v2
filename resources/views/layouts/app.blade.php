@@ -49,6 +49,7 @@
     </div>
 
     @include('partials._global_problem_modals')
+    @stack('modals')
     @yield('scripts')
 </body>
 

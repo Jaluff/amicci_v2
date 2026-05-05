@@ -1,5 +1,3 @@
-import $ from 'jquery';
-
 $(function () {
     const modal = $('#shipments-modal');
     const tableBody = $('#selected-shipments-table tbody');
@@ -17,6 +15,16 @@ $(function () {
     $('.shipment-row input[name="shipments[]"]').each(function () {
         selectedStorage.add($(this).val());
     });
+
+    function toggleHeaderLock() {
+        const count = selectedStorage.size;
+        const $targets = $('#origin_id, #destination_id');
+        if (count > 0) {
+            $targets.addClass('pointer-events-none bg-gray-100 dark:bg-gray-800 opacity-75').attr('tabindex', '-1');
+        } else {
+            $targets.removeClass('pointer-events-none bg-gray-100 dark:bg-gray-800 opacity-75').removeAttr('tabindex');
+        }
+    }
 
     // Control de selectores de Origen y Destino (para evitar seleccionar el mismo)
     function handleLocationSelects() {
@@ -66,6 +74,7 @@ $(function () {
         updateOptions();
     }
     handleLocationSelects();
+    toggleHeaderLock();
 
     // Abrir Modal
     $('.btn-open-shipments-modal').on('click', function () {
@@ -128,8 +137,8 @@ $(function () {
                 },
                 { data: 'empresa', name: 'empresa', orderable: false, searchable: false },
                 { data: 'fecha', name: 'shipments.fecha' },
-                { data: 'origen_nombre', name: 'origen_nombre' },
-                { data: 'destino_nombre', name: 'destino_nombre' },
+                { data: 'remitente_nombre', name: 'remitente.name' },
+                { data: 'destinatario_nombre', name: 'destinatario.name' },
                 {
                     data: 'ubicacion_actual',
                     name: 'shipments.ubicacion_actual',
@@ -205,8 +214,8 @@ $(function () {
                 tableBody.find('.empty-row').remove();
 
                 const numero = $(this).data('numero');
-                const origen = $(this).data('origen');
-                const destino = $(this).data('destino');
+                const remitente = $(this).data('remitente');
+                const destinatario = $(this).data('destinatario');
                 const estado = $(this).data('estado');
                 const bultos = $(this).data('bultos');
                 const hasProblem = $(this).data('has-problem') === true || $(this).data('has-problem') === 'true';
@@ -231,8 +240,8 @@ $(function () {
                             ${numero}${problemIcon}
                             <input type="hidden" name="shipments[]" value="${id}">
                         </td>
-                        <td class="p-3 text-sm text-gray-800 dark:text-gray-200">${origen}</td>
-                        <td class="p-3 text-sm text-gray-800 dark:text-gray-200">${destino}</td>
+                        <td class="p-3 text-sm text-gray-800 dark:text-gray-200">${remitente}</td>
+                        <td class="p-3 text-sm text-gray-800 dark:text-gray-200">${destinatario}</td>
                         <td class="p-3 text-sm text-gray-800 dark:text-gray-200">
                             <span class="dt-badge ${coloresStr}">${estado}</span>
                         </td>
@@ -247,6 +256,7 @@ $(function () {
         });
 
         modal.addClass('hidden');
+        toggleHeaderLock();
     });
 
     // Remover guía de la tabla principal
@@ -260,6 +270,7 @@ $(function () {
         if (tableBody.find('.shipment-row').length === 0) {
             tableBody.append('<tr class="empty-row"><td colspan="5" class="p-4 text-center text-gray-500 text-sm">Aún no se han asignado guías</td></tr>');
         }
+        toggleHeaderLock();
     });
 
 });

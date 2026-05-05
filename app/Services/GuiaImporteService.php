@@ -263,10 +263,10 @@ class GuiaImporteService
     }
 
     /**
-     * Calcula el flete sobre el valor declarado (cálculo por mil).
-     * Fórmula: valor_declarado * (tasa / 1000)
+     * Calcula el flete sobre el valor declarado (cálculo por ciento).
+     * Fórmula: valor_declarado * (tasa / 100)
      *
-     * @param  float  $tasa  Tasa por mil (ej: 8 = $8 por cada $1000)
+     * @param  float  $tasa  Tasa por ciento (ej: 1 = 1% del valor)
      */
     private function calcularPorValorDeclarado(float $tasa, float $valorDeclarado): float
     {
@@ -274,6 +274,6 @@ class GuiaImporteService
             return 0.0;
         }
 
-        return $valorDeclarado * ($tasa / 1000);
+        return $valorDeclarado * ($tasa / 100);
     }
 }

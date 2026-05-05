@@ -1,5 +1,3 @@
-import $ from 'jquery';
-
 $(function () {
     const modal = $('#routes-modal');
     const tableBody = $('#selected-routes-table tbody');
@@ -17,6 +15,16 @@ $(function () {
     $('.route-row input[name="routes[]"]').each(function () {
         selectedStorage.add($(this).val());
     });
+
+    function toggleHeaderLock() {
+        const count = selectedStorage.size;
+        const $targets = $('#origin_id, #destination_id');
+        if (count > 0) {
+            $targets.addClass('pointer-events-none bg-gray-100 dark:bg-gray-800 opacity-75').attr('tabindex', '-1');
+        } else {
+            $targets.removeClass('pointer-events-none bg-gray-100 dark:bg-gray-800 opacity-75').removeAttr('tabindex');
+        }
+    }
 
     // Control origen/destino
     function handleLocationSelects() {
@@ -56,6 +64,7 @@ $(function () {
         updateOptions();
     }
     handleLocationSelects();
+    toggleHeaderLock();
 
     // Abrir Modal
     $('.btn-open-routes-modal').on('click', function () {
@@ -235,6 +244,7 @@ $(function () {
         });
 
         modal.addClass('hidden');
+        toggleHeaderLock();
     });
 
     // Remover ruta de la tabla principal
@@ -248,5 +258,51 @@ $(function () {
         if (tableBody.find('.route-row').length === 0) {
             tableBody.append('<tr class="empty-row"><td colspan="5" class="p-4 text-center text-gray-500 text-sm">Aún no se han asignado rutas</td></tr>');
         }
+        toggleHeaderLock();
+    });
+    // --- MODAL DE IMPRESIÓN DE GUÍAS POR RUTA ---
+    const printModal = $('#print-route-modal');
+    
+    $(document).on('click', '.btn-print-route-guides', function() {
+        const routeId = $(this).data('route-id');
+        const routeNumber = $(this).data('route-number');
+        
+        $('#modal-route-number').text(routeNumber);
+        $('#print-guides-body').html('<tr><td colspan="4" class="p-8 text-center text-gray-500">Cargando guías...</td></tr>');
+        printModal.removeClass('hidden');
+        
+        // Cargar guías vía AJAX
+        $.get(`/routes/${routeId}/shipments`, function(shipments) {
+            let html = '';
+            if (shipments.length === 0) {
+                html = '<tr><td colspan="4" class="p-8 text-center text-gray-500">No hay guías asignadas a esta ruta.</td></tr>';
+            } else {
+                shipments.forEach(shipment => {
+                    const remitente = shipment.sender ? shipment.sender.name : '-';
+                    const destinatario = shipment.recipient ? shipment.recipient.name : '-';
+                    
+                    html += `
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <td class="p-3 text-center">
+                            <input type="checkbox" name="ids[]" value="${shipment.id}" class="print-guide-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700" checked>
+                        </td>
+                        <td class="p-3 text-sm font-bold text-gray-800 dark:text-gray-200">${shipment.numero}</td>
+                        <td class="p-3 text-sm text-gray-600 dark:text-gray-400">${remitente}</td>
+                        <td class="p-3 text-sm text-gray-600 dark:text-gray-400">${destinatario}</td>
+                        <td class="p-3 text-sm text-center font-mono text-gray-500">${shipment.bultos || 0}</td>
+                    </tr>`;
+                });
+            }
+            $('#print-guides-body').html(html);
+            $('#check-all-print').prop('checked', true);
+        });
+    });
+
+    $(document).on('click', '.btn-close-print-modal', function() {
+        printModal.addClass('hidden');
+    });
+
+    $('#check-all-print').on('change', function() {
+        $('.print-guide-checkbox').prop('checked', $(this).is(':checked'));
     });
 });

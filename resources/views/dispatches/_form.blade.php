@@ -76,8 +76,8 @@
     <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Origen</label>
         <select name="origin_id" id="origin_id"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white"
-            required>
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white {{ $isEdit && $dispatch->routes->count() > 0 ? 'pointer-events-none bg-gray-100 dark:bg-gray-800 opacity-75' : '' }}"
+            required {{ $isEdit && $dispatch->routes->count() > 0 ? 'tabindex=-1' : '' }}>
             <option value="">Seleccione origen</option>
             @foreach($branches as $branch)
             <option value="{{ $branch->id }}" @selected(old('origin_id', $dispatch->origin_id) == $branch->id)>
@@ -90,9 +90,9 @@
 
     <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Destino</label>
-        <select name="destination_id"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white"
-            required>
+        <select name="destination_id" id="destination_id"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600 dark:text-white {{ $isEdit && $dispatch->routes->count() > 0 ? 'pointer-events-none bg-gray-100 dark:bg-gray-800 opacity-75' : '' }}"
+            required {{ $isEdit && $dispatch->routes->count() > 0 ? 'tabindex=-1' : '' }}>
             <option value="">Seleccione destino</option>
             @foreach($branches as $branch)
             <option value="{{ $branch->id }}" @selected(old('destination_id', $dispatch->destination_id) == $branch->id)>
@@ -134,7 +134,7 @@
                     <th class="p-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Destino</th>
                     <th class="p-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Estado</th>
                     <th class="p-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Guías</th>
-                    <th class="p-3 text-sm font-semibold text-gray-700 dark:text-gray-300 w-16 text-center">Quitar</th>
+                    <th class="p-3 text-sm font-semibold text-gray-700 dark:text-gray-300 w-32 text-center">Acciones</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
@@ -145,8 +145,8 @@
                         {{ $route->route_number }}
                         <input type="hidden" name="routes[]" value="{{ $route->id }}">
                     </td>
-                    <td class="p-3 text-sm text-gray-800 dark:text-gray-200">{{ $route->origin->nombre ?? '-' }}</td>
-                    <td class="p-3 text-sm text-gray-800 dark:text-gray-200">{{ $route->destination->nombre ?? '-' }}
+                    <td class="p-3 text-sm text-gray-800 dark:text-gray-200">{{ $route->origin->name ?? $route->origin->nombre ?? '-' }}</td>
+                    <td class="p-3 text-sm text-gray-800 dark:text-gray-200">{{ $route->destination->name ?? $route->destination->nombre ?? '-' }}
                     </td>
                     <td class="p-3 text-sm text-gray-800 dark:text-gray-200">
                         @php
@@ -162,12 +162,19 @@
                     </td>
                     <td class="p-3 text-sm text-gray-800 dark:text-gray-200">{{ $route->shipments_count ?? 0 }}</td>
                     <td class="p-3 text-center">
-                        @if(!isset($dispatch) || !$dispatch->exists || $dispatch->status === 'Cargado')
-                        <button type="button" class="text-red-500 hover:text-red-700 btn-remove-route font-bold"
-                            title="Remover">&times;</button>
-                        @else
-                        <span class="text-gray-400">—</span>
-                        @endif
+                        <div class="flex items-center justify-center gap-2">
+                            @if($route->shipments_count > 0)
+                            <button type="button" class="btn-print-route-guides text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                data-route-id="{{ $route->id }}" data-route-number="{{ $route->route_number }}" title="Imprimir Guías">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                            </button>
+                            @endif
+
+                            @if(!isset($dispatch) || !$dispatch->exists || $dispatch->status === 'Cargado')
+                            <button type="button" class="text-red-500 hover:text-red-700 btn-remove-route font-bold text-xl leading-none"
+                                title="Remover">&times;</button>
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 @endforeach

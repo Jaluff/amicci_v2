@@ -34,7 +34,7 @@ class DispatchController extends Controller
     {
         $query = Dispatch::query()
             ->with(['driver', 'origin', 'destination'])
-            ->withCount('routes')
+            ->withCount(['routes', 'shipments'])
             ->withCount(['shipments as problem_count' => function ($q) {
                 $q->whereHas('problems', fn($query) => $query->where('is_active', true));
             }]);
@@ -70,7 +70,7 @@ class DispatchController extends Controller
             }
         }
 
-        $isAdminOrSupervisor = auth()->user()->hasAnyRole(['admin', 'Supervisor']);
+        $isAdminOrSupervisor = auth()->user()->hasAnyRole(['admin', 'supervisor', 'Supervisor']);
 
         return DataTables::of($query->orderByDesc('dispatches.created_at'))
 
@@ -105,6 +105,11 @@ class DispatchController extends Controller
                         'class'   => 'bg-green-600 hover:bg-green-700 text-white',
                         'confirm' => '¿Confirmar llegada a destino?',
                     ],
+                    'Cargado' => [
+                        'label'   => '↩ Revertir',
+                        'class'   => 'bg-gray-500 hover:bg-gray-600 text-white',
+                        'confirm' => '¿Deseas revertir este despacho a estado inicial? Las rutas también se revertirán.',
+                    ],
                 ];
 
                 $statusButtons = "";
@@ -115,7 +120,13 @@ class DispatchController extends Controller
                 }
 
                 $deleteForm = "";
-                if ($row->routes_count == 0 && $currentStatus === \App\StateMachines\DispatchStateMachine::LOADED && $isAdminOrSupervisor) {
+                // El usuario aclara: si tiene 0 RUTAS O está en estado Cargado, permitir eliminar (si es admin/supervisor)
+                $canDelete = $isAdminOrSupervisor && (
+                    $row->routes_count == 0 && 
+                    $currentStatus === \App\StateMachines\DispatchStateMachine::STATUS_CARGADO
+                );
+
+                if ($canDelete) {
                     $deleteForm = "
                     <form action='{$deleteUrl}' method='POST' onsubmit='{$confirm}' class='inline m-0'>
                         <input type='hidden' name='_token' value='{$csrf}'>
@@ -177,8 +188,8 @@ class DispatchController extends Controller
                     data-estado="' . $row->status . '"
                     data-has-problem="' . ($row->problem_count > 0 ? 'true' : 'false') . '">';
             })
-            ->addColumn('origen_nombre', fn($row) => $row->origin->name ?? '-')
-            ->addColumn('destino_nombre', fn($row) => $row->destination->name ?? '-')
+            ->addColumn('origen_nombre', fn($row) => $row->origin?->name ?? $row->origin?->nombre ?? '-')
+            ->addColumn('destino_nombre', fn($row) => $row->destination?->name ?? $row->destination?->nombre ?? '-')
             ->rawColumns(['check', 'empresa'])
             ->make(true);
     }
@@ -218,7 +229,7 @@ class DispatchController extends Controller
             $q->select(['transport_routes.id', 'route_number', 'origin_id', 'destination_id', 'dispatch_id', 'status'])
                 ->with(['origin:id,name', 'destination:id,name'])
                 ->withCount('shipments');
-        }]);
+        }])->loadCount('shipments');
 
         return view('dispatches.edit', compact('dispatch', 'drivers', 'branches'));
     }
@@ -235,10 +246,11 @@ class DispatchController extends Controller
 
     public function destroy(Dispatch $dispatch)
     {
-        abort_if(!auth()->user()->hasAnyRole(['admin', 'Supervisor']), 403, 'No tienes permisos para anular documentos.');
+        abort_if(!auth()->user()->hasAnyRole(['admin', 'supervisor', 'Supervisor']), 403, 'No tienes permisos para anular documentos.');
 
-        if ($dispatch->status !== \App\StateMachines\DispatchStateMachine::STATUS_CARGADO) {
-            return redirect()->route('dispatches.index')->with('error', 'No se puede anular un despacho que ya no está en estado "Cargado".');
+        // Permitir anular SOLO si está en estado base "Cargado" Y no tiene rutas (está vacío)
+        if ($dispatch->status !== \App\StateMachines\DispatchStateMachine::STATUS_CARGADO || $dispatch->routes()->count() > 0) {
+            return redirect()->route('dispatches.index')->with('error', 'Solo se pueden anular despachos que no tengan rutas asignadas y estén en estado inicial.');
         }
 
         \Illuminate\Support\Facades\DB::transaction(function() use ($dispatch) {

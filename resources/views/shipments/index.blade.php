@@ -118,15 +118,16 @@
                             <th>Empresa</th>
                             <th>Fecha</th>
                             <th>Número</th>
-                            <th>Origen</th>
-                            <th>Destino</th>
-                            <th>Remitente / Destinatario</th>
+                            <th>Remitente</th>
+                            <th>Destinatario</th>
+                            <th>Origen/Dest</th>
+                            <th>Despacho</th>
+                            <th>Reparto</th>
                             <th>Flete</th>
                             <th>Bultos</th>
                             <th>Valor Decl.</th>
                             <th>Total</th>
                             <th>Ubicación</th>
-
                             <th>Acciones</th>
                         </tr>
                     </thead>

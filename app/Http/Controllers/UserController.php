@@ -9,6 +9,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class UserController extends Controller
 {
@@ -27,10 +28,11 @@ class UserController extends Controller
     public function create()
     {
         $roles = Role::all();
+        $permissions = Permission::all();
         $companies = Company::all();
         $branches = \App\Models\Branch::with('companies')->get();
 
-        return view('users.create', compact('roles', 'companies', 'branches'));
+        return view('users.create', compact('roles', 'permissions', 'companies', 'branches'));
     }
 
     /**
@@ -43,6 +45,8 @@ class UserController extends Controller
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => ['required', 'exists:roles,name'],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => ['exists:permissions,id'],
             'companies' => ['required', 'array'],
             'companies.*' => ['exists:companies,id'],
             'branches' => ['nullable', 'array'],
@@ -56,6 +60,7 @@ class UserController extends Controller
         ]);
 
         $user->assignRole($request->role);
+        $user->syncPermissions($request->input('permissions', []));
         $user->companies()->sync($request->companies);
         $user->branches()->sync($request->input('branches', []));
 
@@ -68,10 +73,11 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $roles = Role::all();
+        $permissions = Permission::all();
         $companies = Company::all();
         $branches = \App\Models\Branch::with('companies')->get();
 
-        return view('users.edit', compact('user', 'roles', 'companies', 'branches'));
+        return view('users.edit', compact('user', 'roles', 'permissions', 'companies', 'branches'));
     }
 
     /**
@@ -83,6 +89,8 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,' . $user->id],
             'role' => ['required', 'exists:roles,name'],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => ['exists:permissions,id'],
             'companies' => ['required', 'array'],
             'companies.*' => ['exists:companies,id'],
             'branches' => ['nullable', 'array'],
@@ -108,6 +116,7 @@ class UserController extends Controller
         $user->update($data);
 
         $user->syncRoles([$request->role]);
+        $user->syncPermissions($request->input('permissions', []));
         $user->companies()->sync($request->companies);
         $user->branches()->sync($request->input('branches', []));
 

@@ -15,23 +15,19 @@
     // ─── Configuración tarifaria cargada del remitente ──────────────────────
     var tariffSetting = null;
 
-    /**
-     * Limpia y parsea un valor a float.
-     * Maneja signos de moneda, espacios y comas/puntos.
-     */
     function parseNum(v) {
         if (!v) return 0;
-        // Eliminar todo lo que no sea dígito, coma o punto
-        var clean = String(v).replace(/[^0-9,.]/g, '');
-        // Si hay coma y punto, asumimos formato 1.234,56 -> quitar puntos, cambiar coma por punto
-        if (clean.includes(',') && clean.includes('.')) {
-            clean = clean.replace(/\./g, '').replace(/,/g, '.');
-        } 
-        // Si solo hay coma y está al final (decimal), cambiar por punto
-        else if (clean.includes(',') && clean.indexOf(',') > clean.indexOf('.') ) {
-            clean = clean.replace(/,/g, '.');
+        let s = String(v).replace(/[^0-9,.]/g, '');
+        if (s.includes(',') && s.includes('.')) {
+            if (s.lastIndexOf(',') > s.lastIndexOf('.')) {
+                s = s.replace(/\./g, '').replace(/,/g, '.');
+            } else {
+                s = s.replace(/,/g, '');
+            }
+        } else if (s.includes(',')) {
+            s = s.replace(/,/g, '.');
         }
-        var n = parseFloat(clean);
+        const n = parseFloat(s);
         return isNaN(n) ? 0 : n;
     }
 
@@ -41,8 +37,8 @@
         width: '100%',
         minimumResultsForSearch: 0,
         language: {
-            noResults:  function () { return 'Sin resultados'; },
-            searching:  function () { return 'Buscando...';    },
+            noResults: function () { return 'Sin resultados'; },
+            searching: function () { return 'Buscando...'; },
         },
     };
 
@@ -106,11 +102,12 @@
     function recalcularCargosCliente(preventOverwrite = false) {
         var totalValor = 0;
         $('#items-container .item-row').each(function () {
-            var valStr = $(this).find('[name*="[monto_valor_declarado]"]').val();
+            // Seleccionar por nombre o por clase si tuviera, pero name* es robusto
+            var valStr = $(this).find('input[name*="[monto_valor_declarado]"]').val();
             totalValor += parseNum(valStr);
         });
 
-        // Seguro
+        // Seguro (Depende de Tarifa Cliente)
         if (tariffSetting && tariffSetting.has_insurance) {
             var insPct = parseFloat(tariffSetting.insurance_percent) || 0;
             var seguro = (totalValor * insPct) / 1000;
@@ -119,7 +116,7 @@
             $('#seguro').val('0.00').trigger('change');
         }
 
-        // Contra reembolso
+        // Contra reembolso (Depende de Configuración Empresa - Independiente de Tarifa)
         var isContra = $('input[name="contra_reembolso"]:checked').val() == '1';
         if (isContra) {
             var pctCR = window.GlobalContraPct || 0;
@@ -129,7 +126,7 @@
             $('#monto_contra_reembolso').val('0.00').trigger('change');
         }
 
-        // IVA percent
+        // IVA percent (Depende de Tarifa Cliente o Default)
         if (tariffSetting && !preventOverwrite) {
             var ivaPct = parseFloat(tariffSetting.iva_percent) || 0;
             $('#iva_percent').val(ivaPct).trigger('change');
@@ -152,33 +149,33 @@
         var mode = tariffSetting.billing_mode;
 
         // Sumar totales de ítems
-        var totalKg      = 0;
-        var totalM3      = 0;
-        var totalBultos  = 0;
+        var totalKg = 0;
+        var totalM3 = 0;
+        var totalBultos = 0;
         var totalPallets = 0;
-        var totalValor   = 0;
+        var totalValor = 0;
 
         $('#items-container .item-row').each(function () {
             var tipo = $(this).find('[name*="[tipo_paquete]"]').val() || '';
             var cant = parseFloat($(this).find('[name*="[cantidad]"]').val()) || 0;
-            var peso = parseFloat($(this).find('[name*="[peso]"]').val())     || 0;
-            var vol  = parseFloat($(this).find('[name*="[volumen]"]').val())  || 0;
-            var val  = parseFloat($(this).find('[name*="[monto_valor_declarado]"]').val()) || 0;
+            var peso = parseFloat($(this).find('[name*="[peso]"]').val()) || 0;
+            var vol = parseFloat($(this).find('[name*="[volumen]"]').val()) || 0;
+            var val = parseFloat($(this).find('[name*="[monto_valor_declarado]"]').val()) || 0;
 
-            totalKg    += peso;
-            totalM3    += vol;
+            totalKg += peso;
+            totalM3 += vol;
             totalValor += val;
 
-            if (tipo === 'bultos')  totalBultos  += cant;
-            if (tipo === 'palets')  totalPallets += cant;
+            if (tipo === 'bultos') totalBultos += cant;
+            if (tipo === 'palets') totalPallets += cant;
         });
 
         // Modo kg: delegar al servidor (consulta la escala de tramos)
         if (mode === 'kg') {
-            var origenId  = $('#origen_id').val();
+            var origenId = $('#origen_id').val();
             var destinoId = $('#destino_id').val();
             var payerType = $('input[name="flete_a_pagar_en"]:checked').val() || 'origen';
-            var partyId   = payerType === 'origen' ? $('#remitente_id').val() : $('#destinatario_id').val();
+            var partyId = payerType === 'origen' ? $('#remitente_id').val() : $('#destinatario_id').val();
 
             if (!origenId || !destinoId) {
                 $('#tariff-mode-label').text(tariffSetting.billing_mode_label + ' — Esperando origen y destino...');
@@ -194,9 +191,9 @@
             $.ajax({
                 url: '/shipments/calcular-flete',
                 method: 'GET',
-                data: { 
-                    origen_id: origenId, 
-                    destino_id: destinoId, 
+                data: {
+                    origen_id: origenId,
+                    destino_id: destinoId,
                     peso_kg: totalKg,
                     party_id: partyId,
                     payer_type: payerType
@@ -249,15 +246,15 @@
                 break;
 
             case 'bultos_pallets':
-                var fleteBultos  = totalBultos  * tariffSetting.rate_per_bulto;
+                var fleteBultos = totalBultos * tariffSetting.rate_per_bulto;
                 var fletePallets = totalPallets * tariffSetting.rate_per_pallet;
-                if (tariffSetting.minimum_per_bulto  > 0 && fleteBultos  < tariffSetting.minimum_per_bulto)  fleteBultos  = tariffSetting.minimum_per_bulto;
+                if (tariffSetting.minimum_per_bulto > 0 && fleteBultos < tariffSetting.minimum_per_bulto) fleteBultos = tariffSetting.minimum_per_bulto;
                 if (tariffSetting.minimum_per_pallet > 0 && fletePallets < tariffSetting.minimum_per_pallet) fletePallets = tariffSetting.minimum_per_pallet;
                 flete = fleteBultos + fletePallets;
                 break;
 
             case 'valor_declarado':
-                flete = totalValor * (tariffSetting.declared_value_pct / 1000);
+                flete = totalValor * (tariffSetting.declared_value_pct / 100);
                 if (tariffSetting.minimum_charge > 0 && flete < tariffSetting.minimum_charge) {
                     flete = tariffSetting.minimum_charge;
                 }
@@ -281,12 +278,22 @@
         return max + 1;
     }
 
+    function toggleRemoveButtons() {
+        var $rows = $('#items-container .item-row');
+        if ($rows.length <= 1) {
+            $rows.find('.remove-item').addClass('hidden');
+        } else {
+            $rows.find('.remove-item').removeClass('hidden');
+        }
+    }
+
     function addItemRow() {
         var tpl = document.getElementById('item-row-template');
         if (!tpl) return;
         var index = getNextItemIndex();
         var html = tpl.innerHTML.replace(/__INDEX__/g, index);
         $('#items-container').append(html);
+        toggleRemoveButtons();
     }
 
     // ─── Init ─────────────────────────────────────────────────────────────────
@@ -321,7 +328,7 @@
         });
 
         // Al cambiar de pagador → recargar tarifa con el party que corresponda
-        $('input[name="flete_a_pagar_en"]').on('change', function() {
+        $('input[name="flete_a_pagar_en"]').on('change', function () {
             var payerType = $(this).val();
             var payerId = payerType === 'origen' ? $('#remitente_id').val() : $('#destinatario_id').val();
             loadTariff(payerId);
@@ -338,24 +345,24 @@
         var isEdit = $('#shipment-form').data('is-edit') === true;
         var initialPayerOption = $('input[name="flete_a_pagar_en"]:checked').val() || 'origen';
         var initialPayerId = initialPayerOption === 'origen' ? $('#remitente_id').val() : $('#destinatario_id').val();
-        
+
         if (initialPayerId) {
             // Pasamos true para NO sobrescribir los valores que ya vienen de la DB al cargar
             loadTariff(initialPayerId, isEdit);
         }
 
         // ── Calcular totales de importes ──────────────────────────────────
-        window.calculateTotals = function() { // Exponer globalmente para recalcularCargosCliente
-            var flete                = parseNum($('#flete').val());
-            var seguro               = parseNum($('#seguro').val());
+        window.calculateTotals = function () { // Exponer globalmente para recalcularCargosCliente
+            var flete = parseNum($('#flete').val());
+            var seguro = parseNum($('#seguro').val());
             var monto_contra_reembolso = parseNum($('#monto_contra_reembolso').val());
             var retencion_mercaderia = parseNum($('#retencion_mercaderia').val());
-            var otros_cargos         = parseNum($('#otros_cargos').val());
-            var iva                  = parseNum($('#iva_percent').val());
+            var otros_cargos = parseNum($('#otros_cargos').val());
+            var iva = parseNum($('#iva_percent').val());
 
             var subtotal = flete + seguro + monto_contra_reembolso + retencion_mercaderia + otros_cargos;
-            var tax      = subtotal * (iva / 100);
-            var total    = subtotal + tax;
+            var tax = subtotal * (iva / 100);
+            var total = subtotal + tax;
 
             $('#subtotal').val(subtotal.toFixed(2));
             $('#iva_monto').val(tax.toFixed(2));
@@ -366,7 +373,9 @@
         $('#flete, #seguro, #monto_contra_reembolso, #retencion_mercaderia, #otros_cargos, #iva_percent')
             .on('input change', window.calculateTotals);
 
+        recalcularCargosCliente(isEdit);
         calculateTotals();
+        toggleRemoveButtons();
 
         // ── Recalcular flete al cambiar ítems ────────────────────────────
         // (cantidad, tipo_paquete, peso, volumen, valor declarado)
@@ -381,9 +390,10 @@
         });
 
         $(document).on('click', '.remove-item', function () {
-            var rows = $('#items-container .item-row');
-            if (rows.length <= 1) return;
+            var $rows = $('#items-container .item-row');
+            if ($rows.length <= 1) return;
             $(this).closest('.item-row').remove();
+            toggleRemoveButtons();
             // Re-indexar nombres
             // Re-indexar nombres...
             $('#items-container .item-row').each(function (i) {
@@ -408,45 +418,45 @@
         var $quickPartyForm = $('#quick-party-form');
         var currentQuickPartyTarget = null; // Guardará si fue remitente_id o destinatario_id
 
-        $('.btn-quick-party').on('click', function() {
+        $('.btn-quick-party').on('click', function () {
             currentQuickPartyTarget = $(this).data('target');
             $quickPartyForm[0].reset();
             $quickPartyModal.removeClass('hidden');
         });
 
-        $('#btn-close-quick-party, #backdrop-quick-party').on('click', function() {
+        $('#btn-close-quick-party, #backdrop-quick-party').on('click', function () {
             $quickPartyModal.addClass('hidden');
             currentQuickPartyTarget = null;
         });
 
-        $quickPartyForm.on('submit', function(e) {
+        $quickPartyForm.on('submit', function (e) {
             e.preventDefault();
             var $submitBtn = $(this).find('button[type="submit"]');
             var originalText = $submitBtn.text();
-            
+
             $submitBtn.prop('disabled', true).text('Guardando...');
 
             $.ajax({
                 url: '/parties/ajax-store',
                 method: 'POST',
                 data: $quickPartyForm.serialize(),
-                success: function(response) {
+                success: function (response) {
                     if (response.success && response.party) {
                         var newOption = new Option(response.party.name, response.party.id, true, true);
                         $(currentQuickPartyTarget).append(newOption).trigger('change');
-                        
+
                         window.toastr.success('Cliente creado correctamente');
                         $quickPartyModal.addClass('hidden');
                     }
                 },
-                error: function(xhr) {
+                error: function (xhr) {
                     var msg = 'Ocurrió un error al crear el cliente.';
                     if (xhr.responseJSON && xhr.responseJSON.errors) {
                         msg = Object.values(xhr.responseJSON.errors)[0][0];
                     }
                     window.toastr.error(msg);
                 },
-                complete: function() {
+                complete: function () {
                     $submitBtn.prop('disabled', false).text(originalText);
                 }
             });

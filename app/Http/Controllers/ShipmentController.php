@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreShipmentRequest;
 use App\Http\Requests\UpdateShipmentRequest;
+use App\Models\Dispatch as DispatchModel;
 use App\Models\Party;
 use App\Models\Shipment;
 use App\Models\Ubicacion;
@@ -39,6 +40,8 @@ class ShipmentController extends Controller
             'shipments.transport_route_id',
             'deliveries.delivery_number',
             'transport_routes.route_number',
+            'dispatches.dispatch_number',
+            'dispatches.id as dispatch_id',
             'origen.nombre as origen_nombre',
             'destino.nombre as destino_nombre',
             'remitente.name as remitente_nombre',
@@ -55,6 +58,7 @@ class ShipmentController extends Controller
             ->leftJoin('parties as destinatario', 'shipments.destinatario_id', '=', 'destinatario.id')
             ->leftJoin('deliveries', 'shipments.delivery_id', '=', 'deliveries.id')
             ->leftJoin('transport_routes', 'shipments.transport_route_id', '=', 'transport_routes.id')
+            ->leftJoin('dispatches', 'transport_routes.dispatch_id', '=', 'dispatches.id')
             ->whereNull('shipments.deleted_at')
             ->withCount([
                 'problems as has_active_problem' => function ($q) {
@@ -104,7 +108,7 @@ class ShipmentController extends Controller
 
         return DataTables::of($query->orderByDesc('shipments.fecha'))
             ->addColumn('empresa', function ($row) {
-                return "<span class='font-bold text-gray-700 dark:text-gray-300'>{$row->empresa_prefix}</span>";
+                return $row->empresa_prefix ?? '-';
             })
             ->addColumn('bultos', function ($row) {
             return (int)($row->bultos_total ?? 0);
@@ -204,13 +208,39 @@ class ShipmentController extends Controller
 
             return $content;
         })
-            ->addColumn('remitente_destinatario', function ($row) {
-                return '<div class="text-xs">' .
-                    '<span class="font-bold text-gray-700 dark:text-gray-300">R:</span> ' . ($row->remitente_nombre ?? '-') . '<br>' .
-                    '<span class="font-bold text-gray-700 dark:text-gray-300">D:</span> ' . ($row->destinatario_nombre ?? '-') .
-                    '</div>';
+            ->addColumn('despacho', function ($row) {
+                if (!$row->dispatch_id) return '-';
+                $url = route('dispatches.edit', $row->dispatch_id);
+                $num = $row->dispatch_number ?? $row->dispatch_id;
+                return '<a href="'.$url.'" class="flex items-center gap-1 text-blue-600 dark:text-blue-400 font-bold hover:underline">
+                            <i class="fa-solid fa-truck-fast text-[10px]"></i>
+                            <span>#'.$num.'</span>
+                        </a>';
             })
-            ->rawColumns(['acciones', 'ubicacion_actual', 'remitente_destinatario', 'numero', 'empresa'])
+            ->addColumn('reparto', function ($row) {
+                if (!$row->delivery_id) return '-';
+                $url = route('deliveries.edit', $row->delivery_id);
+                $num = $row->delivery_number ?? $row->delivery_id;
+                return '<a href="'.$url.'" class="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-bold hover:underline">
+                            <i class="fa-solid fa-house-chimney text-[10px]"></i>
+                            <span>#'.$num.'</span>
+                        </a>';
+            })
+            ->addColumn('remitente_upper', function ($row) {
+                return '<span class="font-bold text-gray-800 dark:text-gray-200">' . mb_strtoupper($row->remitente_nombre ?? '-') . '</span>';
+            })
+            ->addColumn('destinatario_upper', function ($row) {
+                return '<span class="font-bold text-gray-800 dark:text-gray-200">' . mb_strtoupper($row->destinatario_nombre ?? '-') . '</span>';
+            })
+            ->addColumn('ruta_corta', function ($row) {
+                $or = mb_strtoupper($row->origen_nombre ?? '-');
+                $ds = mb_strtoupper($row->destino_nombre ?? '-');
+                return "<div class='flex flex-col gap-0.5'>
+                            <span class='px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 text-[9px] font-bold w-fit'>$or</span>
+                            <span class='px-1.5 py-0.5 rounded bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 text-[9px] font-bold w-fit'>$ds</span>
+                        </div>";
+            })
+            ->rawColumns(['acciones', 'ubicacion_actual', 'remitente_upper', 'destinatario_upper', 'ruta_corta', 'numero', 'empresa', 'despacho', 'reparto'])
             ->make(true);
     }
 
@@ -299,7 +329,8 @@ class ShipmentController extends Controller
             ->orderBy('code')
             ->get();
 
-        return view('shipments.edit', compact('shipment', 'ubicaciones', 'parties', 'branches'));
+        $selected_company = $shipment->company;
+        return view('shipments.edit', compact('shipment', 'ubicaciones', 'parties', 'branches', 'selected_company'));
     }
 
     public function update(UpdateShipmentRequest $request, Shipment $shipment, ShipmentService $service)
@@ -360,6 +391,29 @@ class ShipmentController extends Controller
         ]);
 
         return view('shipments.print', compact('shipment'));
+    }
+
+    public function printMassive(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        $dispatchId = $request->input('dispatch_id');
+
+        if (empty($ids)) {
+            return back()->with('error', 'Debe seleccionar al menos una guía.');
+        }
+
+        $shipments = Shipment::whereIn('id', $ids)->with([
+            'origin',
+            'destination',
+            'sender',
+            'recipient',
+            'items',
+            'company.addresses'
+        ])->get();
+
+        $dispatch = $dispatchId ? DispatchModel::with(['driver', 'origin', 'destination'])->find($dispatchId) : null;
+
+        return view('shipments.print_massive', compact('shipments', 'dispatch'));
     }
 
     /**

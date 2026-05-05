@@ -25,6 +25,7 @@ class UpdateUbicacionRequest extends FormRequest
 
         return [
             'nombre' => 'required|string|max:255|unique:ubicaciones,nombre,' . $id,
+            'branch_id' => 'required|exists:branches,id',
         ];
     }
 }

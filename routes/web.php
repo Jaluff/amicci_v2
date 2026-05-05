@@ -45,6 +45,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/shipments/{shipment}/edit', [ShipmentController::class , 'edit'])->name('shipments.edit');
     Route::get('/shipments/{shipment}/print', [ShipmentController::class , 'print'])->name('shipments.print');
+    Route::post('/shipments/print-massive', [ShipmentController::class, 'printMassive'])->name('shipments.print-massive');
     Route::post('/shipments/{shipment}', [ShipmentController::class , 'update'])->name('shipments.update');
     Route::delete('/shipments/{shipment}', [ShipmentController::class , 'destroy'])->name('shipments.destroy');
 
@@ -75,6 +76,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/routes/create', [TransportRouteController::class , 'create'])->name('routes.create');
     Route::post('/routes', [TransportRouteController::class , 'store'])->name('routes.store');
     Route::get('/routes/{route}/edit', [TransportRouteController::class , 'edit'])->name('routes.edit');
+    Route::get('/routes/{route}/shipments', [TransportRouteController::class, 'getShipments'])->name('routes.shipments');
     Route::put('/routes/{route}', [TransportRouteController::class , 'update'])->name('routes.update');
     Route::delete('/routes/{route}', [TransportRouteController::class , 'destroy'])->name('routes.destroy');
 
@@ -132,8 +134,6 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'role:admin|supervisor'])->group(function () {
     Route::resource('users', \App\Http\Controllers\UserController::class)->except(['show']);
 
-    Route::get('users/{user}/permissions', [\App\Http\Controllers\UserPermissionController::class , 'show'])->name('users.permissions.show');
-    Route::put('users/{user}/permissions', [\App\Http\Controllers\UserPermissionController::class , 'update'])->name('users.permissions.update');
 
     // Reportes
     Route::get('/reports/dispatches', [\App\Http\Controllers\DispatchReportController::class, 'index'])->name('reports.dispatches.index');

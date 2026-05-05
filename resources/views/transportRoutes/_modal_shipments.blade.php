@@ -28,8 +28,8 @@
                         <th class="p-2 font-semibold text-gray-800 dark:text-gray-200">Número</th>
                         <th class="p-2 font-semibold text-gray-800 dark:text-gray-200">Empresa</th>
                         <th class="p-2 font-semibold text-gray-800 dark:text-gray-200">Fecha</th>
-                        <th class="p-2 font-semibold text-gray-800 dark:text-gray-200">Origen</th>
-                        <th class="p-2 font-semibold text-gray-800 dark:text-gray-200">Destino</th>
+                        <th class="p-2 font-semibold text-gray-800 dark:text-gray-200">Remitente</th>
+                        <th class="p-2 font-semibold text-gray-800 dark:text-gray-200">Destinatario</th>
                         <th class="p-2 font-semibold text-gray-800 dark:text-gray-200">Estado</th>
                         <th class="p-2 font-semibold text-gray-800 dark:text-gray-200 text-right">Bultos</th>
                     </tr>

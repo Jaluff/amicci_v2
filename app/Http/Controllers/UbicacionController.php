@@ -21,7 +21,8 @@ class UbicacionController extends Controller
     public function index(): View
     {
         $ubicaciones = $this->ubicacionService->getAll();
-        return view('ubicaciones.index', compact('ubicaciones'));
+        $branches = \App\Models\Branch::orderBy('name')->get();
+        return view('ubicaciones.index', compact('ubicaciones', 'branches'));
     }
 
     /**

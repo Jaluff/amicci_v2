@@ -69,72 +69,72 @@
                     </x-dropdown>
                 </div>
                 @if(auth()->user()->hasRole(['admin', 'supervisor']))
-                <!-- Dropdown Menú Administración (Desktop) -->
-                <div class="hidden sm:flex sm:items-center sm:ms-10 sm:-my-px h-16 pt-1">
-                    <x-dropdown align="left" width="48">
-                        <x-slot name="trigger">
-                            <button
-                                class="inline-flex items-center px-1 pt-1 h-full border-b-2 {{ request()->routeIs('reports.*') || request()->routeIs('billing.*') ? 'border-indigo-400 dark:border-indigo-600 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700' }} text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
-                                <div>{{ __('Administración') }}</div>
-                                <div class="ms-1">
-                                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd"
-                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                            </button>
-                        </x-slot>
+                    <!-- Dropdown Menú Administración (Desktop) -->
+                    <div class="hidden sm:flex sm:items-center sm:ms-10 sm:-my-px h-16 pt-1">
+                        <x-dropdown align="left" width="48">
+                            <x-slot name="trigger">
+                                <button
+                                    class="inline-flex items-center px-1 pt-1 h-full border-b-2 {{ request()->routeIs('reports.*') || request()->routeIs('billing.*') ? 'border-indigo-400 dark:border-indigo-600 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700' }} text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
+                                    <div>{{ __('Administración') }}</div>
+                                    <div class="ms-1">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            </x-slot>
 
-                        <x-slot name="content">
-                            <x-dropdown-link :href="route('reports.dispatches.index')">
-                                {{ __('Reporte de Guías') }}
-                            </x-dropdown-link>
-                            <x-dropdown-link :href="route('billing.index')" :active="request()->routeIs('billing.*')">
-                                {{ __('Facturación') }}
-                            </x-dropdown-link>
-                        </x-slot>
-                    </x-dropdown>
-                </div>
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('reports.dispatches.index')">
+                                    {{ __('Reporte de Guías') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('billing.index')" :active="request()->routeIs('billing.*')">
+                                    {{ __('Facturación') }}
+                                </x-dropdown-link>
+                            </x-slot>
+                        </x-dropdown>
+                    </div>
 
-                <!-- Dropdown Menú Configuraciones (Desktop) -->
-                <div class="hidden sm:flex sm:items-center sm:ms-10 sm:-my-px h-16 pt-1">
-                    <x-dropdown align="left" width="48">
-                        <x-slot name="trigger">
-                            <button
-                                class="inline-flex items-center px-1 pt-1 h-full border-b-2 {{ request()->routeIs('users.*') || request()->routeIs('branches.*') || request()->routeIs('companies.*') || request()->routeIs('company.*') || request()->routeIs('tariff-tables.*') ? 'border-indigo-400 dark:border-indigo-600 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700' }} text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
-                                <div>{{ __('Configuraciones') }}</div>
-                                <div class="ms-1">
-                                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd"
-                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                            </button>
-                        </x-slot>
+                    <!-- Dropdown Menú Configuraciones (Desktop) -->
+                    <div class="hidden sm:flex sm:items-center sm:ms-10 sm:-my-px h-16 pt-1">
+                        <x-dropdown align="left" width="48">
+                            <x-slot name="trigger">
+                                <button
+                                    class="inline-flex items-center px-1 pt-1 h-full border-b-2 {{ request()->routeIs('users.*') || request()->routeIs('branches.*') || request()->routeIs('companies.*') || request()->routeIs('company.*') || request()->routeIs('tariff-tables.*') ? 'border-indigo-400 dark:border-indigo-600 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700' }} text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
+                                    <div>{{ __('Configuraciones') }}</div>
+                                    <div class="ms-1">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            </x-slot>
 
-                        <x-slot name="content">
-                            <x-dropdown-link :href="route('users.index')">
-                                {{ __('Usuarios') }}
-                            </x-dropdown-link>
-                            <x-dropdown-link :href="route('branches.index')">
-                                {{ __('Sucursales') }}
-                            </x-dropdown-link>
-                            <x-dropdown-link :href="route('companies.index')">
-                                {{ __('Datos de Empresa') }}
-                            </x-dropdown-link>
-                            <x-dropdown-link :href="route('tariff-tables.index')">
-                                {{ __('Tarifas') }}
-                            </x-dropdown-link>
-                            <x-dropdown-link :href="route('ubicaciones.index')">
-                                {{ __('Ubicaciones') }}
-                            </x-dropdown-link>
-                        </x-slot>
-                    </x-dropdown>
-                </div>
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('users.index')">
+                                    {{ __('Usuarios') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('branches.index')">
+                                    {{ __('Sucursales') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('companies.index')">
+                                    {{ __('Datos de Empresa') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('tariff-tables.index')">
+                                    {{ __('Tarifas') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('ubicaciones.index')">
+                                    {{ __('Ubicaciones') }}
+                                </x-dropdown-link>
+                            </x-slot>
+                        </x-dropdown>
+                    </div>
                 @endif
             </div>
 
@@ -179,7 +179,7 @@
 
                     <x-slot name="content">
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
+                            {{ __('Mi Perfil') }}
                         </x-dropdown-link>
 
                         <!-- Authentication -->
@@ -188,7 +188,7 @@
 
                             <x-dropdown-link :href="route('logout')" onclick="event.preventDefault();
                                                 this.closest('form').submit();">
-                                {{ __('Log Out') }}
+                                {{ __('Salir') }}
                             </x-dropdown-link>
                         </form>
                     </x-slot>
@@ -256,58 +256,61 @@
                 </div>
             </div>
             @if(auth()->user()->hasRole(['admin', 'supervisor']))
-            <!-- Dropdown Menú Administración (Mobile) -->
-            <div x-data="{ adminOpen: false }" class="border-t border-gray-200 dark:border-gray-700 mt-2">
-                <button @click="adminOpen = ! adminOpen"
-                    class="w-full flex items-center justify-between ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
-                    {{ __('Administración') }}
-                    <svg class="fill-current h-4 w-4 transition-transform duration-200"
-                        :class="{ 'rotate-180': adminOpen }" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd"
-                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                            clip-rule="evenodd" />
-                    </svg>
-                </button>
-                <div x-show="adminOpen" class="bg-gray-50 dark:bg-gray-900 pl-4 py-1" style="display: none;">
-                    <x-responsive-nav-link :href="route('reports.dispatches.index')" :active="request()->routeIs('reports.dispatches.*')">
-                        {{ __('Reporte de Guías') }}
-                    </x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('billing.index')" :active="request()->routeIs('billing.*')">
-                        {{ __('Facturación') }}
-                    </x-responsive-nav-link>
+                <!-- Dropdown Menú Administración (Mobile) -->
+                <div x-data="{ adminOpen: false }" class="border-t border-gray-200 dark:border-gray-700 mt-2">
+                    <button @click="adminOpen = ! adminOpen"
+                        class="w-full flex items-center justify-between ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
+                        {{ __('Administración') }}
+                        <svg class="fill-current h-4 w-4 transition-transform duration-200"
+                            :class="{ 'rotate-180': adminOpen }" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div x-show="adminOpen" class="bg-gray-50 dark:bg-gray-900 pl-4 py-1" style="display: none;">
+                        <x-responsive-nav-link :href="route('reports.dispatches.index')"
+                            :active="request()->routeIs('reports.dispatches.*')">
+                            {{ __('Reporte de Guías') }}
+                        </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('billing.index')" :active="request()->routeIs('billing.*')">
+                            {{ __('Facturación') }}
+                        </x-responsive-nav-link>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Dropdown Menú Configuraciones (Mobile) -->
-            <div x-data="{ confOpen: false }" class="border-t border-gray-200 dark:border-gray-700 mt-2">
-                <button @click="confOpen = ! confOpen"
-                    class="w-full flex items-center justify-between ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
-                    {{ __('Configuraciones') }}
-                    <svg class="fill-current h-4 w-4 transition-transform duration-200"
-                        :class="{ 'rotate-180': confOpen }" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd"
-                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                            clip-rule="evenodd" />
-                    </svg>
-                </button>
-                <div x-show="confOpen" class="bg-gray-50 dark:bg-gray-900 pl-4 py-1" style="display: none;">
-                    <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
-                        {{ __('Usuarios') }}
-                    </x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('branches.index')" :active="request()->routeIs('branches.*')">
-                        {{ __('Sucursales') }}
-                    </x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('companies.index')" :active="request()->routeIs('companies.*') || request()->routeIs('company.*')">
-                        {{ __('Datos de Empresa') }}
-                    </x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('tariff-tables.index')" :active="request()->routeIs('tariff-tables.*')">
-                        {{ __('Tarifas') }}
-                    </x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('ubicaciones.index')" :active="request()->routeIs('ubicaciones.*')">
-                        {{ __('Ubicaciones') }}
-                    </x-responsive-nav-link>
+                <!-- Dropdown Menú Configuraciones (Mobile) -->
+                <div x-data="{ confOpen: false }" class="border-t border-gray-200 dark:border-gray-700 mt-2">
+                    <button @click="confOpen = ! confOpen"
+                        class="w-full flex items-center justify-between ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
+                        {{ __('Configuraciones') }}
+                        <svg class="fill-current h-4 w-4 transition-transform duration-200"
+                            :class="{ 'rotate-180': confOpen }" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div x-show="confOpen" class="bg-gray-50 dark:bg-gray-900 pl-4 py-1" style="display: none;">
+                        <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                            {{ __('Usuarios') }}
+                        </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('branches.index')" :active="request()->routeIs('branches.*')">
+                            {{ __('Sucursales') }}
+                        </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('companies.index')" :active="request()->routeIs('companies.*') || request()->routeIs('company.*')">
+                            {{ __('Datos de Empresa') }}
+                        </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('tariff-tables.index')"
+                            :active="request()->routeIs('tariff-tables.*')">
+                            {{ __('Tarifas') }}
+                        </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('ubicaciones.index')"
+                            :active="request()->routeIs('ubicaciones.*')">
+                            {{ __('Ubicaciones') }}
+                        </x-responsive-nav-link>
+                    </div>
                 </div>
-            </div>
             @endif
         </div>
 
@@ -322,7 +325,7 @@
 
             <div class="mt-3 space-y-1">
                 <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
+                    {{ __('Mi Perfil') }}
                 </x-responsive-nav-link>
 
                 <!-- Authentication -->

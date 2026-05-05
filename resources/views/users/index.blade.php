@@ -58,10 +58,6 @@
                                     <button type="submit" class="text-red-600 hover:text-red-900">Eliminar</button>
                                 </form>
                                 @endif
-                                <button type="button" class="btn-edit-permissions text-yellow-600 hover:text-yellow-900"
-                                    data-user-id="{{ $user->id }}">
-                                    Permisos
-                                </button>
                             </td>
                         </tr>
                         @endforeach
@@ -72,20 +68,7 @@
     </div>
 </div>
 
-<!-- DataTables CSS & JS -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 
-<script>
-    $(document).ready(function () {
-        $('#usersTable').DataTable({
-            language: {
-                url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
-            }
-        });
-    });
-</script>
 
 <style>
     /* Estilos base para DataTables */
@@ -195,7 +178,6 @@
     }
 </style>
 
-@include('users._modal_permissions')
 @endsection
 
 @section('scripts')
