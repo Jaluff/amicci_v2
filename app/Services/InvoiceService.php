@@ -16,10 +16,10 @@ class InvoiceService
     /**
      * Crea una nueva factura y asocia las guías seleccionadas.
      *
-     * @param  array<int>     $shipmentIds  IDs de las guías a facturar
-     * @param  array<string, mixed> $data   Datos de la factura (numero, fecha_factura, etc.)
-     * @param  int            $partyId      ID del cliente facturado
-     * @param  bool           $isAdmin      Si el usuario es admin (puede re-facturar)
+     * @param  array<int>  $shipmentIds  IDs de las guías a facturar
+     * @param  array<string, mixed>  $data  Datos de la factura (numero, fecha_factura, etc.)
+     * @param  int  $partyId  ID del cliente facturado
+     * @param  bool  $isAdmin  Si el usuario es admin (puede re-facturar)
      */
     public function generateInvoice(
         array $shipmentIds,
@@ -30,14 +30,14 @@ class InvoiceService
     ): Invoice {
         return DB::transaction(function () use ($shipmentIds, $data, $partyId, $companyId, $isAdmin): Invoice {
             $invoice = Invoice::create([
-                'company_id'     => $companyId,
-                'party_id'       => $partyId,
-                'numero'         => $data['numero'],
-                'fecha_factura'  => $data['fecha_factura'],
-                'numero_recibo'  => $data['numero_recibo'] ?? null,
-                'notas'          => $data['notas'] ?? null,
-                'total'          => 0, // Se recalcula en el action
-                'cobrada'        => false,
+                'company_id' => $companyId,
+                'party_id' => $partyId,
+                'numero' => $data['numero'],
+                'fecha_factura' => $data['fecha_factura'],
+                'numero_recibo' => $data['numero_recibo'] ?? null,
+                'notas' => $data['notas'] ?? null,
+                'total' => 0, // Se recalcula en el action
+                'cobrada' => false,
             ]);
 
             $this->assignShipments->execute($invoice, $shipmentIds, $isAdmin);
@@ -57,7 +57,7 @@ class InvoiceService
 
         DB::transaction(function () use ($invoice): void {
             $invoice->update([
-                'cobrada'    => true,
+                'cobrada' => true,
                 'fecha_cobro' => now()->toDateString(),
             ]);
 

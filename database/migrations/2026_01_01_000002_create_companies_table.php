@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -24,7 +25,7 @@ return new class extends Migration {
             $table->string('address_line2')->nullable();
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
-            
+
             $table->unsignedBigInteger('last_shipment_number')->default(0);
             $table->unsignedBigInteger('last_route_number')->default(0);
             $table->unsignedBigInteger('last_dispatch_number')->default(0);

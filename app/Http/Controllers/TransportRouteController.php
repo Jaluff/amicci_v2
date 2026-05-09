@@ -5,22 +5,25 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreRouteRequest;
 use App\Http\Resources\TransportRouteResource;
 use App\Models\Branch;
+use App\Models\Shipment;
 use App\Models\TransportRoute;
 use App\Services\TransportRouteService;
-use Exception;
+use App\StateMachines\RouteStateMachine;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Yajra\DataTables\Facades\DataTables;
 
 class TransportRouteController extends Controller
 {
     public function __construct(
         private TransportRouteService $routeService
-    ) {
-    }
+    ) {}
 
-    public function create(Request $request): View|\Illuminate\Http\RedirectResponse
+    public function create(Request $request): View|RedirectResponse
     {
         $user = auth()->user();
         $companies = $user->companies;
@@ -31,13 +34,13 @@ class TransportRouteController extends Controller
 
         $company_id = $request->input('company_id');
 
-        if (!$company_id) {
+        if (! $company_id) {
             if ($companies->count() === 1) {
                 $company_id = $companies->first()->id;
             } else {
                 return redirect()->route('routes.index')->with('error', 'Debes seleccionar una empresa primero.');
             }
-        } elseif (!$companies->contains('id', $company_id)) {
+        } elseif (! $companies->contains('id', $company_id)) {
             abort(403, 'No tienes permiso para operar en esta empresa.');
         }
 
@@ -50,12 +53,13 @@ class TransportRouteController extends Controller
             ->get();
 
         $selected_company = $companies->firstWhere('id', $company_id);
+
         return view('transportRoutes.create', compact('branches', 'selected_company'));
     }
 
     public function availableShipments(Request $request)
     {
-        $query = \App\Models\Shipment::query()
+        $query = Shipment::query()
             ->select([
                 'shipments.id',
                 'shipments.numero',
@@ -68,7 +72,7 @@ class TransportRouteController extends Controller
                 'destinatario.name as destinatario_nombre',
                 'companies.prefix as empresa_prefix',
                 'companies.color as empresa_color',
-                DB::raw('(SELECT COALESCE(SUM(si.cantidad), 0) FROM shipment_items si WHERE si.shipment_id = shipments.id) as bultos_total')
+                DB::raw('(SELECT COALESCE(SUM(si.cantidad), 0) FROM shipment_items si WHERE si.shipment_id = shipments.id) as bultos_total'),
             ])
             ->join('companies', 'shipments.company_id', '=', 'companies.id')
             ->leftJoin('ubicaciones as origen', 'shipments.origen_id', '=', 'origen.id')
@@ -102,32 +106,33 @@ class TransportRouteController extends Controller
             $query->where('shipments.company_id', $request->company_id);
         }
 
-        $query->withCount(['problems as has_active_problem' => fn($q) => $q->where('is_active', true)])
-            ->withCount(['problems as has_resolved_problem' => fn($q) => $q->where('is_active', false)]);
+        $query->withCount(['problems as has_active_problem' => fn ($q) => $q->where('is_active', true)])
+            ->withCount(['problems as has_resolved_problem' => fn ($q) => $q->where('is_active', false)]);
 
-        return \Yajra\DataTables\Facades\DataTables::of($query)
+        return DataTables::of($query)
             ->addColumn('empresa', function ($row) {
                 $color = $row->empresa_color ?? '#6366f1';
+
                 return "<span class='px-2 py-1 rounded-full text-[10px] font-bold text-white shadow-sm' style='background-color: {$color}'>{$row->empresa_prefix}</span>";
             })
             ->addColumn('bultos', function ($row) {
                 return (int) ($row->bultos_total ?? 0);
             })
-            ->addColumn('origen_nombre', fn($row) => mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->origen_nombre ?? '-')))
-            ->addColumn('destino_nombre', fn($row) => mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->destino_nombre ?? '-')))
+            ->addColumn('origen_nombre', fn ($row) => mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->origen_nombre ?? '-')))
+            ->addColumn('destino_nombre', fn ($row) => mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->destino_nombre ?? '-')))
             ->addColumn('check', function ($row) {
                 return '<input type="checkbox" class="shipment-checkbox w-4 h-4 text-blue-600 rounded focus:ring-blue-500" 
-                    value="' . $row->id . '" 
-                    data-numero="' . $row->numero . '" 
-                    data-remitente="' . ($row->remitente_nombre ?? '-') . '" 
-                    data-destinatario="' . ($row->destinatario_nombre ?? '-') . '" 
-                    data-bultos="' . (int) ($row->bultos_total ?? 0) . '" 
-                    data-estado="' . $row->ubicacion_actual . '" 
-                    data-has-problem="' . ($row->has_active_problem > 0 ? 'true' : 'false') . '"
-                    data-has-resolved-problem="' . ($row->has_resolved_problem > 0 ? 'true' : 'false') . '">';
+                    value="'.$row->id.'" 
+                    data-numero="'.$row->numero.'" 
+                    data-remitente="'.($row->remitente_nombre ?? '-').'" 
+                    data-destinatario="'.($row->destinatario_nombre ?? '-').'" 
+                    data-bultos="'.(int) ($row->bultos_total ?? 0).'" 
+                    data-estado="'.$row->ubicacion_actual.'" 
+                    data-has-problem="'.($row->has_active_problem > 0 ? 'true' : 'false').'"
+                    data-has-resolved-problem="'.($row->has_resolved_problem > 0 ? 'true' : 'false').'">';
             })
             ->editColumn('fecha', function ($row) {
-                return \Carbon\Carbon::parse($row->fecha)->format('d/m/Y');
+                return Carbon::parse($row->fecha)->format('d/m/Y');
             })
             ->rawColumns(['check', 'empresa'])
             ->make(true);
@@ -137,6 +142,7 @@ class TransportRouteController extends Controller
     {
         $branches = Branch::where('active', true)->orderBy('code')->get();
         $userCompanies = auth()->user()->companies;
+
         return view('transportRoutes.index', compact('branches', 'userCompanies'));
     }
 
@@ -148,7 +154,7 @@ class TransportRouteController extends Controller
             ->with(['origin', 'destination', 'dispatch'])
             ->withCount('shipments')
             ->withCount(['shipments as problem_count' => function ($q) {
-                $q->whereHas('problems', fn($query) => $query->where('is_active', true));
+                $q->whereHas('problems', fn ($query) => $query->where('is_active', true));
             }])
             ->whereIn('transport_routes.company_id', auth()->user()->companies->pluck('id'));
 
@@ -169,22 +175,23 @@ class TransportRouteController extends Controller
             $query->whereDate('created_at', '<=', $request->fecha_fin);
         }
         if ($request->filled('numero_documento')) {
-            $query->where('route_number', 'like', '%' . $request->numero_documento . '%');
+            $query->where('route_number', 'like', '%'.$request->numero_documento.'%');
         }
         if ($request->filled('estado')) {
             $estado = $request->estado;
             if ($estado === 'Con problemas') {
                 $query->whereHas('shipments', function ($sq) {
-                    $sq->whereHas('problems', fn($pq) => $pq->where('is_active', true));
+                    $sq->whereHas('problems', fn ($pq) => $pq->where('is_active', true));
                 });
             } else {
                 $query->where('status', $estado);
             }
         }
 
-        return \Yajra\DataTables\Facades\DataTables::of($query->orderByDesc('transport_routes.created_at'))
+        return DataTables::of($query->orderByDesc('transport_routes.created_at'))
             ->addColumn('empresa', function ($row) {
                 $color = $row->empresa_color ?? '#6366f1';
+
                 return "<span class='px-2 py-1 rounded-full text-[10px] font-bold text-white shadow-sm' style='background-color: {$color}'>{$row->empresa_prefix}</span>";
             })
             ->editColumn('route_number', function ($row) {
@@ -192,11 +199,13 @@ class TransportRouteController extends Controller
                 if ($row->problem_count > 0) {
                     $numberHtml .= " <span class='text-red-500 animate-pulse font-bold ml-1' style='color: #dc2626 !important;' title='Contiene guías con problemas abiertos'>⚠</span>";
                 }
+
                 return $numberHtml;
             })
             ->addColumn('ruta_corta', function ($row) {
                 $or = mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->origin?->name ?? '-'));
                 $ds = mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->destination?->name ?? '-'));
+
                 return "<div class='flex flex-col gap-0.5 items-center'>
                             <span class='px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 text-[9px] font-bold w-fit'>$or</span>
                             <span class='px-1.5 py-0.5 rounded bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 text-[9px] font-bold w-fit'>$ds</span>
@@ -207,7 +216,7 @@ class TransportRouteController extends Controller
                 $deleteUrl = route('routes.destroy', $row->id);
                 $csrf = csrf_token();
                 $confirm = 'return confirm(\'¿Eliminar esta ruta?\')';
-                $deleteForm = "";
+                $deleteForm = '';
                 if ($row->shipments_count == 0 && $row->status === 'Cargada') {
                     $deleteForm = "
                     <form action='{$deleteUrl}' method='POST' onsubmit='{$confirm}' class='inline m-0'>
@@ -233,11 +242,12 @@ class TransportRouteController extends Controller
     public function store(StoreRouteRequest $request)
     {
         $data = $request->validated();
-        if (!auth()->user()->companies->contains('id', $data['company_id'])) {
+        if (! auth()->user()->companies->contains('id', $data['company_id'])) {
             abort(403, 'No tienes permiso para operar en esta empresa.');
         }
 
         $this->routeService->createRoute($data);
+
         return redirect()->route('routes.index')->with('success', 'Ruta creada exitosamente.');
     }
 
@@ -250,15 +260,15 @@ class TransportRouteController extends Controller
 
         $route->load(['shipments' => function ($q) {
             $q->select([
-                'shipments.id', 'shipments.numero', 'shipments.origen_id', 'shipments.destino_id', 
+                'shipments.id', 'shipments.numero', 'shipments.origen_id', 'shipments.destino_id',
                 'shipments.remitente_id', 'shipments.destinatario_id',
-                'shipments.transport_route_id', 'shipments.ubicacion_actual'
+                'shipments.transport_route_id', 'shipments.ubicacion_actual',
             ])
                 ->with([
-                    'origin:id,nombre', 
+                    'origin:id,nombre',
                     'destination:id,nombre',
                     'sender:id,name',
-                    'recipient:id,name'
+                    'recipient:id,name',
                 ])
                 ->withCount(['items as bultos' => function ($query) {
                     $query->select(DB::raw('COALESCE(SUM(cantidad), 0)'));
@@ -273,21 +283,22 @@ class TransportRouteController extends Controller
     public function update(StoreRouteRequest $request, TransportRoute $route)
     {
         $this->routeService->updateRoute($route, $request->validated());
+
         return redirect()->route('routes.index')->with('success', 'Ruta actualizada exitosamente.');
     }
 
     public function destroy(TransportRoute $route)
     {
-        abort_if(!auth()->user()->hasAnyRole(['admin', 'Supervisor']), 403, 'No tienes permisos para anular documentos.');
+        abort_if(! auth()->user()->hasAnyRole(['admin', 'Supervisor']), 403, 'No tienes permisos para anular documentos.');
 
-        if ($route->status !== \App\StateMachines\RouteStateMachine::STATUS_CARGADA) {
+        if ($route->status !== RouteStateMachine::STATUS_CARGADA) {
             return redirect()->route('routes.index')->with('error', 'No se puede anular una ruta cuyo estado no es "Cargada".');
         }
 
-        \Illuminate\Support\Facades\DB::transaction(function() use ($route) {
+        DB::transaction(function () use ($route) {
             // Desasignar guías vinculadas
             $shipments = $route->shipments;
-            foreach($shipments as $s) {
+            foreach ($shipments as $s) {
                 $s->update(['transport_route_id' => null]);
                 $s->logActivity("Desvinculada por anulación de la ruta {$route->route_number}", 'unassigned_route');
             }
@@ -300,7 +311,7 @@ class TransportRouteController extends Controller
     public function show(TransportRoute $ruta): JsonResponse
     {
         return response()->json([
-            'route' => new TransportRouteResource($ruta->loadCount('shipments'))
+            'route' => new TransportRouteResource($ruta->loadCount('shipments')),
         ]);
     }
 

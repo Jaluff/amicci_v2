@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\Company;
 use App\Models\Delivery;
 use App\Models\Shipment;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,7 @@ class DeliveryService
     {
         return DB::transaction(function () use ($data) {
             // Se usa la empresa enviada en los datos para la numeración
-            $company = \App\Models\Company::lockForUpdate()->findOrFail($data['company_id']);
+            $company = Company::lockForUpdate()->findOrFail($data['company_id']);
             $company->last_delivery_number++;
             $company->save();
 
@@ -23,15 +24,15 @@ class DeliveryService
             $data['delivery_number'] = sprintf('%s-%d-E-%08d', $company->prefix, $branchId, $company->last_delivery_number);
 
             $shipments = [];
-            if (!empty($data['shipments'])) {
+            if (! empty($data['shipments'])) {
                 $shipments = Shipment::query()->with('items')->whereIn('id', $data['shipments'])
                     ->where('ubicacion_actual', '=', 'Dto destino')
                     ->whereNull('delivery_id')
                     ->get();
             }
 
-            $data['guide_count']   = count($shipments);
-            $data['package_count'] = collect($shipments)->sum(fn($s) => $s->items->sum('cantidad'));
+            $data['guide_count'] = count($shipments);
+            $data['package_count'] = collect($shipments)->sum(fn ($s) => $s->items->sum('cantidad'));
             $data['dispatch_date'] = $data['dispatch_date'] ?? null;
 
             $delivery = Delivery::create($data);
@@ -65,14 +66,14 @@ class DeliveryService
 
                 foreach ($removedShipments as $s) {
                     $s->update([
-                        'delivery_id'     => null,
-                        'ubicacion_actual' => 'Dto destino'
+                        'delivery_id' => null,
+                        'ubicacion_actual' => 'Dto destino',
                     ]);
                     $s->logActivity("Desvinculada del reparto {$delivery->delivery_number}", 'unassigned_delivery');
                 }
 
                 // Connect new ones
-                if (!empty($shipmentIds)) {
+                if (! empty($shipmentIds)) {
                     $shipments = Shipment::query()->with('items')->whereIn('id', $shipmentIds)
                         ->where(function ($q) use ($delivery) {
                             $q->whereNull('delivery_id')
@@ -90,10 +91,10 @@ class DeliveryService
                         }
                     }
 
-                    $data['guide_count']   = count($shipments);
-                    $data['package_count'] = collect($shipments)->sum(fn($s) => $s->items->sum('cantidad'));
+                    $data['guide_count'] = count($shipments);
+                    $data['package_count'] = collect($shipments)->sum(fn ($s) => $s->items->sum('cantidad'));
                 } else {
-                    $data['guide_count']   = 0;
+                    $data['guide_count'] = 0;
                     $data['package_count'] = 0;
                 }
             } else {
@@ -110,12 +111,12 @@ class DeliveryService
     public function returnShipmentFromDelivery(Delivery $delivery, Shipment $shipment): void
     {
         if ($shipment->delivery_id !== $delivery->id) {
-            throw new InvalidArgumentException("La guía no pertenece a este reparto.");
+            throw new InvalidArgumentException('La guía no pertenece a este reparto.');
         }
 
         $shipment->update([
-            'delivery_id'      => null,
-            'ubicacion_actual' => 'Dto destino'
+            'delivery_id' => null,
+            'ubicacion_actual' => 'Dto destino',
         ]);
 
         $shipment->logActivity("Devuelta a depósito (con problema) desde reparto {$delivery->delivery_number}", 'returned_from_delivery');

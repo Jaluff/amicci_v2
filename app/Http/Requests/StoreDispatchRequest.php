@@ -17,7 +17,7 @@ class StoreDispatchRequest extends FormRequest
     {
         return [
 
-            'origin_id'      => ['required', 'exists:branches,id'],
+            'origin_id' => ['required', 'exists:branches,id'],
             'destination_id' => ['required', 'exists:branches,id', 'different:origin_id'],
             'driver_id' => ['required', 'exists:drivers,id'],
             'status' => ['required', 'in:Cargado,En viaje,Arribado'],

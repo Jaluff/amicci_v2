@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models\Traits;
 
 use App\Models\ActivityLog;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 trait HasActivityLogs
@@ -20,11 +21,10 @@ trait HasActivityLogs
     /**
      * Registra una nueva actividad para este modelo.
      *
-     * @param string $description Una descripción legible ("Guía creada", "Asignada al reparto #1")
-     * @param string|null $event Un evento corto opcional ("created", "updated", "assigned")
-     * @param array $properties Datos extra opcionales estructurados ['old' => ..., 'new' => ...]
-     * @param \Illuminate\Database\Eloquent\Model|null $causer El usuario que disparó la acción (si es nulo, toma Auth::user())
-     * @return ActivityLog
+     * @param  string  $description  Una descripción legible ("Guía creada", "Asignada al reparto #1")
+     * @param  string|null  $event  Un evento corto opcional ("created", "updated", "assigned")
+     * @param  array  $properties  Datos extra opcionales estructurados ['old' => ..., 'new' => ...]
+     * @param  Model|null  $causer  El usuario que disparó la acción (si es nulo, toma Auth::user())
      */
     public function logActivity(string $description, ?string $event = null, array $properties = [], $causer = null): ActivityLog
     {

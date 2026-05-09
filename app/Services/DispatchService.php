@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Dispatch;
+use App\Models\StatusHistory;
 use App\Models\TransportRoute;
+use App\StateMachines\DispatchStateMachine;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -21,24 +24,24 @@ class DispatchService
             $nextNumber = (int) end($lastNumberPart) + 1;
 
             $branchId = $data['origin_id'] ?? 0;
-            
+
             // Usamos AMI genérico ya que despachos agrupa rutas de múltiples empresas (no tiene company_id)
             $data['dispatch_number'] = sprintf('AMI-%d-D-%08d', $branchId, $nextNumber);
 
             $dispatch = Dispatch::create($data);
 
             // Registrar estado inicial en el historial (creación no pasa por transitionTo)
-            \App\Models\StatusHistory::create([
-                'model_type'      => Dispatch::class,
-                'model_id'        => $dispatch->id,
-                'from_status'     => null,
-                'to_status'       => $dispatch->status,
-                'comment'         => 'Estado inicial al crear el despacho',
-                'user_id'         => \Illuminate\Support\Facades\Auth::id(),
+            StatusHistory::create([
+                'model_type' => Dispatch::class,
+                'model_id' => $dispatch->id,
+                'from_status' => null,
+                'to_status' => $dispatch->status,
+                'comment' => 'Estado inicial al crear el despacho',
+                'user_id' => Auth::id(),
                 'transitioned_at' => now(),
             ]);
 
-            if (!empty($data['routes'])) {
+            if (! empty($data['routes'])) {
                 $this->assignRoutes($dispatch, $data['routes']);
             }
 
@@ -49,19 +52,19 @@ class DispatchService
     public function updateDispatch(Dispatch $dispatch, array $data): Dispatch
     {
         return DB::transaction(function () use ($dispatch, $data) {
-            $newStatus     = $data['status'] ?? null;
+            $newStatus = $data['status'] ?? null;
             $currentStatus = $dispatch->status; // Capturar ANTES de cualquier cambio
 
             // Separar campos de metadata
             $fieldsToUpdate = collect($data)->except('status', 'routes')->toArray();
 
             // 1. Actualizar campos de metadata directamente
-            if (!empty($fieldsToUpdate)) {
+            if (! empty($fieldsToUpdate)) {
                 $dispatch->update($fieldsToUpdate);
             }
 
             // 2. Reasignar rutas SÓLO si el despacho está en "Cargado" (editable)
-            if ($currentStatus === \App\StateMachines\DispatchStateMachine::STATUS_CARGADO) {
+            if ($currentStatus === DispatchStateMachine::STATUS_CARGADO) {
                 // Si 'routes' no viene en el request (ej. se quitaron todas), pasamos array vacío
                 $this->assignRoutes($dispatch, $data['routes'] ?? []);
             }
@@ -98,7 +101,7 @@ class DispatchService
             ->update(['dispatch_id' => null]);
 
         // Asignar las nuevas rutas
-        if (!empty($routeIds)) {
+        if (! empty($routeIds)) {
             TransportRoute::whereIn('id', $routeIds)
                 ->update(['dispatch_id' => $dispatch->id]);
         }

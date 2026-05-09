@@ -25,10 +25,10 @@ class TariffTable extends Model
 
     protected $casts = [
         'rate_per_ton' => 'decimal:2',
-        'rate_per_m3'  => 'decimal:2',
-        'valid_from'   => 'date',
-        'valid_until'  => 'date',
-        'is_active'    => 'boolean',
+        'rate_per_m3' => 'decimal:2',
+        'valid_from' => 'date',
+        'valid_until' => 'date',
+        'is_active' => 'boolean',
     ];
 
     /**
@@ -71,7 +71,7 @@ class TariffTable extends Model
     {
         return $query->where('is_active', true)
             ->where('valid_from', '<=', now())
-            ->where(fn(Builder $q) => $q->whereNull('valid_until')->orWhere('valid_until', '>=', now()));
+            ->where(fn (Builder $q) => $q->whereNull('valid_until')->orWhere('valid_until', '>=', now()));
     }
 
     /**
@@ -80,7 +80,7 @@ class TariffTable extends Model
     public function getRouteNameAttribute(): string
     {
         $originName = $this->origin?->nombre ?? '?';
-        $destName   = $this->destination?->nombre ?? '?';
+        $destName = $this->destination?->nombre ?? '?';
 
         return "{$originName} → {$destName}";
     }

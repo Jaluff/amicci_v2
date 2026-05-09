@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TransportRoute extends Model
 {
-    use HasFactory, HasStateMachine, HasProblems;
+    use HasFactory, HasProblems, HasStateMachine;
 
     protected string $stateMachineClass = RouteStateMachine::class;
 

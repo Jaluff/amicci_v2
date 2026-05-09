@@ -13,9 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 abstract class BaseStateMachine implements StateMachineInterface
 {
-    public function __construct(protected Model $model)
-    {
-    }
+    public function __construct(protected Model $model) {}
 
     // ─────────────────────────────────────────────
     // Implementaciones de la interfaz
@@ -43,7 +41,7 @@ abstract class BaseStateMachine implements StateMachineInterface
     {
         $from = $this->currentStatus();
 
-        if (!$this->canTransitionTo($from, $targetStatus)) {
+        if (! $this->canTransitionTo($from, $targetStatus)) {
             throw new InvalidTransitionException($from, $targetStatus, get_class($this->model));
         }
 
@@ -65,7 +63,7 @@ abstract class BaseStateMachine implements StateMachineInterface
             // 2b. Opcional: Escribir también en el log de actividades si el modelo lo permite
             if (method_exists($this->model, 'logActivity')) {
                 $this->model->logActivity(
-                    "Cambio de estado: {$from} ➔ {$targetStatus}" . ($comment ? " ({$comment})" : ""),
+                    "Cambio de estado: {$from} ➔ {$targetStatus}".($comment ? " ({$comment})" : ''),
                     'status_changed',
                     ['from' => $from, 'to' => $targetStatus]
                 );
@@ -98,6 +96,6 @@ abstract class BaseStateMachine implements StateMachineInterface
      */
     protected function afterTransition(string $from, string $to): void
     {
-    // Sin cascada por defecto
+        // Sin cascada por defecto
     }
 }

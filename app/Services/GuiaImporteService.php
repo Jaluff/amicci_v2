@@ -39,8 +39,8 @@ class GuiaImporteService
      * configuración tarifaria activa para el cliente.
      *
      * @param  Shipment  $shipment  La guía con sus items cargados
-     * @param  int       $tariffTableId  ID del cuadro tarifario a usar (según la ruta)
-     * @return array|null  Array con el desglose, o null si no hay tarifa aplicable
+     * @param  int  $tariffTableId  ID del cuadro tarifario a usar (según la ruta)
+     * @return array|null Array con el desglose, o null si no hay tarifa aplicable
      */
     public function calcular(Shipment $shipment, int $tariffTableId): ?array
     {
@@ -67,12 +67,12 @@ class GuiaImporteService
         // ── 3. Calcular totales de los ítems de la guía ──────────────────
         $shipment->loadMissing('items');
 
-        $totalPesoKg       = $shipment->items->sum('peso');         // Kg totales
-        $totalVolumenM3    = $shipment->items->sum('volumen');       // M3 totales
-        $totalBultos       = $shipment->items
+        $totalPesoKg = $shipment->items->sum('peso');         // Kg totales
+        $totalVolumenM3 = $shipment->items->sum('volumen');       // M3 totales
+        $totalBultos = $shipment->items
             ->where('tipo_paquete', 'bultos')
             ->sum('cantidad');
-        $totalPallets      = $shipment->items
+        $totalPallets = $shipment->items
             ->where('tipo_paquete', 'palets')
             ->sum('cantidad');
         $totalValorDeclarado = $shipment->items->sum('monto_valor_declarado');
@@ -111,14 +111,14 @@ class GuiaImporteService
             // Cada uno aplica su propio mínimo antes de sumar.
             'bultos_pallets' => (function () use ($setting, $totalBultos, $totalPallets): float {
                 // Importe por bultos con su mínimo propio
-                $bultoImporte  = $this->calcularPorUnidad((float) ($setting->rate_per_bulto  ?? 0), $totalBultos);
-                $minBulto      = (float) ($setting->minimum_per_bulto  ?? 0);
-                $bultoFinal    = ($minBulto > 0 && $bultoImporte < $minBulto) ? $minBulto : $bultoImporte;
+                $bultoImporte = $this->calcularPorUnidad((float) ($setting->rate_per_bulto ?? 0), $totalBultos);
+                $minBulto = (float) ($setting->minimum_per_bulto ?? 0);
+                $bultoFinal = ($minBulto > 0 && $bultoImporte < $minBulto) ? $minBulto : $bultoImporte;
 
                 // Importe por pallets con su mínimo propio
                 $palletImporte = $this->calcularPorUnidad((float) ($setting->rate_per_pallet ?? 0), $totalPallets);
-                $minPallet     = (float) ($setting->minimum_per_pallet ?? 0);
-                $palletFinal   = ($minPallet > 0 && $palletImporte < $minPallet) ? $minPallet : $palletImporte;
+                $minPallet = (float) ($setting->minimum_per_pallet ?? 0);
+                $palletFinal = ($minPallet > 0 && $palletImporte < $minPallet) ? $minPallet : $palletImporte;
 
                 return $bultoFinal + $palletFinal;
             })(),
@@ -142,25 +142,25 @@ class GuiaImporteService
         // ── 6. Retornar desglose completo del cálculo ────────────────────
         return [
             // Datos del cliente y modo
-            'party_id'          => $setting->party_id,
-            'billing_mode'      => $setting->billing_mode,
+            'party_id' => $setting->party_id,
+            'billing_mode' => $setting->billing_mode,
             'billing_mode_label' => $setting->billing_mode_label,
 
             // Datos usados en el cálculo
-            'total_peso_kg'       => $totalPesoKg,
-            'total_volumen_m3'    => $totalVolumenM3,
-            'total_bultos'        => $totalBultos,
-            'total_pallets'       => $totalPallets,
+            'total_peso_kg' => $totalPesoKg,
+            'total_volumen_m3' => $totalVolumenM3,
+            'total_bultos' => $totalBultos,
+            'total_pallets' => $totalPallets,
             'total_valor_declarado' => $totalValorDeclarado,
 
             // Resultado
-            'importe_calculado'  => round($importeCalculado, 2),
-            'minimum_charge'     => $setting->minimum_charge ? (float) $setting->minimum_charge : null,
-            'importe_final'      => round($importeFinal, 2),
+            'importe_calculado' => round($importeCalculado, 2),
+            'minimum_charge' => $setting->minimum_charge ? (float) $setting->minimum_charge : null,
+            'importe_final' => round($importeFinal, 2),
 
             // Cuadro tarifario usado
-            'tariff_table_id'    => $tariffTable->id,
-            'tariff_table_name'  => $tariffTable->name,
+            'tariff_table_id' => $tariffTable->id,
+            'tariff_table_name' => $tariffTable->name,
         ];
     }
 
@@ -198,14 +198,15 @@ class GuiaImporteService
      * Calcula el flete buscando el tramo de peso correspondiente.
      * Si el peso >= 1000 kg, usa la tarifa por tonelada del cuadro general.
      *
-     * @param  int    $tariffTableId  ID del cuadro tarifario
-     * @param  float  $pesoKg         Peso total de la guía en kg
+     * @param  int  $tariffTableId  ID del cuadro tarifario
+     * @param  float  $pesoKg  Peso total de la guía en kg
      */
     private function calcularPorKg(int $tariffTableId, float $pesoKg): float
     {
         // Para pesos >= 1000 kg se usa la tarifa por tonelada del cuadro
         if ($pesoKg >= 1000) {
             $tariffTable = TariffTable::find($tariffTableId);
+
             return $this->calcularPorTonelada((float) $tariffTable->rate_per_ton, $pesoKg);
         }
 

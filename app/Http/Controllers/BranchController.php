@@ -24,10 +24,11 @@ class BranchController extends Controller
 
         return DataTables::of($query)
             ->addColumn('acciones', function ($row) {
-                $editUrl   = route('branches.edit', $row->id);
+                $editUrl = route('branches.edit', $row->id);
                 $deleteUrl = route('branches.destroy', $row->id);
-                $csrf      = csrf_token();
-                $confirm   = "return confirm('¿Eliminar esta sucursal?')";
+                $csrf = csrf_token();
+                $confirm = "return confirm('¿Eliminar esta sucursal?')";
+
                 return "
                     <div class='flex items-center gap-2'>
                         <a href='{$editUrl}' title='Editar' class='inline-flex items-center justify-center p-2 rounded-md bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/40 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-800/60 transition-colors'>
@@ -44,8 +45,11 @@ class BranchController extends Controller
             })
             ->addColumn('ubicacion_nombre', fn ($row) => $row->ubicacion?->nombre ?? '—')
             ->addColumn('last_shipment_number', function ($row) {
-                if ($row->companies->isEmpty()) return '—';
-                return $row->companies->map(function($c) {
+                if ($row->companies->isEmpty()) {
+                    return '—';
+                }
+
+                return $row->companies->map(function ($c) {
                     return "<span class='font-mono font-bold text-xs'>{$c->prefix}: {$c->pivot->last_shipment_number}</span>";
                 })->implode('<br>');
             })
@@ -59,16 +63,17 @@ class BranchController extends Controller
     public function create()
     {
         $ubicaciones = Ubicacion::orderBy('nombre')->get();
+
         return view('branches.create', compact('ubicaciones'));
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name'         => 'required|string|max:100',
-            'code'         => 'required|integer|min:1|max:99|unique:branches,code',
+            'name' => 'required|string|max:100',
+            'code' => 'required|integer|min:1|max:99|unique:branches,code',
             'ubicacion_id' => 'required|integer|exists:ubicaciones,id',
-            'active'       => 'boolean',
+            'active' => 'boolean',
         ]);
 
         $data['active'] = $request->boolean('active', true);
@@ -81,16 +86,17 @@ class BranchController extends Controller
     public function edit(Branch $branch)
     {
         $ubicaciones = Ubicacion::orderBy('nombre')->get();
+
         return view('branches.edit', compact('branch', 'ubicaciones'));
     }
 
     public function update(Request $request, Branch $branch)
     {
         $data = $request->validate([
-            'name'         => 'required|string|max:100',
-            'code'         => "required|integer|min:1|max:99|unique:branches,code,{$branch->id}",
+            'name' => 'required|string|max:100',
+            'code' => "required|integer|min:1|max:99|unique:branches,code,{$branch->id}",
             'ubicacion_id' => 'required|integer|exists:ubicaciones,id',
-            'active'       => 'boolean',
+            'active' => 'boolean',
         ]);
 
         $data['active'] = $request->boolean('active', true);
@@ -103,6 +109,7 @@ class BranchController extends Controller
     public function destroy(Branch $branch)
     {
         $branch->delete();
+
         return redirect()->route('branches.index')->with('success', 'Sucursal eliminada.');
     }
 }

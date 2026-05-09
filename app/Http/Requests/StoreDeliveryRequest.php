@@ -17,7 +17,7 @@ class StoreDeliveryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'company_id'  => ['required', 'exists:companies,id'],
+            'company_id' => ['required', 'exists:companies,id'],
             'location_id' => ['required', 'exists:branches,id'],
             'deliverer_id' => ['required', 'exists:deliverers,id'],
             'vehicle_plate' => ['nullable', 'string', 'max:20'],

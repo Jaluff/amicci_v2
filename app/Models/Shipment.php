@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasActivityLogs;
 use App\Models\Traits\HasProblems;
 use App\Models\Traits\HasStateMachine;
-use App\Models\Traits\HasActivityLogs;
 use App\StateMachines\ShipmentStateMachine;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,19 +13,19 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Shipment extends Model
 {
-    use SoftDeletes, HasFactory, HasStateMachine, HasProblems, HasActivityLogs;
+    use HasActivityLogs, HasFactory, HasProblems, HasStateMachine, SoftDeletes;
 
     protected string $stateMachineClass = ShipmentStateMachine::class;
 
     protected $casts = [
         'transport_route_id' => 'integer',
-        'invoice_id'         => 'integer',
-        'fecha'              => 'date',
-        'fecha_entrega'      => 'date',
-        'cobrada'            => 'boolean',
-        'contra_reembolso'   => 'boolean',
-        'delivery_id'        => 'integer',
-        'iva_percent'        => 'float',
+        'invoice_id' => 'integer',
+        'fecha' => 'date',
+        'fecha_entrega' => 'date',
+        'cobrada' => 'boolean',
+        'contra_reembolso' => 'boolean',
+        'delivery_id' => 'integer',
+        'iva_percent' => 'float',
     ];
 
     protected $fillable = [

@@ -4,7 +4,6 @@ namespace App\Actions\Invoice;
 
 use App\Models\Invoice;
 use App\Models\Shipment;
-use Illuminate\Support\Collection;
 
 class AssignShipmentsToInvoiceAction
 {
@@ -13,9 +12,8 @@ class AssignShipmentsToInvoiceAction
      * Lanza excepción si alguna guía ya tiene otra factura asignada
      * y el usuario no tiene el rol de admin.
      *
-     * @param  Invoice     $invoice
      * @param  array<int>  $shipmentIds
-     * @param  bool        $isAdmin  Si es admin puede re-facturar guías ya asignadas
+     * @param  bool  $isAdmin  Si es admin puede re-facturar guías ya asignadas
      */
     public function execute(Invoice $invoice, array $shipmentIds, bool $isAdmin = false): void
     {
@@ -23,9 +21,9 @@ class AssignShipmentsToInvoiceAction
             ->whereIn('id', $shipmentIds)
             ->get();
 
-        if (!$isAdmin) {
+        if (! $isAdmin) {
             $alreadyInvoiced = $shipments->filter(
-                fn(Shipment $s) => $s->invoice_id !== null && $s->invoice_id !== $invoice->id
+                fn (Shipment $s) => $s->invoice_id !== null && $s->invoice_id !== $invoice->id
             );
 
             if ($alreadyInvoiced->isNotEmpty()) {

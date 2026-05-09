@@ -12,20 +12,20 @@ class PartyService
     {
         return DB::transaction(function () use ($data) {
             $party = Party::create([
-                'name'              => $data['name'],
-                'document'          => $data['document'] ?? null,
-                'document_type'     => $data['document_type'] ?? null,
-                'tax_status'        => $data['tax_status'] ?? null,
-                'iva_percent'       => $data['iva_percent'] ?? 0,
-                'has_insurance'     => filter_var($data['has_insurance'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'name' => $data['name'],
+                'document' => $data['document'] ?? null,
+                'document_type' => $data['document_type'] ?? null,
+                'tax_status' => $data['tax_status'] ?? null,
+                'iva_percent' => $data['iva_percent'] ?? 0,
+                'has_insurance' => filter_var($data['has_insurance'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 'insurance_percent' => $data['insurance_percent'] ?? null,
             ]);
 
-            if (!empty($data['addresses'])) {
+            if (! empty($data['addresses'])) {
                 $this->syncAddresses($party, $data['addresses']);
             }
 
-            if (!empty($data['tariff']['billing_mode'])) {
+            if (! empty($data['tariff']['billing_mode'])) {
                 $this->saveTariffSetting($party, $data['tariff']);
             }
 
@@ -37,12 +37,12 @@ class PartyService
     {
         return DB::transaction(function () use ($party, $data) {
             $party->update([
-                'name'              => $data['name'],
-                'document'          => $data['document'] ?? null,
-                'document_type'     => $data['document_type'] ?? null,
-                'tax_status'        => $data['tax_status'] ?? null,
-                'iva_percent'       => $data['iva_percent'] ?? 0,
-                'has_insurance'     => filter_var($data['has_insurance'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'name' => $data['name'],
+                'document' => $data['document'] ?? null,
+                'document_type' => $data['document_type'] ?? null,
+                'tax_status' => $data['tax_status'] ?? null,
+                'iva_percent' => $data['iva_percent'] ?? 0,
+                'has_insurance' => filter_var($data['has_insurance'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 'insurance_percent' => $data['insurance_percent'] ?? null,
             ]);
 
@@ -54,7 +54,7 @@ class PartyService
             }
 
             // Actualizar configuración tarifaria
-            if (!empty($data['tariff']['billing_mode'])) {
+            if (! empty($data['tariff']['billing_mode'])) {
                 $this->saveTariffSetting($party, $data['tariff']);
             } elseif (isset($data['tariff'])) {
                 // Si viene el array tariff pero sin billing_mode, es porque se desmarcó el checkbox
@@ -69,16 +69,16 @@ class PartyService
     {
         return DB::transaction(function () use ($data) {
             $party = Party::create([
-                'name'              => $data['name'],
-                'document_type'     => $data['document_type'] ?? null,
-                'document'          => $data['document'] ?? null,
-                'tax_status'        => $data['tax_status'] ?? null,
-                'iva_percent'       => $data['iva_percent'] ?? 0,
-                'has_insurance'     => filter_var($data['has_insurance'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'name' => $data['name'],
+                'document_type' => $data['document_type'] ?? null,
+                'document' => $data['document'] ?? null,
+                'tax_status' => $data['tax_status'] ?? null,
+                'iva_percent' => $data['iva_percent'] ?? 0,
+                'has_insurance' => filter_var($data['has_insurance'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 'insurance_percent' => $data['insurance_percent'] ?? null,
                 // Assigning phone and email directly to the model instead of creating a dummy address.
-                'phone'             => $data['phone'] ?? null,
-                'email'             => $data['email'] ?? null,
+                'phone' => $data['phone'] ?? null,
+                'email' => $data['email'] ?? null,
             ]);
 
             // No se guarda la dirección cuando se da de alta por el modal.
@@ -97,7 +97,7 @@ class PartyService
                 continue;
             }
 
-            $isPrimary = $hasPrimary ? !empty($addrData['is_primary']) : ($index === 0);
+            $isPrimary = $hasPrimary ? ! empty($addrData['is_primary']) : ($index === 0);
 
             $address = $party->addresses()->updateOrCreate(
                 ['id' => $addrData['id'] ?? null],
@@ -128,19 +128,19 @@ class PartyService
         PartyTariffSetting::updateOrCreate(
             ['party_id' => $party->id],
             [
-                'tariff_table_id'     => null,
-                'billing_mode'        => $finalMode,
-                'minimum_charge'      => ($tariffData['minimum_charge']      ?? null) ?: null,
-                'rate_per_ton_custom' => ($tariffData['rate_per_ton_custom']  ?? null) ?: null,
-                'rate_per_m3_custom'  => ($tariffData['rate_per_m3_custom']   ?? null) ?: null,
-                'rate_per_bulto'      => ($tariffData['rate_per_bulto']       ?? null) ?: null,
-                'minimum_per_bulto'   => ($tariffData['minimum_per_bulto']    ?? null) ?: null,
-                'rate_per_pallet'     => ($tariffData['rate_per_pallet']      ?? null) ?: null,
-                'minimum_per_pallet'  => ($tariffData['minimum_per_pallet']   ?? null) ?: null,
-                'declared_value_pct'  => ($tariffData['declared_value_pct']   ?? null) ?: null,
-                'valid_from'          => $tariffData['valid_from']            ?? null,
-                'valid_until'         => ($tariffData['valid_until']          ?? null) ?: null,
-                'notes'               => ($tariffData['notes']               ?? null) ?: null,
+                'tariff_table_id' => null,
+                'billing_mode' => $finalMode,
+                'minimum_charge' => ($tariffData['minimum_charge'] ?? null) ?: null,
+                'rate_per_ton_custom' => ($tariffData['rate_per_ton_custom'] ?? null) ?: null,
+                'rate_per_m3_custom' => ($tariffData['rate_per_m3_custom'] ?? null) ?: null,
+                'rate_per_bulto' => ($tariffData['rate_per_bulto'] ?? null) ?: null,
+                'minimum_per_bulto' => ($tariffData['minimum_per_bulto'] ?? null) ?: null,
+                'rate_per_pallet' => ($tariffData['rate_per_pallet'] ?? null) ?: null,
+                'minimum_per_pallet' => ($tariffData['minimum_per_pallet'] ?? null) ?: null,
+                'declared_value_pct' => ($tariffData['declared_value_pct'] ?? null) ?: null,
+                'valid_from' => $tariffData['valid_from'] ?? null,
+                'valid_until' => ($tariffData['valid_until'] ?? null) ?: null,
+                'notes' => ($tariffData['notes'] ?? null) ?: null,
             ]
         );
     }

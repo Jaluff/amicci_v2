@@ -3,9 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -29,7 +27,7 @@ return new class extends Migration
               AND COLUMN_NAME  = 'billing_mode'
         ");
 
-        if (!str_contains($column[0]->COLUMN_TYPE ?? '', 'bultos_pallets')) {
+        if (! str_contains($column[0]->COLUMN_TYPE ?? '', 'bultos_pallets')) {
             DB::statement("
                 ALTER TABLE party_tariff_settings
                 MODIFY COLUMN billing_mode ENUM(
@@ -49,11 +47,12 @@ return new class extends Migration
             LIMIT 1
         ");
 
-        if (!empty($oldUnique)) {
+        if (! empty($oldUnique)) {
             // Primero soltar el FK que lo bloquea
             try {
                 DB::statement('ALTER TABLE party_tariff_settings DROP FOREIGN KEY party_tariff_settings_party_id_foreign');
-            } catch (\Throwable) {}
+            } catch (Throwable) {
+            }
 
             DB::statement('ALTER TABLE party_tariff_settings DROP INDEX party_tariff_settings_party_id_tariff_table_id_unique');
 

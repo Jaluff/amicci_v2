@@ -20,7 +20,7 @@ return new class extends Migration
             $table->nullableMorphs('causer', 'causer');
             $table->text('properties')->nullable();
             $table->timestamps();
-            
+
             $table->index('log_name');
         });
     }

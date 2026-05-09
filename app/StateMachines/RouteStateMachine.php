@@ -15,7 +15,9 @@ class RouteStateMachine extends BaseStateMachine
 {
     // ── Constantes de estado ─────────────────────────────────
     public const STATUS_CARGADA = 'Cargada';
+
     public const STATUS_EN_VIAJE = 'En viaje';
+
     public const STATUS_ENTREGADA = 'Entregada';
     // STATUS_CON_PROBLEMAS eliminado: ahora es un DocumentProblem (flag ortogonal al estado)
 
@@ -49,7 +51,7 @@ class RouteStateMachine extends BaseStateMachine
             self::STATUS_ENTREGADA => ShipmentStateMachine::STATUS_DTO_DESTINO,
         ];
 
-        if (!isset($shipmentStatusMap[$to])) {
+        if (! isset($shipmentStatusMap[$to])) {
             return; // No hay propagación para este estado
         }
 

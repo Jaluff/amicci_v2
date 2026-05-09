@@ -20,7 +20,7 @@ class Branch extends Model
 
     protected $casts = [
         'active' => 'boolean',
-        'code'   => 'integer',
+        'code' => 'integer',
     ];
 
     /**
@@ -30,13 +30,13 @@ class Branch extends Model
     public function scopePermitted($query)
     {
         $user = auth()->user();
-        if (!$user) {
+        if (! $user) {
             return $query->whereRaw('1 = 0');
         }
 
         $branchIds = $user->branches()->pluck('branches.id')->toArray();
 
-        if (!empty($branchIds)) {
+        if (! empty($branchIds)) {
             return $query->whereIn('id', $branchIds);
         }
 

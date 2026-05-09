@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreUbicacionRequest;
 use App\Http\Requests\UpdateUbicacionRequest;
+use App\Models\Branch;
 use App\Models\Ubicacion;
 use App\Services\UbicacionService;
 use Illuminate\Http\RedirectResponse;
@@ -21,7 +22,8 @@ class UbicacionController extends Controller
     public function index(): View
     {
         $ubicaciones = $this->ubicacionService->getAll();
-        $branches = \App\Models\Branch::orderBy('name')->get();
+        $branches = Branch::orderBy('name')->get();
+
         return view('ubicaciones.index', compact('ubicaciones', 'branches'));
     }
 
@@ -31,6 +33,7 @@ class UbicacionController extends Controller
     public function store(StoreUbicacionRequest $request): RedirectResponse
     {
         $this->ubicacionService->store($request->validated());
+
         return redirect()->route('ubicaciones.index')->with('success', 'Ubicación creada correctamente.');
     }
 
@@ -40,6 +43,7 @@ class UbicacionController extends Controller
     public function update(UpdateUbicacionRequest $request, Ubicacion $ubicacione): RedirectResponse
     {
         $this->ubicacionService->update($ubicacione, $request->validated());
+
         return redirect()->route('ubicaciones.index')->with('success', 'Ubicación actualizada correctamente.');
     }
 
@@ -50,6 +54,7 @@ class UbicacionController extends Controller
     {
         try {
             $this->ubicacionService->delete($ubicacione);
+
             return redirect()->route('ubicaciones.index')->with('success', 'Ubicación eliminada correctamente.');
         } catch (\Exception $e) {
             return redirect()->route('ubicaciones.index')->with('error', $e->getMessage());

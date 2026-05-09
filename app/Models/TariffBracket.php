@@ -18,8 +18,8 @@ class TariffBracket extends Model
 
     protected $casts = [
         'weight_from' => 'integer',
-        'weight_to'   => 'integer',
-        'rate'        => 'decimal:2',
+        'weight_to' => 'integer',
+        'rate' => 'decimal:2',
     ];
 
     /**

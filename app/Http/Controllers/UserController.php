@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Models\Branch;
 use App\Models\Company;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -19,6 +20,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::with(['roles', 'companies'])->get();
+
         return view('users.index', compact('users'));
     }
 
@@ -30,7 +32,7 @@ class UserController extends Controller
         $roles = Role::all();
         $permissions = Permission::all();
         $companies = Company::all();
-        $branches = \App\Models\Branch::with('companies')->get();
+        $branches = Branch::with('companies')->get();
 
         return view('users.create', compact('roles', 'permissions', 'companies', 'branches'));
     }
@@ -42,7 +44,7 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => ['required', 'exists:roles,name'],
             'permissions' => ['nullable', 'array'],
@@ -75,7 +77,7 @@ class UserController extends Controller
         $roles = Role::all();
         $permissions = Permission::all();
         $companies = Company::all();
-        $branches = \App\Models\Branch::with('companies')->get();
+        $branches = Branch::with('companies')->get();
 
         return view('users.edit', compact('user', 'roles', 'permissions', 'companies', 'branches'));
     }
@@ -87,7 +89,7 @@ class UserController extends Controller
     {
         $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'role' => ['required', 'exists:roles,name'],
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['exists:permissions,id'],

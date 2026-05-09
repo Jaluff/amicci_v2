@@ -3,14 +3,14 @@
 namespace App\Models;
 
 use App\Traits\HasAddresses;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Party extends Model
 {
-    use HasFactory, HasAddresses;
+    use HasAddresses, HasFactory;
 
     protected $fillable = [
         'name',
@@ -29,8 +29,6 @@ class Party extends Model
         'has_insurance',
         'insurance_percent',
     ];
-
-
 
     /**
      * Todas las configuraciones tarifarias del cliente (puede tener varias para distintas rutas).

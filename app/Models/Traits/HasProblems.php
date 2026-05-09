@@ -30,7 +30,7 @@ trait HasProblems
      */
     public function problems(): MorphMany
     {
-        return $this->morphMany(DocumentProblem::class , 'documentable')
+        return $this->morphMany(DocumentProblem::class, 'documentable')
             ->orderByDesc('created_at');
     }
 
@@ -39,7 +39,7 @@ trait HasProblems
      */
     public function currentProblem(): MorphOne
     {
-        return $this->morphOne(DocumentProblem::class , 'documentable')
+        return $this->morphOne(DocumentProblem::class, 'documentable')
             ->latestOfMany('created_at');
     }
 

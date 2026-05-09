@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\Delivery;
 use App\Models\Dispatch;
 use App\Models\Shipment;
 use App\Models\TransportRoute;
 use App\StateMachines\Exceptions\InvalidTransitionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 
 class StatusTransitionController extends Controller
 {
@@ -19,16 +19,16 @@ class StatusTransitionController extends Controller
      * Agregar aquí los nuevos documentos (Reparto, etc.) sin tocar la lógica.
      */
     private array $modelMap = [
-        'shipment' => Shipment::class ,
-        'route' => TransportRoute::class ,
-        'dispatch' => Dispatch::class ,
-        'delivery' => \App\Models\Delivery::class ,
+        'shipment' => Shipment::class,
+        'route' => TransportRoute::class,
+        'dispatch' => Dispatch::class,
+        'delivery' => Delivery::class,
     ];
 
     public function transition(Request $request): JsonResponse
     {
         $request->validate([
-            'model_type' => ['required', 'string', 'in:' . implode(',', array_keys($this->modelMap))],
+            'model_type' => ['required', 'string', 'in:'.implode(',', array_keys($this->modelMap))],
             'model_id' => ['required', 'integer'],
             'status' => ['required', 'string'],
             'comment' => ['nullable', 'string', 'max:500'],
@@ -60,8 +60,7 @@ class StatusTransitionController extends Controller
                 'redirect_url' => $redirectRoutes[$request->model_type] ?? null,
             ]);
 
-        }
-        catch (InvalidTransitionException $e) {
+        } catch (InvalidTransitionException $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
@@ -76,7 +75,7 @@ class StatusTransitionController extends Controller
     public function available(Request $request): JsonResponse
     {
         $request->validate([
-            'model_type' => ['required', 'string', 'in:' . implode(',', array_keys($this->modelMap))],
+            'model_type' => ['required', 'string', 'in:'.implode(',', array_keys($this->modelMap))],
             'model_id' => ['required', 'integer'],
         ]);
 

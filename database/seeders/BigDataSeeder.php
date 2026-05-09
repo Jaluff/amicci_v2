@@ -38,6 +38,7 @@ class BigDataSeeder extends Seeder
 
         if ($companies->isEmpty() || $ubicaciones->isEmpty()) {
             $this->command->error('Debe haber empresas y ubicaciones para ejecutar este seeder.');
+
             return;
         }
 
@@ -56,10 +57,10 @@ class BigDataSeeder extends Seeder
         //     $company = $companies->random();
         //     $branches = Branch::where('company_id', $company->id)->get();
         //     $branch = $branches->random();
-            
+
         //     $origen = $ubicaciones->random();
         //     $destino = $ubicaciones->where('id', '!=', $origen->id)->random() ?? $ubicaciones->random();
-            
+
         //     $remitente = $allParties->where('company_id', $company->id)->random();
         //     $destinatario = $allParties->where('company_id', $company->id)->where('id', '!=', $remitente->id)->random() ?? $remitente;
 
@@ -123,37 +124,37 @@ class BigDataSeeder extends Seeder
         } */
 
         // 5. Crear 3 Despachos
-      /*   $this->command->info('Creando 3 despachos...');
-        $availableRoutes = TransportRoute::all();
-        for ($i = 0; $i < 3; $i++) {
-            $company = $companies->random();
-            $branch = Branch::where('company_id', $company->id)->get()->random();
-            $driver = $drivers->random();
-            $origen = $ubicaciones->random();
-            $destino = $ubicaciones->where('id', '!=', $origen->id)->random() ?? $ubicaciones->random();
+        /*   $this->command->info('Creando 3 despachos...');
+          $availableRoutes = TransportRoute::all();
+          for ($i = 0; $i < 3; $i++) {
+              $company = $companies->random();
+              $branch = Branch::where('company_id', $company->id)->get()->random();
+              $driver = $drivers->random();
+              $origen = $ubicaciones->random();
+              $destino = $ubicaciones->where('id', '!=', $origen->id)->random() ?? $ubicaciones->random();
 
-            $dispatch = Dispatch::create([
-                'company_id' => $company->id,
-                'branch_id' => $branch->id,
-                'dispatch_number' => $company->prefix . '-D' . str_pad((string)($i + 1), 8, '0', STR_PAD_LEFT),
-                'origin_id' => $origen->id,
-                'destination_id' => $destino->id,
-                'driver_id' => $driver->id,
-                'status' => 'Cargado',
-                'cost' => rand(10000, 50000)
-            ]);
+              $dispatch = Dispatch::create([
+                  'company_id' => $company->id,
+                  'branch_id' => $branch->id,
+                  'dispatch_number' => $company->prefix . '-D' . str_pad((string)($i + 1), 8, '0', STR_PAD_LEFT),
+                  'origin_id' => $origen->id,
+                  'destination_id' => $destino->id,
+                  'driver_id' => $driver->id,
+                  'status' => 'Cargado',
+                  'cost' => rand(10000, 50000)
+              ]);
 
-            $rutasParaDespacho = $availableRoutes->where('company_id', $company->id)
-                ->where('branch_id', $branch->id)
-                ->where('origin_id', $origen->id)
-                ->where('destination_id', $destino->id)
-                ->whereNull('dispatch_id')
-                ->take(rand(2, 5));
+              $rutasParaDespacho = $availableRoutes->where('company_id', $company->id)
+                  ->where('branch_id', $branch->id)
+                  ->where('origin_id', $origen->id)
+                  ->where('destination_id', $destino->id)
+                  ->whereNull('dispatch_id')
+                  ->take(rand(2, 5));
 
-            foreach ($rutasParaDespacho as $r) {
-                $r->update(['dispatch_id' => $dispatch->id]);
-            }
-        } */
+              foreach ($rutasParaDespacho as $r) {
+                  $r->update(['dispatch_id' => $dispatch->id]);
+              }
+          } */
 
         // 6. Crear 5 Repartos
         /* $this->command->info('Creando 5 repartos...');
@@ -184,13 +185,13 @@ class BigDataSeeder extends Seeder
             foreach ($guíasParaReparto as $s) {
                 $s->update(['delivery_id' => $delivery->id, 'ubicacion_actual' => 'En reparto']);
             }
-            
+
             $delivery->update([
                 'guide_count' => $guíasParaReparto->count(),
-                'package_count' => $guíasParaReparto->count() * 2 
+                'package_count' => $guíasParaReparto->count() * 2
             ]);
         } */
-        
+
         $this->command->info('Seeder finalizado con éxito.');
     }
 }

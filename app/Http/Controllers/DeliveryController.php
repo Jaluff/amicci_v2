@@ -9,23 +9,24 @@ use App\Models\Deliverer;
 use App\Models\Delivery;
 use App\Models\Shipment;
 use App\Services\DeliveryService;
+use App\StateMachines\DeliveryStateMachine;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Yajra\DataTables\Facades\DataTables;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class DeliveryController extends Controller
 {
-    public function __construct(private DeliveryService $deliveryService)
-    {
-    }
+    public function __construct(private DeliveryService $deliveryService) {}
 
     public function index(): View|JsonResponse
     {
         $branches = Branch::where('active', true)->orderBy('code')->get();
         $userCompanies = auth()->user()->companies;
+
         return view('deliveries.index', compact('branches', 'userCompanies'));
     }
 
@@ -38,10 +39,10 @@ class DeliveryController extends Controller
             ->withCount('shipments')
             ->withCount(['shipments as total_bultos' => function ($q) {
                 $q->select(DB::raw('COALESCE(SUM(shipment_items.cantidad), 0)'))
-                  ->join('shipment_items', 'shipments.id', '=', 'shipment_items.shipment_id');
+                    ->join('shipment_items', 'shipments.id', '=', 'shipment_items.shipment_id');
             }])
             ->withCount(['shipments as problem_count' => function ($q) {
-                $q->whereHas('problems', fn($query) => $query->where('is_active', true));
+                $q->whereHas('problems', fn ($query) => $query->where('is_active', true));
             }])
             ->whereIn('deliveries.company_id', auth()->user()->companies->pluck('id'));
 
@@ -59,13 +60,13 @@ class DeliveryController extends Controller
             $query->whereDate('load_date', '<=', $request->fecha_fin);
         }
         if ($request->filled('numero_documento')) {
-            $query->where('delivery_number', 'like', '%' . $request->numero_documento . '%');
+            $query->where('delivery_number', 'like', '%'.$request->numero_documento.'%');
         }
         if ($request->filled('estado')) {
             $estado = $request->estado;
             if ($estado === 'Con problemas') {
                 $query->whereHas('shipments', function ($sq) {
-                    $sq->whereHas('problems', fn($pq) => $pq->where('is_active', true));
+                    $sq->whereHas('problems', fn ($pq) => $pq->where('is_active', true));
                 });
             } else {
                 $query->where('status', $estado);
@@ -87,31 +88,31 @@ class DeliveryController extends Controller
 
                 $btnConfig = [
                     'En reparto' => [
-                        'label'   => '🚛 En Reparto',
-                        'class'   => 'bg-yellow-500 hover:bg-yellow-600 text-white',
+                        'label' => '🚛 En Reparto',
+                        'class' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
                         'confirm' => '¿Confirmar que el reparto inicia?',
                     ],
                     'Finalizado' => [
-                        'label'   => '✅ Finalizado',
-                        'class'   => 'bg-green-600 hover:bg-green-700 text-white',
+                        'label' => '✅ Finalizado',
+                        'class' => 'bg-green-600 hover:bg-green-700 text-white',
                         'confirm' => '¿Confirmar finalizar?',
                     ],
                     'Listo' => [
-                        'label'   => '🔙 Revertir a Listo',
-                        'class'   => 'bg-gray-600 hover:bg-gray-700 text-white',
+                        'label' => '🔙 Revertir a Listo',
+                        'class' => 'bg-gray-600 hover:bg-gray-700 text-white',
                         'confirm' => '¿Deshacer el inicio de reparto? Esto devolverá las guías a destino.',
                     ],
                 ];
 
-                $statusButtons = "";
+                $statusButtons = '';
                 foreach ($availableTransitions as $transition) {
                     $cfg = $btnConfig[$transition] ?? ['label' => $transition, 'class' => 'bg-gray-600 text-white', 'confirm' => null];
-                    $confAttr = $cfg['confirm'] ? "data-confirm='{$cfg['confirm']}'" : "";
+                    $confAttr = $cfg['confirm'] ? "data-confirm='{$cfg['confirm']}'" : '';
                     $statusButtons .= "<button type='button' class='inline-flex items-center gap-1 px-2.5 py-1.5 mb-1 sm:mb-0 rounded-md font-bold text-xs shadow-sm transition-all {$cfg['class']}' data-model-type='delivery' data-model-id='{$row->id}' data-transition='{$transition}' {$confAttr} title='{$cfg['label']}'>{$cfg['label']}</button>";
                 }
 
-                $deleteForm = "";
-                if ($row->shipments_count == 0 && $currentStatus === \App\StateMachines\DeliveryStateMachine::READY && $isAdminOrSupervisor) {
+                $deleteForm = '';
+                if ($row->shipments_count == 0 && $currentStatus === DeliveryStateMachine::READY && $isAdminOrSupervisor) {
                     $deleteForm = "
                     <form action='{$deleteUrl}' method='POST' onsubmit='{$confirm}' class='inline m-0'>
                         <input type='hidden' name='_token' value='{$csrf}'>
@@ -122,7 +123,7 @@ class DeliveryController extends Controller
                         </form>";
                 }
 
-                $devolutionBtn = "";
+                $devolutionBtn = '';
                 if ($row->problem_count > 0) {
                     $devolutionBtn = "
                         <button type='button' title='Guías a devolver' 
@@ -149,6 +150,7 @@ class DeliveryController extends Controller
                 if ($row->problem_count > 0) {
                     $numberHtml .= " <span class='text-red-500 animate-pulse font-bold ml-1' style='color: #dc2626 !important;' title='Contiene guías con problemas abiertos'>⚠</span>";
                 }
+
                 return $numberHtml;
             })
             ->addColumn('guide_count', function ($row) {
@@ -164,7 +166,7 @@ class DeliveryController extends Controller
             ->make(true);
     }
 
-    public function create(Request $request): View|\Illuminate\Http\RedirectResponse
+    public function create(Request $request): View|RedirectResponse
     {
         $user = auth()->user();
         $companies = $user->companies;
@@ -175,18 +177,18 @@ class DeliveryController extends Controller
 
         $company_id = $request->input('company_id');
 
-        if (!$company_id) {
+        if (! $company_id) {
             if ($companies->count() === 1) {
                 $company_id = $companies->first()->id;
             } else {
                 return redirect()->route('deliveries.index')->with('error', 'Debes seleccionar una empresa primero.');
             }
-        } elseif (!$companies->contains('id', $company_id)) {
+        } elseif (! $companies->contains('id', $company_id)) {
             abort(403, 'No tienes permiso para operar en esta empresa.');
         }
 
         $deliverers = Deliverer::orderBy('name')->get();
-        $branches   = Branch::where('active', true)
+        $branches = Branch::where('active', true)
             ->whereHas('companies', function ($q) use ($company_id) {
                 $q->where('companies.id', $company_id);
             })
@@ -200,24 +202,26 @@ class DeliveryController extends Controller
             ->pluck('vehicle_plate');
 
         $selected_company = $companies->firstWhere('id', $company_id);
+
         return view('deliveries.create', compact('deliverers', 'branches', 'existingPlates', 'selected_company'));
     }
 
     public function store(StoreDeliveryRequest $request)
     {
         $data = $request->validated();
-        if (!auth()->user()->companies->contains('id', $data['company_id'])) {
+        if (! auth()->user()->companies->contains('id', $data['company_id'])) {
             abort(403, 'No tienes permiso para operar en esta empresa.');
         }
 
         $this->deliveryService->createDelivery($data);
+
         return redirect()->route('deliveries.index')->with('success', 'Reparto creado exitosamente.');
     }
 
     public function edit(Delivery $delivery): View
     {
         $deliverers = Deliverer::orderBy('name')->get();
-        $branches   = Branch::where('active', true)
+        $branches = Branch::where('active', true)
             ->permitted()
             ->orderBy('code')
             ->get();
@@ -241,21 +245,22 @@ class DeliveryController extends Controller
     public function update(UpdateDeliveryRequest $request, Delivery $delivery)
     {
         $this->deliveryService->updateDelivery($delivery, $request->validated());
+
         return redirect()->route('deliveries.index')->with('success', 'Reparto actualizado exitosamente.');
     }
 
     public function destroy(Delivery $delivery)
     {
-        abort_if(!auth()->user()->hasAnyRole(['admin', 'Supervisor']), 403, 'No tienes permisos para anular documentos.');
+        abort_if(! auth()->user()->hasAnyRole(['admin', 'Supervisor']), 403, 'No tienes permisos para anular documentos.');
 
-        if ($delivery->status !== \App\StateMachines\DeliveryStateMachine::READY) {
+        if ($delivery->status !== DeliveryStateMachine::READY) {
             return redirect()->route('deliveries.index')->with('error', 'No se puede anular un reparto cuyo estado no es "Listo".');
         }
 
-        \Illuminate\Support\Facades\DB::transaction(function() use ($delivery) {
+        DB::transaction(function () use ($delivery) {
             // Desasignar guías
             $shipments = $delivery->shipments;
-            foreach($shipments as $s) {
+            foreach ($shipments as $s) {
                 $s->update(['delivery_id' => null]);
                 $s->logActivity("Desvinculada por anulación del reparto {$delivery->delivery_number}", 'unassigned_delivery');
             }
@@ -278,7 +283,7 @@ class DeliveryController extends Controller
                 'destino.nombre as destino_nombre',
                 'companies.prefix as empresa_prefix',
                 'companies.color as empresa_color',
-                DB::raw('(SELECT COALESCE(SUM(si.cantidad), 0) FROM shipment_items si WHERE si.shipment_id = shipments.id) as bultos_total')
+                DB::raw('(SELECT COALESCE(SUM(si.cantidad), 0) FROM shipment_items si WHERE si.shipment_id = shipments.id) as bultos_total'),
             ])
             ->join('companies', 'shipments.company_id', '=', 'companies.id')
             ->leftJoin('ubicaciones as origen', 'shipments.origen_id', '=', 'origen.id')
@@ -287,7 +292,7 @@ class DeliveryController extends Controller
             ->where('shipments.ubicacion_actual', '=', 'Dto destino')
             ->withCount([
                 'problems as has_active_problem' => fn ($q) => $q->where('is_active', true),
-                'problems as has_resolved_problem' => fn ($q) => $q->where('is_active', false)
+                'problems as has_resolved_problem' => fn ($q) => $q->where('is_active', false),
             ]);
 
         // We only allow those that do not have a delivery, or belong to the current one being edited
@@ -317,6 +322,7 @@ class DeliveryController extends Controller
         return DataTables::of($query)
             ->addColumn('empresa', function ($row) {
                 $color = $row->empresa_color ?? '#6366f1';
+
                 return "<span class='px-2 py-1 rounded-full text-[10px] font-bold text-white shadow-sm' style='background-color: {$color}'>{$row->empresa_prefix}</span>";
             })
             ->addColumn('bultos', function ($row) {
@@ -324,14 +330,14 @@ class DeliveryController extends Controller
             })
             ->addColumn('check', function ($row) {
                 return '<input type="checkbox" class="shipment-checkbox w-4 h-4 text-blue-600 rounded focus:ring-blue-500" 
-                    value="' . $row->id . '" 
-                    data-numero="' . $row->numero . '" 
-                    data-origen="' . $row->origen_nombre . '" 
-                    data-destino="' . $row->destino_nombre . '" 
-                    data-bultos="' . (int) ($row->bultos_total ?? 0) . '" 
-                    data-estado="' . $row->ubicacion_actual . '" 
-                    data-has-problem="' . ($row->has_active_problem > 0 ? 'true' : 'false') . '"
-                    data-has-resolved-problem="' . ($row->has_resolved_problem > 0 ? 'true' : 'false') . '">';
+                    value="'.$row->id.'" 
+                    data-numero="'.$row->numero.'" 
+                    data-origen="'.$row->origen_nombre.'" 
+                    data-destino="'.$row->destino_nombre.'" 
+                    data-bultos="'.(int) ($row->bultos_total ?? 0).'" 
+                    data-estado="'.$row->ubicacion_actual.'" 
+                    data-has-problem="'.($row->has_active_problem > 0 ? 'true' : 'false').'"
+                    data-has-resolved-problem="'.($row->has_resolved_problem > 0 ? 'true' : 'false').'">';
             })
             ->editColumn('fecha', function ($row) {
                 return Carbon::parse($row->fecha)->format('d/m/Y');
@@ -344,6 +350,7 @@ class DeliveryController extends Controller
     {
         try {
             $this->deliveryService->returnShipmentFromDelivery($delivery, $shipment);
+
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 400);

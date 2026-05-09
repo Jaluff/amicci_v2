@@ -17,7 +17,7 @@ use LogicException;
  *       use HasStateMachine;
  *       protected string $stateMachineClass = DispatchStateMachine::class;
  *   }
- *   
+ *
  *   // Desde el controlador:
  *   $dispatch->stateMachine()->transitionTo('En viaje');
  */
@@ -29,10 +29,10 @@ trait HasStateMachine
      */
     public function stateMachine(): StateMachineInterface
     {
-        if (!isset($this->stateMachineClass)) {
+        if (! isset($this->stateMachineClass)) {
             throw new LogicException(
-                get_class($this) . ' debe definir $stateMachineClass para usar HasStateMachine.'
-                );
+                get_class($this).' debe definir $stateMachineClass para usar HasStateMachine.'
+            );
         }
 
         /** @var BaseStateMachine */
@@ -44,7 +44,7 @@ trait HasStateMachine
      */
     public function statusHistories()
     {
-        return $this->morphMany(StatusHistory::class , 'model')->orderByDesc('transitioned_at');
+        return $this->morphMany(StatusHistory::class, 'model')->orderByDesc('transitioned_at');
     }
 
     /**
@@ -52,6 +52,6 @@ trait HasStateMachine
      */
     public function latestStatusHistory()
     {
-        return $this->morphOne(StatusHistory::class , 'model')->latestOfMany('transitioned_at');
+        return $this->morphOne(StatusHistory::class, 'model')->latestOfMany('transitioned_at');
     }
 }

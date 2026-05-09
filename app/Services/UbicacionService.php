@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\Shipment;
+use App\Models\TransportRoute;
 use App\Models\Ubicacion;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -20,8 +22,7 @@ class UbicacionService
     /**
      * Store a new location.
      *
-     * @param array{nombre: string} $data
-     * @return Ubicacion
+     * @param  array{nombre: string}  $data
      */
     public function store(array $data): Ubicacion
     {
@@ -31,9 +32,7 @@ class UbicacionService
     /**
      * Update an existing location.
      *
-     * @param Ubicacion $ubicacion
-     * @param array{nombre: string} $data
-     * @return bool
+     * @param  array{nombre: string}  $data
      */
     public function update(Ubicacion $ubicacion, array $data): bool
     {
@@ -43,14 +42,12 @@ class UbicacionService
     /**
      * Delete a location.
      *
-     * @param Ubicacion $ubicacion
-     * @return bool
      * @throws \Exception
      */
     public function delete(Ubicacion $ubicacion): bool
     {
         // Check if used in shipments (guías)
-        $usedInShipments = \App\Models\Shipment::where('origen_id', $ubicacion->id)
+        $usedInShipments = Shipment::where('origen_id', $ubicacion->id)
             ->orWhere('destino_id', $ubicacion->id)
             ->exists();
 
@@ -59,7 +56,7 @@ class UbicacionService
         }
 
         // Check if used in transport routes
-        $usedInRoutes = \App\Models\TransportRoute::where('origin_id', $ubicacion->id)
+        $usedInRoutes = TransportRoute::where('origin_id', $ubicacion->id)
             ->orWhere('destination_id', $ubicacion->id)
             ->exists();
 

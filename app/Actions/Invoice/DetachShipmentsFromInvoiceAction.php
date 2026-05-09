@@ -11,14 +11,13 @@ class DetachShipmentsFromInvoiceAction
      * Desvincula guías específicas de la factura (solo admin).
      * Recalcula el total de la factura tras la operación.
      *
-     * @param  Invoice    $invoice
-     * @param  array<int> $shipmentIds
+     * @param  array<int>  $shipmentIds
      */
     public function execute(Invoice $invoice, array $shipmentIds): void
     {
         if ($invoice->cobrada) {
             throw new \DomainException(
-                "No se pueden quitar guías de una factura ya cobrada."
+                'No se pueden quitar guías de una factura ya cobrada.'
             );
         }
 

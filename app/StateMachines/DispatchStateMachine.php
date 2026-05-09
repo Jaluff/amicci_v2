@@ -18,7 +18,9 @@ class DispatchStateMachine extends BaseStateMachine
 {
     // ── Constantes de estado ─────────────────────────────────
     public const STATUS_CARGADO = 'Cargado';
+
     public const STATUS_EN_VIAJE = 'En viaje';
+
     public const STATUS_ARRIBADO = 'Arribado';
 
     // ── Interfaz ─────────────────────────────────────────────
@@ -47,12 +49,12 @@ class DispatchStateMachine extends BaseStateMachine
     {
         // Mapeamos el nuevo estado de Despacho → estado de Ruta
         $routeStatusMap = [
-            self::STATUS_CARGADO  => RouteStateMachine::STATUS_CARGADA,
+            self::STATUS_CARGADO => RouteStateMachine::STATUS_CARGADA,
             self::STATUS_EN_VIAJE => RouteStateMachine::STATUS_EN_VIAJE,
             self::STATUS_ARRIBADO => RouteStateMachine::STATUS_ENTREGADA,
         ];
 
-        if (!isset($routeStatusMap[$to])) {
+        if (! isset($routeStatusMap[$to])) {
             return;
         }
 

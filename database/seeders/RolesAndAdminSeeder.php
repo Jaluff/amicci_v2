@@ -2,12 +2,13 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
-use App\Models\User;
+use App\Models\Branch;
 use App\Models\Company;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 class RolesAndAdminSeeder extends Seeder
 {
@@ -20,96 +21,92 @@ class RolesAndAdminSeeder extends Seeder
 
         // Crear una empresa por defecto si es que no existe
         $company = Company::firstOrCreate(
-        ['name' => 'Amicci'],
-        [
-            'prefix' => 'AM',
-            'last_shipment_number' => 5000,
-        ]
+            ['name' => 'Amicci'],
+            [
+                'prefix' => 'AM',
+                'last_shipment_number' => 5000,
+            ]
         );
 
         // Crear usuario administrador
         $adminUser = User::firstOrCreate(
-        ['email' => 'admin@admin.com'],
-        [
-            'name' => 'Admin Sistema',
-            'password' => Hash::make('password'), // cambiar después
-            'email_verified_at' => now(),
-            'remember_token' => Str::random(10),
-        ]
+            ['email' => 'admin@admin.com'],
+            [
+                'name' => 'Admin Sistema',
+                'password' => Hash::make('password'), // cambiar después
+                'email_verified_at' => now(),
+                'remember_token' => Str::random(10),
+            ]
         );
-
 
         // Crear usuario supervisor
         $supervisorUser = User::firstOrCreate(
-        ['email' => 'supervisor@supervisor.com'],
-        [
-            'name' => 'Supervisor',
-            'password' => Hash::make('password'), // cambiar después
-            'email_verified_at' => now(),
-            'remember_token' => Str::random(10),
-        ]
+            ['email' => 'supervisor@supervisor.com'],
+            [
+                'name' => 'Supervisor',
+                'password' => Hash::make('password'), // cambiar después
+                'email_verified_at' => now(),
+                'remember_token' => Str::random(10),
+            ]
         );
 
         // Crear usuario operador
         $operatorUser = User::firstOrCreate(
-        ['email' => 'operador@operador.com'],
-        [
-            'name' => 'Operador',
-            'password' => Hash::make('password'), // cambiar después
-            'email_verified_at' => now(),
-            'remember_token' => Str::random(10),
-        ]
+            ['email' => 'operador@operador.com'],
+            [
+                'name' => 'Operador',
+                'password' => Hash::make('password'), // cambiar después
+                'email_verified_at' => now(),
+                'remember_token' => Str::random(10),
+            ]
         );
 
-
         // Asignarle rol de admin
-        if (!$adminUser->hasRole('admin')) {
+        if (! $adminUser->hasRole('admin')) {
             $adminUser->assignRole($adminRole);
         }
         // Asignarle rol de supervisor
-        if (!$supervisorUser->hasRole('supervisor')) {
+        if (! $supervisorUser->hasRole('supervisor')) {
             $supervisorUser->assignRole($supervisorRole);
         }
 
         // Asignarle rol de operador
-        if (!$operatorUser->hasRole('operador')) {
+        if (! $operatorUser->hasRole('operador')) {
             $operatorUser->assignRole($operatorRole);
         }
-
 
         // Asignarle la empresa al admin si no la tiene
         $companies = Company::all();
         foreach ($companies as $company) {
-            if (!$adminUser->companies()->where('company_id', $company->id)->exists()) {
+            if (! $adminUser->companies()->where('company_id', $company->id)->exists()) {
                 $adminUser->companies()->attach($company->id);
             }
 
         }
 
         // Asignarle la empresa al supervisor si no la tiene
-        if (!$supervisorUser->companies()->where('company_id', $company->id)->exists()) {
+        if (! $supervisorUser->companies()->where('company_id', $company->id)->exists()) {
             $supervisorUser->companies()->attach($company->id);
         }
 
         // Asignarle la empresa al operador si no la tiene
-        if (!$operatorUser->companies()->where('company_id', $company->id)->exists()) {
+        if (! $operatorUser->companies()->where('company_id', $company->id)->exists()) {
             $operatorUser->companies()->attach($company->id);
         }
 
         // Asignar primera sucursal al operador
-        $branch = \App\Models\Branch::first();
-        if ($branch && !$operatorUser->branches()->where('branch_id', $branch->id)->exists()) {
+        $branch = Branch::first();
+        if ($branch && ! $operatorUser->branches()->where('branch_id', $branch->id)->exists()) {
             $operatorUser->branches()->attach($branch->id);
         }
 
-        
         // El supervisor tiene todas las sucursales
-        $allBranches = \App\Models\Branch::all();
+        $allBranches = Branch::all();
         foreach ($allBranches as $b) {
-            if (!$supervisorUser->branches()->where('branch_id', $b->id)->exists()) {
+            if (! $supervisorUser->branches()->where('branch_id', $b->id)->exists()) {
                 $supervisorUser->branches()->attach($b->id);
             }
-            if (!$adminUser->branches()->where('branch_id', $b->id)->exists()) {
+            if (! $adminUser->branches()->where('branch_id', $b->id)->exists()) {
                 $adminUser->branches()->attach($b->id);
             }
         }

@@ -11,7 +11,9 @@ class LoadStateMachine extends BaseStateMachine
 {
     // ── Constantes de estado ─────────────────────────────────
     public const STATUS_PREPARADO = 'Preparado';
+
     public const STATUS_EN_VIAJE = 'En viaje';
+
     public const STATUS_ARRIBADO = 'Arribado';
 
     // ── Interfaz ─────────────────────────────────────────────
@@ -36,7 +38,7 @@ class LoadStateMachine extends BaseStateMachine
 
     protected function afterTransition(string $from, string $to): void
     {
-        if ($to === self::STATUS_ARRIBADO && !$this->model->fecha_descarga) {
+        if ($to === self::STATUS_ARRIBADO && ! $this->model->fecha_descarga) {
             $this->model->update(['fecha_descarga' => now()]);
         }
     }

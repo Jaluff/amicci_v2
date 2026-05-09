@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Load extends Model
 {
-    use HasFactory, SoftDeletes, HasStateMachine;
+    use HasFactory, HasStateMachine, SoftDeletes;
 
     protected string $stateMachineClass = LoadStateMachine::class;
 
@@ -50,12 +50,12 @@ class Load extends Model
      */
     public function getFacturadaAttribute(): bool
     {
-        return !empty($this->numero_factura);
+        return ! empty($this->numero_factura);
     }
 
     public function getCobradaAttribute(): bool
     {
-        return !empty($this->numero_recibo);
+        return ! empty($this->numero_recibo);
     }
 
     public function company(): BelongsTo

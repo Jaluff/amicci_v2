@@ -9,7 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Driver extends Model
 {
-    use HasFactory, HasAddresses;
+    use HasAddresses, HasFactory;
+
     protected $fillable = [
         'name',
         'address',
@@ -17,6 +18,7 @@ class Driver extends Model
         'license_number',
         'dni',
     ];
+
     public function transportRoutes(): HasMany
     {
         return $this->hasMany(TransportRoute::class);

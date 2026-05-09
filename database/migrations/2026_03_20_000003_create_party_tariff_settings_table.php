@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Crea la tabla de configuración tarifaria particular por cliente (party).
      *
@@ -35,15 +36,15 @@ return new class extends Migration {
             // Cliente (remitente o destinatario) al que aplica esta configuración
             // Al eliminar un party, se eliminan sus configuraciones tarifarias
             $table->foreignId('party_id')
-                  ->constrained('parties')
-                  ->cascadeOnDelete();
+                ->constrained('parties')
+                ->cascadeOnDelete();
 
             // Cuadro tarifario base al que se vincula este acuerdo
             // Determina la ruta (origen → destino) para la que aplica
             // Al eliminar el cuadro base, se elimina este acuerdo también
             $table->foreignId('tariff_table_id')
-                  ->constrained('tariff_tables')
-                  ->cascadeOnDelete();
+                ->constrained('tariff_tables')
+                ->cascadeOnDelete();
 
             // ──────────────────────────────────────────────────────────────
             // MODO DE FACTURACIÓN

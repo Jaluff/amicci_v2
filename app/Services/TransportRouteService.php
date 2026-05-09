@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\TransportRoute;
+use App\Models\Company;
 use App\Models\Shipment;
+use App\Models\TransportRoute;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
 
 class TransportRouteService
 {
@@ -15,7 +15,7 @@ class TransportRouteService
     {
         return DB::transaction(function () use ($data) {
             // Se usa la empresa enviada en los datos para la numeración
-            $company = \App\Models\Company::lockForUpdate()->findOrFail($data['company_id']);
+            $company = Company::lockForUpdate()->findOrFail($data['company_id']);
 
             $company->last_route_number++;
             $company->save();
@@ -27,6 +27,7 @@ class TransportRouteService
             if (isset($data['shipments'])) {
                 $this->assignShipments($route, $data['shipments']);
             }
+
             return $route->loadCount('shipments');
         });
     }
@@ -36,19 +37,19 @@ class TransportRouteService
         return DB::transaction(function () use ($route, $data) {
             $currentStatus = $route->status;
             $newStatus = $data['status'] ?? null;
-            
+
             // Remove 'status' from data to update other fields cleanly,
             // we will transition explicitly using the state machine.
             if (array_key_exists('status', $data)) {
                 unset($data['status']);
             }
-            
+
             $route->update($data);
-            
+
             if (isset($data['shipments']) && $currentStatus === 'Cargada') {
                 $this->assignShipments($route, $data['shipments']);
             }
-            
+
             // Execute state transition if a new status was requested and differs.
             if ($newStatus && $newStatus !== $currentStatus) {
                 $route->stateMachine()->transitionTo(
@@ -56,7 +57,7 @@ class TransportRouteService
                     'Actualizado desde formulario'
                 );
             }
-            
+
             return $route->loadCount('shipments');
         });
     }
@@ -74,7 +75,7 @@ class TransportRouteService
         }
 
         // Si hay algun ID seteamos para esta ruta
-        if (!empty($shipmentIds)) {
+        if (! empty($shipmentIds)) {
             $addedShipments = Shipment::whereIn('id', $shipmentIds)
                 ->where('transport_route_id', '!=', $route->id)->orWhereNull('transport_route_id')
                 ->get();
@@ -88,6 +89,4 @@ class TransportRouteService
             }
         }
     }
-
-
 }

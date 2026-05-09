@@ -16,6 +16,7 @@ class PartySeeder extends Seeder
         $company = Company::first();
         if (! $company) {
             $this->command->warn('No hay empresa. Ejecutá CompanySeeder primero.');
+
             return;
         }
 

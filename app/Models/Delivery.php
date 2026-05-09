@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Delivery extends Model
 {
-    use HasProblems, HasStateMachine, HasFactory;
+    use HasFactory, HasProblems, HasStateMachine;
 
     protected string $stateMachineClass = DeliveryStateMachine::class;
 
@@ -32,7 +32,7 @@ class Delivery extends Model
     ];
 
     protected $casts = [
-        'load_date'     => 'date',
+        'load_date' => 'date',
         'dispatch_date' => 'date',
     ];
 

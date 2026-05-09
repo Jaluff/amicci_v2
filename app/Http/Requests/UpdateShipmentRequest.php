@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateShipmentRequest extends FormRequest
@@ -17,14 +18,14 @@ class UpdateShipmentRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
             // 'numero' => 'required|string|unique:shipments,numero,' . $this->route('shipment')->id,
-            'fecha'             => 'required|date',
-            'branch_id'         => 'nullable|integer|exists:branches,id',
+            'fecha' => 'required|date',
+            'branch_id' => 'nullable|integer|exists:branches,id',
             'origen_id' => 'nullable|integer|exists:ubicaciones,id',
             'destino_id' => 'nullable|integer|exists:ubicaciones,id',
             'remitente_id' => 'nullable|integer|exists:parties,id',

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Traits\HasAddresses;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Company extends Model
 {
@@ -36,23 +38,23 @@ class Company extends Model
         return $this->hasMany(Shipment::class);
     }
 
-    public function branches(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function branches(): BelongsToMany
     {
         return $this->belongsToMany(Branch::class, 'branch_company')
             ->withPivot('last_shipment_number');
     }
 
-    public function transportRoutes(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function transportRoutes(): HasMany
     {
         return $this->hasMany(TransportRoute::class);
     }
 
-    public function dispatches(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function dispatches(): HasMany
     {
         return $this->hasMany(Dispatch::class);
     }
 
-    public function deliveries(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function deliveries(): HasMany
     {
         return $this->hasMany(Delivery::class);
     }

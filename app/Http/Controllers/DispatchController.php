@@ -12,8 +12,10 @@ use App\Models\Dispatch;
 use App\Models\Driver;
 use App\Models\TransportRoute;
 use App\Services\DispatchService;
+use App\StateMachines\DispatchStateMachine;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -21,12 +23,12 @@ class DispatchController extends Controller
 {
     public function __construct(
         private DispatchService $dispatchService
-    ) {
-    }
+    ) {}
 
     public function index(): View
     {
         $branches = Branch::where('active', true)->orderBy('code')->get();
+
         return view('dispatches.index', compact('branches'));
     }
 
@@ -36,11 +38,11 @@ class DispatchController extends Controller
             ->with(['driver', 'origin', 'destination'])
             ->withCount(['routes', 'shipments'])
             ->withCount(['shipments as problem_count' => function ($q) {
-                $q->whereHas('problems', fn($query) => $query->where('is_active', true));
+                $q->whereHas('problems', fn ($query) => $query->where('is_active', true));
             }]);
 
         if ($request->filled('company_id')) {
-            // Ignorar company_id si viene en el request de filtros antiguos, 
+            // Ignorar company_id si viene en el request de filtros antiguos,
             // o eliminar si ya no se usa.
         }
 
@@ -57,13 +59,13 @@ class DispatchController extends Controller
             $query->whereDate('created_at', '<=', $request->fecha_fin);
         }
         if ($request->filled('numero_documento')) {
-            $query->where('dispatch_number', 'like', '%' . $request->numero_documento . '%');
+            $query->where('dispatch_number', 'like', '%'.$request->numero_documento.'%');
         }
         if ($request->filled('estado')) {
             $estado = $request->estado;
             if ($estado === 'Con problemas') {
                 $query->whereHas('shipments', function ($sq) {
-                    $sq->whereHas('problems', fn($pq) => $pq->where('is_active', true));
+                    $sq->whereHas('problems', fn ($pq) => $pq->where('is_active', true));
                 });
             } else {
                 $query->where('status', $estado);
@@ -79,6 +81,7 @@ class DispatchController extends Controller
                 if ($row->problem_count > 0) {
                     $numberHtml .= " <span class='text-red-500 animate-pulse font-bold ml-1' style='color: #dc2626 !important;' title='Contiene guías con problemas abiertos'>⚠</span>";
                 }
+
                 return $numberHtml;
             })
             ->addColumn('fecha', function ($row) {
@@ -87,6 +90,7 @@ class DispatchController extends Controller
             ->addColumn('ruta_corta', function ($row) {
                 $or = mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->origin?->name ?? '-'));
                 $ds = mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->destination?->name ?? '-'));
+
                 return "<div class='flex flex-col gap-0.5 items-center'>
                             <span class='px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 text-[9px] font-bold w-fit'>$or</span>
                             <span class='px-1.5 py-0.5 rounded bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 text-[9px] font-bold w-fit'>$ds</span>
@@ -104,34 +108,34 @@ class DispatchController extends Controller
 
                 $btnConfig = [
                     'En viaje' => [
-                        'label'   => '🚛 En Viaje',
-                        'class'   => 'bg-yellow-500 hover:bg-yellow-600 text-white',
+                        'label' => '🚛 En Viaje',
+                        'class' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
                         'confirm' => '¿Confirmar inicio de viaje?',
                     ],
                     'Arribado' => [
-                        'label'   => '✅ Arribado',
-                        'class'   => 'bg-green-600 hover:bg-green-700 text-white',
+                        'label' => '✅ Arribado',
+                        'class' => 'bg-green-600 hover:bg-green-700 text-white',
                         'confirm' => '¿Confirmar llegada a destino?',
                     ],
                     'Cargado' => [
-                        'label'   => '↩ Revertir',
-                        'class'   => 'bg-gray-500 hover:bg-gray-600 text-white',
+                        'label' => '↩ Revertir',
+                        'class' => 'bg-gray-500 hover:bg-gray-600 text-white',
                         'confirm' => '¿Deseas revertir este despacho a estado inicial? Las rutas también se revertirán.',
                     ],
                 ];
 
-                $statusButtons = "";
+                $statusButtons = '';
                 foreach ($availableTransitions as $transition) {
                     $cfg = $btnConfig[$transition] ?? ['label' => $transition, 'class' => 'bg-gray-600 text-white', 'confirm' => null];
-                    $confAttr = $cfg['confirm'] ? "data-confirm='{$cfg['confirm']}'" : "";
+                    $confAttr = $cfg['confirm'] ? "data-confirm='{$cfg['confirm']}'" : '';
                     $statusButtons .= "<button type='button' class='inline-flex items-center gap-1 px-2.5 py-1.5 mb-1 sm:mb-0 rounded-md font-bold text-xs shadow-sm transition-all {$cfg['class']}' data-model-type='dispatch' data-model-id='{$row->id}' data-transition='{$transition}' {$confAttr} title='{$cfg['label']}'>{$cfg['label']}</button>";
                 }
 
-                $deleteForm = "";
+                $deleteForm = '';
                 // El usuario aclara: si tiene 0 RUTAS O está en estado Cargado, permitir eliminar (si es admin/supervisor)
                 $canDelete = $isAdminOrSupervisor && (
-                    $row->routes_count == 0 && 
-                    $currentStatus === \App\StateMachines\DispatchStateMachine::STATUS_CARGADO
+                    $row->routes_count == 0 &&
+                    $currentStatus === DispatchStateMachine::STATUS_CARGADO
                 );
 
                 if ($canDelete) {
@@ -167,7 +171,7 @@ class DispatchController extends Controller
             ->with(['origin', 'destination'])
             ->withCount('shipments')
             ->withCount(['shipments as problem_count' => function ($q) {
-                $q->whereHas('problems', fn($query) => $query->where('is_active', true));
+                $q->whereHas('problems', fn ($query) => $query->where('is_active', true));
             }])
             ->where('status', 'Cargada')
             ->whereNull('dispatch_id');
@@ -184,27 +188,28 @@ class DispatchController extends Controller
         return DataTables::of($query)
             ->addColumn('empresa', function ($row) {
                 $color = $row->empresa_color ?? '#6366f1';
+
                 return "<span class='px-2 py-1 rounded-full text-[10px] font-bold text-white shadow-sm' style='background-color: {$color}'>{$row->empresa_prefix}</span>";
             })
             ->addColumn('check', function ($row) {
                 return '<input type="checkbox" class="route-checkbox w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                    value="' . $row->id . '"
-                    data-numero="' . $row->route_number . '"
-                    data-origen="' . ($row->origin->name ?? '-') . '"
-                    data-destino="' . ($row->destination->name ?? '-') . '"
-                    data-rutas="' . $row->shipments_count . '"
-                    data-estado="' . $row->status . '"
-                    data-has-problem="' . ($row->problem_count > 0 ? 'true' : 'false') . '">';
+                    value="'.$row->id.'"
+                    data-numero="'.$row->route_number.'"
+                    data-origen="'.($row->origin->name ?? '-').'"
+                    data-destino="'.($row->destination->name ?? '-').'"
+                    data-rutas="'.$row->shipments_count.'"
+                    data-estado="'.$row->status.'"
+                    data-has-problem="'.($row->problem_count > 0 ? 'true' : 'false').'">';
             })
-            ->addColumn('origen_nombre', fn($row) => mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->origin?->name ?? $row->origin?->nombre ?? '-')))
-            ->addColumn('destino_nombre', fn($row) => mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->destination?->name ?? $row->destination?->nombre ?? '-')))
+            ->addColumn('origen_nombre', fn ($row) => mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->origin?->name ?? $row->origin?->nombre ?? '-')))
+            ->addColumn('destino_nombre', fn ($row) => mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->destination?->name ?? $row->destination?->nombre ?? '-')))
             ->rawColumns(['check', 'empresa'])
             ->make(true);
     }
 
     public function create(Request $request): View
     {
-        $drivers  = Driver::all(['id', 'name', 'dni']);
+        $drivers = Driver::all(['id', 'name', 'dni']);
         $branches = Branch::where('active', true)
             ->permitted()
             ->orderBy('code')
@@ -219,6 +224,7 @@ class DispatchController extends Controller
 
         try {
             $this->dispatchService->createDispatch($data);
+
             return redirect()->route('dispatches.index')->with('success', 'Despacho creado exitosamente.');
         } catch (\InvalidArgumentException $e) {
             return back()->withErrors(['routes' => $e->getMessage()])->withInput();
@@ -227,7 +233,7 @@ class DispatchController extends Controller
 
     public function edit(Dispatch $dispatch): View
     {
-        $drivers  = Driver::all(['id', 'name', 'dni']);
+        $drivers = Driver::all(['id', 'name', 'dni']);
         $branches = Branch::where('active', true)
             ->permitted()
             ->orderBy('code')
@@ -246,6 +252,7 @@ class DispatchController extends Controller
     {
         try {
             $this->dispatchService->updateDispatch($dispatch, $request->validated());
+
             return redirect()->route('dispatches.index')->with('success', 'Despacho actualizado exitosamente.');
         } catch (\InvalidArgumentException $e) {
             return back()->withErrors(['routes' => $e->getMessage()])->withInput();
@@ -254,14 +261,14 @@ class DispatchController extends Controller
 
     public function destroy(Dispatch $dispatch)
     {
-        abort_if(!auth()->user()->hasAnyRole(['admin', 'supervisor', 'Supervisor']), 403, 'No tienes permisos para anular documentos.');
+        abort_if(! auth()->user()->hasAnyRole(['admin', 'supervisor', 'Supervisor']), 403, 'No tienes permisos para anular documentos.');
 
         // Permitir anular SOLO si está en estado base "Cargado" Y no tiene rutas (está vacío)
-        if ($dispatch->status !== \App\StateMachines\DispatchStateMachine::STATUS_CARGADO || $dispatch->routes()->count() > 0) {
+        if ($dispatch->status !== DispatchStateMachine::STATUS_CARGADO || $dispatch->routes()->count() > 0) {
             return redirect()->route('dispatches.index')->with('error', 'Solo se pueden anular despachos que no tengan rutas asignadas y estén en estado inicial.');
         }
 
-        \Illuminate\Support\Facades\DB::transaction(function() use ($dispatch) {
+        DB::transaction(function () use ($dispatch) {
             // Desasignar rutas
             $dispatch->routes()->update(['dispatch_id' => null]);
             $dispatch->delete();
@@ -273,7 +280,7 @@ class DispatchController extends Controller
     public function show(Dispatch $dispatch): JsonResponse
     {
         return response()->json([
-            'dispatch' => new DispatchResource($dispatch->load(['driver', 'origin', 'destination'])->loadCount('routes'))
+            'dispatch' => new DispatchResource($dispatch->load(['driver', 'origin', 'destination'])->loadCount('routes')),
         ]);
     }
 }

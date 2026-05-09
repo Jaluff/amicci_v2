@@ -63,7 +63,7 @@ class DelivererController extends Controller
             return response()->json([
                 'success' => true,
                 'deliverer' => $deliverer,
-                'message' => 'Repartidor guardado correctamente.'
+                'message' => 'Repartidor guardado correctamente.',
             ]);
         }
 
@@ -94,6 +94,7 @@ class DelivererController extends Controller
     public function destroy(Deliverer $deliverer)
     {
         $deliverer->delete();
+
         return redirect()->route('deliverers.index')->with('success', 'Repartidor eliminado correctamente.');
     }
 }

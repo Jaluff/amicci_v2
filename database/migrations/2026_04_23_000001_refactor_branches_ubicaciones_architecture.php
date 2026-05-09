@@ -60,8 +60,8 @@ return new class extends Migration
         foreach ($branches as $branch) {
             $targetBranchId = $branch->code; // code 1→branch 1, code 2→branch 2
             DB::table('branch_company')->insert([
-                'branch_id'            => $targetBranchId,
-                'company_id'           => $branch->company_id,
+                'branch_id' => $targetBranchId,
+                'company_id' => $branch->company_id,
                 'last_shipment_number' => $branch->last_shipment_number,
             ]);
         }
@@ -134,20 +134,20 @@ return new class extends Migration
                 ->first();
 
             // Intentar match parcial si el exacto falla
-            if (!$originUbicacion) {
+            if (! $originUbicacion) {
                 $originUbicacion = DB::table('ubicaciones')
-                    ->whereRaw('LOWER(nombre) LIKE ?', ['%' . strtolower(trim($tariff->origin)) . '%'])
+                    ->whereRaw('LOWER(nombre) LIKE ?', ['%'.strtolower(trim($tariff->origin)).'%'])
                     ->first();
             }
-            if (!$destUbicacion) {
+            if (! $destUbicacion) {
                 $destUbicacion = DB::table('ubicaciones')
-                    ->whereRaw('LOWER(nombre) LIKE ?', ['%' . strtolower(trim($tariff->destination)) . '%'])
+                    ->whereRaw('LOWER(nombre) LIKE ?', ['%'.strtolower(trim($tariff->destination)).'%'])
                     ->first();
             }
 
             if ($originUbicacion && $destUbicacion) {
                 DB::table('tariff_tables')->where('id', $tariff->id)->update([
-                    'origin_id'      => $originUbicacion->id,
+                    'origin_id' => $originUbicacion->id,
                     'destination_id' => $destUbicacion->id,
                 ]);
             }
@@ -175,8 +175,8 @@ return new class extends Migration
     {
         // Este refactor es irreversible por la complejidad de la consolidación de datos.
         // Para revertir: restaurar un backup de la base de datos.
-        throw new \RuntimeException(
-            'Este refactor arquitectónico no es reversible automáticamente. ' .
+        throw new RuntimeException(
+            'Este refactor arquitectónico no es reversible automáticamente. '.
             'Restaure un backup de la base de datos si necesita revertir.'
         );
     }

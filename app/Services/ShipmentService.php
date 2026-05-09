@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\Shipment;
+use App\Models\Branch;
 use App\Models\Company;
+use App\Models\Shipment;
 use Illuminate\Support\Facades\DB;
 
 class ShipmentService
@@ -17,7 +18,7 @@ class ShipmentService
             $company = Company::lockForUpdate()->findOrFail($data['company_id']);
 
             // Numeración por sucursal+empresa via pivot branch_company
-            if (!empty($data['branch_id'])) {
+            if (! empty($data['branch_id'])) {
                 $pivot = DB::table('branch_company')
                     ->where('branch_id', $data['branch_id'])
                     ->where('company_id', $company->id)
@@ -31,17 +32,17 @@ class ShipmentService
                         ->where('company_id', $company->id)
                         ->update(['last_shipment_number' => $nextNumber]);
 
-                    $branch = \App\Models\Branch::findOrFail($data['branch_id']);
+                    $branch = Branch::findOrFail($data['branch_id']);
                     $number = $branch->generateShipmentNumber($company->prefix, $nextNumber);
                 } else {
                     // Crear registro de pivot si no existe
                     DB::table('branch_company')->insert([
-                        'branch_id'            => $data['branch_id'],
-                        'company_id'           => $company->id,
+                        'branch_id' => $data['branch_id'],
+                        'company_id' => $company->id,
                         'last_shipment_number' => 1,
                     ]);
 
-                    $branch = \App\Models\Branch::findOrFail($data['branch_id']);
+                    $branch = Branch::findOrFail($data['branch_id']);
                     $number = $branch->generateShipmentNumber($company->prefix, 1);
                 }
             } else {
@@ -49,7 +50,7 @@ class ShipmentService
                 $company->last_shipment_number++;
                 $company->save();
 
-                $number = $company->prefix . '-0-G-' . str_pad(
+                $number = $company->prefix.'-0-G-'.str_pad(
                     (string) $company->last_shipment_number,
                     8,
                     '0',
@@ -57,7 +58,7 @@ class ShipmentService
                 );
             }
 
-            $data['numero']     = $number;
+            $data['numero'] = $number;
             $data['company_id'] = $company->id;
 
             $shipment = Shipment::create($data);
@@ -115,7 +116,7 @@ class ShipmentService
             'subtotal' => $subtotal,
             'iva_monto' => $tax,
             'iva_percent' => $ivaPercent,
-            'total' => $subtotal + $tax
+            'total' => $subtotal + $tax,
         ]);
     }
 }

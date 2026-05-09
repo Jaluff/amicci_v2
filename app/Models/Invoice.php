@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Builder;
 
 class Invoice extends Model
 {
@@ -27,11 +27,11 @@ class Invoice extends Model
 
     protected $casts = [
         'fecha_factura' => 'date',
-        'fecha_cobro'   => 'date',
-        'cobrada'       => 'boolean',
-        'total'         => 'decimal:2',
-        'party_id'      => 'integer',
-        'company_id'    => 'integer',
+        'fecha_cobro' => 'date',
+        'cobrada' => 'boolean',
+        'total' => 'decimal:2',
+        'party_id' => 'integer',
+        'company_id' => 'integer',
     ];
 
     // Sin global scopes: el filtrado por empresa se hace de forma explícita

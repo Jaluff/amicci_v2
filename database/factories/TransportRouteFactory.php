@@ -12,7 +12,7 @@ class TransportRouteFactory extends Factory
     public function definition(): array
     {
         return [
-            'route_number' => 'R-' . $this->faker->unique()->numberBetween(1000, 9999),
+            'route_number' => 'R-'.$this->faker->unique()->numberBetween(1000, 9999),
             'status' => $this->faker->randomElement(['Cargada', 'Entregada', 'En viaje']),
         ];
     }

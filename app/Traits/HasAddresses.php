@@ -13,7 +13,7 @@ trait HasAddresses
      */
     public function addresses(): MorphMany
     {
-        return $this->morphMany(Address::class , 'addressable');
+        return $this->morphMany(Address::class, 'addressable');
     }
 
     /**
@@ -21,7 +21,7 @@ trait HasAddresses
      */
     public function primaryAddress(): MorphOne
     {
-        return $this->morphOne(Address::class , 'addressable')
+        return $this->morphOne(Address::class, 'addressable')
             ->where('is_primary', true)
             ->latestOfMany();
     }

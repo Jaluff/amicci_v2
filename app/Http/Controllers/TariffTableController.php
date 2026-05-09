@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\TariffBracket;
 use App\Models\TariffTable;
+use App\Models\Ubicacion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -29,12 +29,13 @@ class TariffTableController extends Controller
         $query = TariffTable::with(['origin', 'destination'])->withCount('brackets');
 
         return DataTables::of($query)
-            ->addColumn('ruta', fn($row) => ($row->origin?->nombre ?? '?') . ' → ' . ($row->destination?->nombre ?? '?'))
-            ->addColumn('rate_per_ton_fmt', fn($row) => '$ ' . number_format((float) $row->rate_per_ton, 2, ',', '.'))
-            ->addColumn('rate_per_m3_fmt', fn($row) => '$ ' . number_format((float) $row->rate_per_m3, 2, ',', '.'))
+            ->addColumn('ruta', fn ($row) => ($row->origin?->nombre ?? '?').' → '.($row->destination?->nombre ?? '?'))
+            ->addColumn('rate_per_ton_fmt', fn ($row) => '$ '.number_format((float) $row->rate_per_ton, 2, ',', '.'))
+            ->addColumn('rate_per_m3_fmt', fn ($row) => '$ '.number_format((float) $row->rate_per_m3, 2, ',', '.'))
             ->addColumn('vigencia', function ($row) {
                 $desde = $row->valid_from->format('d/m/Y');
                 $hasta = $row->valid_until ? $row->valid_until->format('d/m/Y') : 'Sin vencimiento';
+
                 return "{$desde} → {$hasta}";
             })
             ->addColumn('estado', function ($row) {
@@ -43,9 +44,9 @@ class TariffTableController extends Controller
                     : '<span class="badge-status badge-inactive">Inactivo</span>';
             })
             ->addColumn('acciones', function ($row) {
-                $editUrl   = route('tariff-tables.edit', $row->id);
+                $editUrl = route('tariff-tables.edit', $row->id);
                 $deleteUrl = route('tariff-tables.destroy', $row->id);
-                $csrf      = csrf_token();
+                $csrf = csrf_token();
 
                 return "
                     <div class='flex items-center gap-2'>
@@ -70,7 +71,8 @@ class TariffTableController extends Controller
      */
     public function create(): View
     {
-        $ubicaciones = \App\Models\Ubicacion::orderBy('nombre')->get();
+        $ubicaciones = Ubicacion::orderBy('nombre')->get();
+
         return view('tariffTables.create', compact('ubicaciones'));
     }
 
@@ -80,32 +82,32 @@ class TariffTableController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name'           => 'required|string|max:255',
-            'origin_id'      => 'required|exists:ubicaciones,id',
+            'name' => 'required|string|max:255',
+            'origin_id' => 'required|exists:ubicaciones,id',
             'destination_id' => 'required|exists:ubicaciones,id',
-            'rate_per_ton'   => 'required|numeric|min:0',
-            'rate_per_m3'    => 'required|numeric|min:0',
-            'valid_from'     => 'required|date',
-            'valid_until'    => 'nullable|date|after:valid_from',
-            'is_active'      => 'boolean',
+            'rate_per_ton' => 'required|numeric|min:0',
+            'rate_per_m3' => 'required|numeric|min:0',
+            'valid_from' => 'required|date',
+            'valid_until' => 'nullable|date|after:valid_from',
+            'is_active' => 'boolean',
             'contra_reembolso_percent' => 'nullable|numeric|min:0|max:100',
 
             // Tramos de peso (deben siempre enviarse al menos uno)
-            'brackets'              => 'required|array|min:1',
+            'brackets' => 'required|array|min:1',
             'brackets.*.weight_from' => 'required|integer|min:1',
-            'brackets.*.weight_to'   => 'required|integer|gt:brackets.*.weight_from',
-            'brackets.*.rate'        => 'required|numeric|min:0',
+            'brackets.*.weight_to' => 'required|integer|gt:brackets.*.weight_from',
+            'brackets.*.rate' => 'required|numeric|min:0',
         ]);
 
         $table = TariffTable::create([
-            'name'           => $validated['name'],
-            'origin_id'      => $validated['origin_id'],
+            'name' => $validated['name'],
+            'origin_id' => $validated['origin_id'],
             'destination_id' => $validated['destination_id'],
-            'rate_per_ton'   => $validated['rate_per_ton'],
-            'rate_per_m3'    => $validated['rate_per_m3'],
-            'valid_from'     => $validated['valid_from'],
-            'valid_until'    => $validated['valid_until'] ?? null,
-            'is_active'      => $request->boolean('is_active', true),
+            'rate_per_ton' => $validated['rate_per_ton'],
+            'rate_per_m3' => $validated['rate_per_m3'],
+            'valid_from' => $validated['valid_from'],
+            'valid_until' => $validated['valid_until'] ?? null,
+            'is_active' => $request->boolean('is_active', true),
             'contra_reembolso_percent' => $validated['contra_reembolso_percent'] ?? 0,
         ]);
 
@@ -113,8 +115,8 @@ class TariffTableController extends Controller
         foreach ($validated['brackets'] as $bracket) {
             $table->brackets()->create([
                 'weight_from' => $bracket['weight_from'],
-                'weight_to'   => $bracket['weight_to'],
-                'rate'        => $bracket['rate'],
+                'weight_to' => $bracket['weight_to'],
+                'rate' => $bracket['rate'],
             ]);
         }
 
@@ -128,7 +130,7 @@ class TariffTableController extends Controller
     public function edit(TariffTable $tariffTable): View
     {
         $tariffTable->load('brackets');
-        $ubicaciones = \App\Models\Ubicacion::orderBy('nombre')->get();
+        $ubicaciones = Ubicacion::orderBy('nombre')->get();
 
         return view('tariffTables.edit', compact('tariffTable', 'ubicaciones'));
     }
@@ -139,31 +141,31 @@ class TariffTableController extends Controller
     public function update(Request $request, TariffTable $tariffTable): RedirectResponse
     {
         $validated = $request->validate([
-            'name'           => 'required|string|max:255',
-            'origin_id'      => 'required|exists:ubicaciones,id',
+            'name' => 'required|string|max:255',
+            'origin_id' => 'required|exists:ubicaciones,id',
             'destination_id' => 'required|exists:ubicaciones,id',
-            'rate_per_ton'   => 'required|numeric|min:0',
-            'rate_per_m3'    => 'required|numeric|min:0',
-            'valid_from'     => 'required|date',
-            'valid_until'    => 'nullable|date|after:valid_from',
-            'is_active'      => 'boolean',
+            'rate_per_ton' => 'required|numeric|min:0',
+            'rate_per_m3' => 'required|numeric|min:0',
+            'valid_from' => 'required|date',
+            'valid_until' => 'nullable|date|after:valid_from',
+            'is_active' => 'boolean',
             'contra_reembolso_percent' => 'nullable|numeric|min:0|max:100',
 
-            'brackets'               => 'required|array|min:1',
+            'brackets' => 'required|array|min:1',
             'brackets.*.weight_from' => 'required|integer|min:1',
-            'brackets.*.weight_to'   => 'required|integer',
-            'brackets.*.rate'        => 'required|numeric|min:0',
+            'brackets.*.weight_to' => 'required|integer',
+            'brackets.*.rate' => 'required|numeric|min:0',
         ]);
 
         $tariffTable->update([
-            'name'           => $validated['name'],
-            'origin_id'      => $validated['origin_id'],
+            'name' => $validated['name'],
+            'origin_id' => $validated['origin_id'],
             'destination_id' => $validated['destination_id'],
-            'rate_per_ton'   => $validated['rate_per_ton'],
-            'rate_per_m3'    => $validated['rate_per_m3'],
-            'valid_from'     => $validated['valid_from'],
-            'valid_until'    => $validated['valid_until'] ?? null,
-            'is_active'      => $request->boolean('is_active', true),
+            'rate_per_ton' => $validated['rate_per_ton'],
+            'rate_per_m3' => $validated['rate_per_m3'],
+            'valid_from' => $validated['valid_from'],
+            'valid_until' => $validated['valid_until'] ?? null,
+            'is_active' => $request->boolean('is_active', true),
             'contra_reembolso_percent' => $validated['contra_reembolso_percent'] ?? 0,
         ]);
 
@@ -174,8 +176,8 @@ class TariffTableController extends Controller
         foreach ($validated['brackets'] as $bracket) {
             $tariffTable->brackets()->create([
                 'weight_from' => $bracket['weight_from'],
-                'weight_to'   => $bracket['weight_to'],
-                'rate'        => $bracket['rate'],
+                'weight_to' => $bracket['weight_to'],
+                'rate' => $bracket['rate'],
             ]);
         }
 

@@ -16,7 +16,7 @@ class ShipmentItem extends Model
         'monto_valor_declarado',
         'monto_seguro_item',
         'referencia_recepcion',
-        'referencia_orden_carga'
+        'referencia_orden_carga',
     ];
 
     public function shipment()

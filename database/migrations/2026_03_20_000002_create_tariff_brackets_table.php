@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Crea la tabla de tramos de peso (escala tarifaria por kg).
      *
@@ -30,8 +31,8 @@ return new class extends Migration {
             // FK al cuadro tarifario al que pertenece este tramo
             // Al eliminar un cuadro tarifario, sus tramos se eliminan en cascada
             $table->foreignId('tariff_table_id')
-                  ->constrained('tariff_tables')
-                  ->cascadeOnDelete();
+                ->constrained('tariff_tables')
+                ->cascadeOnDelete();
 
             // Límite inferior del tramo expresado en kilogramos enteros
             // Ej: 1, 21, 31, 41, 51... 751

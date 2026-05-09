@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreShipmentRequest extends FormRequest
@@ -17,14 +18,14 @@ class StoreShipmentRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            'company_id'        => 'required|integer|exists:companies,id',
-            'fecha'             => 'required|date',
-            'branch_id'         => 'nullable|integer|exists:branches,id',
+            'company_id' => 'required|integer|exists:companies,id',
+            'fecha' => 'required|date',
+            'branch_id' => 'nullable|integer|exists:branches,id',
             'origen_id' => 'nullable|integer|exists:ubicaciones,id',
             'destino_id' => 'nullable|integer|exists:ubicaciones,id',
             'remitente_id' => 'nullable|integer|exists:parties,id',

@@ -12,7 +12,7 @@ class DeliveryFactory extends Factory
     public function definition(): array
     {
         return [
-            'delivery_number' => 'REP-' . $this->faker->unique()->numberBetween(1000, 9999),
+            'delivery_number' => 'REP-'.$this->faker->unique()->numberBetween(1000, 9999),
             'status' => $this->faker->randomElement(['Listo', 'En reparto', 'Finalizado']),
             'load_date' => now()->format('Y-m-d'),
         ];

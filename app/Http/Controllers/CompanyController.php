@@ -18,6 +18,7 @@ class CompanyController extends Controller
 
         if ($companies->count() === 1) {
             session()->put('company_id', $companies->first()->id);
+
             return redirect()->intended(route('dashboard'));
         }
 
@@ -27,7 +28,7 @@ class CompanyController extends Controller
     /**
      * Switch the active company.
      */
-    public function switch (Request $request)
+    public function switch(Request $request)
     {
         $request->validate([
             'company_id' => ['required', 'integer'],
@@ -48,6 +49,7 @@ class CompanyController extends Controller
     public function index()
     {
         $companies = Company::all();
+
         return view('company.index', compact('companies'));
     }
 
@@ -57,6 +59,7 @@ class CompanyController extends Controller
     public function edit(Company $company)
     {
         $company->load('addresses'); // Cargar todas las direcciones polimórficas
+
         return view('company.edit', compact('company'));
     }
 
@@ -127,20 +130,20 @@ class CompanyController extends Controller
             $hasPrimary = collect($validated['addresses'])->contains('is_primary', true);
 
             foreach ($validated['addresses'] as $index => $addrData) {
-                $isPrimary = $hasPrimary ? !empty($addrData['is_primary']) : ($index === 0);
+                $isPrimary = $hasPrimary ? ! empty($addrData['is_primary']) : ($index === 0);
 
                 $address = $company->addresses()->updateOrCreate(
-                ['id' => $addrData['id'] ?? null],
-                [
-                    'type' => $addrData['type'] ?? 'Sucursal',
-                    'address_line1' => $addrData['address_line1'],
-                    'city' => $addrData['city'] ?? null,
-                    'state' => $addrData['state'] ?? null,
-                    'zip_code' => $addrData['zip_code'] ?? null,
-                    'phone' => $addrData['phone'] ?? null,
-                    'email' => $addrData['email'] ?? null,
-                    'is_primary' => $isPrimary,
-                ]
+                    ['id' => $addrData['id'] ?? null],
+                    [
+                        'type' => $addrData['type'] ?? 'Sucursal',
+                        'address_line1' => $addrData['address_line1'],
+                        'city' => $addrData['city'] ?? null,
+                        'state' => $addrData['state'] ?? null,
+                        'zip_code' => $addrData['zip_code'] ?? null,
+                        'phone' => $addrData['phone'] ?? null,
+                        'email' => $addrData['email'] ?? null,
+                        'is_primary' => $isPrimary,
+                    ]
                 );
                 $existingAddressesIds[] = $address->id;
 

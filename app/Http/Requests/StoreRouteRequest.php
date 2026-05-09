@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Str;
 
 class StoreRouteRequest extends FormRequest
 {
@@ -15,18 +15,16 @@ class StoreRouteRequest extends FormRequest
         return auth()->user()->companies->contains('id', $this->company_id);
     }
 
-
-
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            'company_id'     => ['required', 'exists:companies,id'],
-            'origin_id'      => ['required', 'exists:branches,id'],
+            'company_id' => ['required', 'exists:companies,id'],
+            'origin_id' => ['required', 'exists:branches,id'],
             'destination_id' => ['required', 'exists:branches,id', 'different:origin_id'],
             'status' => ['required', 'in:Cargada,Entregada,En viaje,Con problemas'],
 

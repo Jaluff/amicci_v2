@@ -2,11 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Branch;
-use App\Models\Company;
-use App\Models\Party;
 use App\Models\Shipment;
-use App\Models\Ubicacion;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ShipmentFactory extends Factory
@@ -19,7 +15,7 @@ class ShipmentFactory extends Factory
         $total = $flete * 1.21;
 
         return [
-            'numero' => 'TMP-' . $this->faker->unique()->numberBetween(100000, 999999),
+            'numero' => 'TMP-'.$this->faker->unique()->numberBetween(100000, 999999),
             'fecha' => $this->faker->dateTimeBetween('-1 month', 'now')->format('Y-m-d'),
             'flete' => $flete,
             'total' => $total,

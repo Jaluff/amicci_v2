@@ -15,7 +15,7 @@ class PayLoadRequest extends FormRequest
     {
         return [
             'numero_recibo' => ['required', 'string', 'max:255'],
-            'fecha_recibo'  => ['required', 'date'],
+            'fecha_recibo' => ['required', 'date'],
         ];
     }
 }

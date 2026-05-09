@@ -15,16 +15,16 @@ class BranchScope implements Scope
         }
 
         $user = auth()->user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
         // Obtener IDs de sucursales asignadas
         $branchIds = $user->branches()->pluck('branches.id')->toArray();
 
-        if (!empty($branchIds)) {
-            $builder->whereIn($model->getTable() . '.branch_id', $branchIds);
-        } elseif (!$user->hasRole('admin')) {
+        if (! empty($branchIds)) {
+            $builder->whereIn($model->getTable().'.branch_id', $branchIds);
+        } elseif (! $user->hasRole('admin')) {
             // No es admin y no tiene sucursales: no ve nada
             $builder->whereRaw('1 = 0');
         }

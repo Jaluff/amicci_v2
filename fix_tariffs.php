@@ -1,10 +1,14 @@
 <?php
+
+use App\Models\TariffTable;
+use Illuminate\Contracts\Console\Kernel;
+
 require __DIR__.'/vendor/autoload.php';
 $app = require_once __DIR__.'/bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel = $app->make(Kernel::class);
 $kernel->bootstrap();
 
-$t3 = App\Models\TariffTable::find(3);
+$t3 = TariffTable::find(3);
 if ($t3) {
     // Origen: Buenos Aires (Cap. Fed) -> Ubicacion id 5
     // Destino: Mendoza -> Ubicacion id 4

@@ -12,20 +12,22 @@ return new class extends Migration
     public function up(): void
     {
         // ─── PASO 5: Routes - remap FKs de ubicaciones → branches ───
-        
+
         // Helper to drop foreign key if it exists
         $dropFkIfExists = function (string $table, string $key) {
             try {
                 Schema::table($table, function (Blueprint $t) use ($key) {
                     $t->dropForeign([$key]);
                 });
-            } catch (\Exception $e) { } // Ignore if already dropped
+            } catch (Exception $e) {
+            } // Ignore if already dropped
         };
 
         $dropConstraintIfExists = function (string $table, string $name) {
             try {
                 DB::statement("ALTER TABLE `{$table}` DROP FOREIGN KEY `{$name}`");
-            } catch (\Exception $e) { } // Ignore if already dropped
+            } catch (Exception $e) {
+            } // Ignore if already dropped
         };
 
         // DROP FKs on transport_routes
@@ -40,21 +42,24 @@ return new class extends Migration
             Schema::table('transport_routes', function (Blueprint $table) {
                 $table->dropUnique(['company_id', 'route_number']);
             });
-        } catch (\Exception $e) { }
+        } catch (Exception $e) {
+        }
 
         // Create route_number unique if not exists
         try {
             Schema::table('transport_routes', function (Blueprint $table) {
                 $table->unique('route_number');
             });
-        } catch (\Exception $e) { }
+        } catch (Exception $e) {
+        }
 
         // Drop columns
         try {
             Schema::table('transport_routes', function (Blueprint $table) {
                 $table->dropColumn(['company_id', 'branch_id']);
             });
-        } catch (\Exception $e) { }
+        } catch (Exception $e) {
+        }
 
         // Re-add FKs pointing to branches
         try {
@@ -63,8 +68,8 @@ return new class extends Migration
                 $table->foreign('destination_id')->references('id')->on('branches')->restrictOnDelete();
                 $table->foreign('dispatch_id')->references('id')->on('dispatches')->nullOnDelete();
             });
-        } catch (\Exception $e) { }
-
+        } catch (Exception $e) {
+        }
 
         // ─── PASO 6: Dispatches ───
         $dropFkIfExists('dispatches', 'origin_id');
@@ -76,15 +81,16 @@ return new class extends Migration
             Schema::table('dispatches', function (Blueprint $table) {
                 $table->dropColumn(['company_id', 'branch_id']);
             });
-        } catch (\Exception $e) { }
+        } catch (Exception $e) {
+        }
 
         try {
             Schema::table('dispatches', function (Blueprint $table) {
                 $table->foreign('origin_id')->references('id')->on('branches')->restrictOnDelete();
                 $table->foreign('destination_id')->references('id')->on('branches')->restrictOnDelete();
             });
-        } catch (\Exception $e) { }
-
+        } catch (Exception $e) {
+        }
 
         // ─── PASO 7: Deliveries ───
         $dropFkIfExists('deliveries', 'location_id');
@@ -95,16 +101,16 @@ return new class extends Migration
             Schema::table('deliveries', function (Blueprint $table) {
                 $table->dropColumn(['company_id', 'branch_id']);
             });
-        } catch (\Exception $e) { }
+        } catch (Exception $e) {
+        }
 
         try {
             Schema::table('deliveries', function (Blueprint $table) {
                 $table->foreign('location_id')->references('id')->on('branches')->restrictOnDelete();
             });
-        } catch (\Exception $e) { }
+        } catch (Exception $e) {
+        }
     }
 
-    public function down(): void
-    {
-    }
+    public function down(): void {}
 };

@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -34,7 +35,7 @@ return new class extends Migration {
             $table->enum('ubicacion_actual', ['Dto origen', 'En transito', 'Dto destino', 'En reparto', 'Entregado', 'Con problemas'])->default('Dto origen');
             $table->enum('flete_a_pagar_en', ['Origen', 'Destino'])->nullable();
             $table->date('fecha_entrega')->nullable();
-            
+
             $table->boolean('cobrada')->default(false);
             $table->boolean('contra_reembolso')->default(false);
 

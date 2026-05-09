@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Dispatch extends Model
 {
-    use HasFactory, HasStateMachine, HasProblems;
+    use HasFactory, HasProblems, HasStateMachine;
 
     protected string $stateMachineClass = DispatchStateMachine::class;
 
@@ -34,8 +34,6 @@ class Dispatch extends Model
     protected $casts = [
         'cost' => 'decimal:2',
     ];
-
-
 
     public function driver(): BelongsTo
     {

@@ -63,7 +63,7 @@ class DriverController extends Controller
             return response()->json([
                 'success' => true,
                 'driver' => $driver,
-                'message' => 'Conductor guardado correctamente.'
+                'message' => 'Conductor guardado correctamente.',
             ]);
         }
 
@@ -81,9 +81,9 @@ class DriverController extends Controller
             'name' => 'required|string|max:255',
             'address' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:50',
-            'email' => 'nullable|email|max:255|unique:drivers,email,' . $driver->id,
-            'license_number' => 'nullable|string|max:100|unique:drivers,license_number,' . $driver->id,
-            'dni' => 'nullable|string|max:50|unique:drivers,dni,' . $driver->id,
+            'email' => 'nullable|email|max:255|unique:drivers,email,'.$driver->id,
+            'license_number' => 'nullable|string|max:100|unique:drivers,license_number,'.$driver->id,
+            'dni' => 'nullable|string|max:50|unique:drivers,dni,'.$driver->id,
         ]);
 
         $driver->update($validated);
@@ -94,6 +94,7 @@ class DriverController extends Controller
     public function destroy(Driver $driver)
     {
         $driver->delete();
+
         return redirect()->route('drivers.index')->with('success', 'Conductor eliminado correctamente.');
     }
 }

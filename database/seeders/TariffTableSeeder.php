@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Models\Ubicacion;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
-use App\Models\Ubicacion;
 
 class TariffTableSeeder extends Seeder
 {
@@ -35,16 +35,16 @@ class TariffTableSeeder extends Seeder
         // CUADRO 1: Buenos Aires → Mendoza Este
         // ════════════════════════════════════════════════════════════════════
         $tablaBAMzaEste = DB::table('tariff_tables')->insertGetId([
-            'name'           => 'Buenos Aires → Mendoza Este',
-            'origin_id'      => $ba,
+            'name' => 'Buenos Aires → Mendoza Este',
+            'origin_id' => $ba,
             'destination_id' => $mzaEste,
-            'rate_per_ton'   => 145031.00,
-            'rate_per_m3'    => 60540.00,
-            'valid_from'     => $validFrom,
-            'valid_until'    => null,
-            'is_active'      => true,
-            'created_at'     => now(),
-            'updated_at'     => now(),
+            'rate_per_ton' => 145031.00,
+            'rate_per_m3' => 60540.00,
+            'valid_from' => $validFrom,
+            'valid_until' => null,
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $this->insertBrackets($tablaBAMzaEste, [
@@ -59,16 +59,16 @@ class TariffTableSeeder extends Seeder
         // CUADRO 2: Buenos Aires → Mendoza Sur
         // ════════════════════════════════════════════════════════════════════
         $tablaBAMzaSur = DB::table('tariff_tables')->insertGetId([
-            'name'           => 'Buenos Aires → Mendoza Sur',
-            'origin_id'      => $ba,
+            'name' => 'Buenos Aires → Mendoza Sur',
+            'origin_id' => $ba,
             'destination_id' => $mzaSur,
-            'rate_per_ton'   => 178328.00,
-            'rate_per_m3'    => 77850.00,
-            'valid_from'     => $validFrom,
-            'valid_until'    => null,
-            'is_active'      => true,
-            'created_at'     => now(),
-            'updated_at'     => now(),
+            'rate_per_ton' => 178328.00,
+            'rate_per_m3' => 77850.00,
+            'valid_from' => $validFrom,
+            'valid_until' => null,
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $this->insertBrackets($tablaBAMzaSur, [
@@ -83,16 +83,16 @@ class TariffTableSeeder extends Seeder
         // CUADRO 3: Buenos Aires (Cap. Fed.) → Mendoza
         // ════════════════════════════════════════════════════════════════════
         $tablaBACapFedMza = DB::table('tariff_tables')->insertGetId([
-            'name'           => 'Buenos Aires (Cap. Fed.) → Mendoza',
-            'origin_id'      => $baCapFed,
+            'name' => 'Buenos Aires (Cap. Fed.) → Mendoza',
+            'origin_id' => $baCapFed,
             'destination_id' => $mza,
-            'rate_per_ton'   => 120617.00,
-            'rate_per_m3'    => 52630.00,
-            'valid_from'     => $validFrom,
-            'valid_until'    => null,
-            'is_active'      => true,
-            'created_at'     => now(),
-            'updated_at'     => now(),
+            'rate_per_ton' => 120617.00,
+            'rate_per_m3' => 52630.00,
+            'valid_from' => $validFrom,
+            'valid_until' => null,
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $this->insertBrackets($tablaBACapFedMza, [
@@ -107,16 +107,16 @@ class TariffTableSeeder extends Seeder
         // CUADRO 4: Mendoza → Buenos Aires
         // ════════════════════════════════════════════════════════════════════
         $tablaMzaBA = DB::table('tariff_tables')->insertGetId([
-            'name'           => 'Mendoza → Buenos Aires',
-            'origin_id'      => $mza,
+            'name' => 'Mendoza → Buenos Aires',
+            'origin_id' => $mza,
             'destination_id' => $ba,
-            'rate_per_ton'   => 150690.00,
-            'rate_per_m3'    => 65785.00,
-            'valid_from'     => $validFrom,
-            'valid_until'    => null,
-            'is_active'      => true,
-            'created_at'     => now(),
-            'updated_at'     => now(),
+            'rate_per_ton' => 150690.00,
+            'rate_per_m3' => 65785.00,
+            'valid_from' => $validFrom,
+            'valid_until' => null,
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $this->insertBrackets($tablaMzaBA, [
@@ -135,13 +135,13 @@ class TariffTableSeeder extends Seeder
      */
     private function insertBrackets(int $tariffTableId, array $brackets): void
     {
-        $rows = array_map(fn($b) => [
+        $rows = array_map(fn ($b) => [
             'tariff_table_id' => $tariffTableId,
-            'weight_from'     => $b[0],
-            'weight_to'       => $b[1],
-            'rate'            => $b[2],
-            'created_at'      => now(),
-            'updated_at'      => now(),
+            'weight_from' => $b[0],
+            'weight_to' => $b[1],
+            'rate' => $b[2],
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $brackets);
 
         DB::table('tariff_brackets')->insert($rows);

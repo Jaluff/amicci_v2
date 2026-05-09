@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Party;
-use App\Models\TariffTable;
+use App\Http\Requests\AjaxStorePartyRequest;
 use App\Http\Requests\StorePartyRequest;
 use App\Http\Requests\UpdatePartyRequest;
-use App\Http\Requests\AjaxStorePartyRequest;
+use App\Models\Party;
+use App\Models\Shipment;
+use App\Models\TariffTable;
 use App\Services\PartyService;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Yajra\DataTables\Facades\DataTables;
 
 class PartyController extends Controller
@@ -30,23 +31,26 @@ class PartyController extends Controller
         return DataTables::of($query)
             ->addColumn('direcciones', function ($row) {
                 $addr = $row->primaryAddress;
-                if (!$addr) return '-';
-                return $addr->address_line1 . ($addr->city ? ', ' . $addr->city : '');
+                if (! $addr) {
+                    return '-';
+                }
+
+                return $addr->address_line1.($addr->city ? ', '.$addr->city : '');
             })
             ->addColumn('contacto', function ($row) {
                 $addr = $row->primaryAddress;
                 $contacto = [];
                 // Check direct fields first
                 if ($row->phone) {
-                    $contacto[] = '📞 ' . $row->phone;
+                    $contacto[] = '📞 '.$row->phone;
                 } elseif ($addr && $addr->phone) {
-                    $contacto[] = '📞 ' . $addr->phone;
+                    $contacto[] = '📞 '.$addr->phone;
                 }
 
                 if ($row->email) {
-                    $contacto[] = '✉️ ' . $row->email;
+                    $contacto[] = '✉️ '.$row->email;
                 } elseif ($addr && $addr->email) {
-                    $contacto[] = '✉️ ' . $addr->email;
+                    $contacto[] = '✉️ '.$addr->email;
                 }
 
                 return implode(' <br> ', $contacto) ?: '-';
@@ -94,8 +98,8 @@ class PartyController extends Controller
             'success' => true,
             'party' => [
                 'id' => $party->id,
-                'name' => $party->name
-            ]
+                'name' => $party->name,
+            ],
         ]);
     }
 
@@ -103,6 +107,7 @@ class PartyController extends Controller
     {
         $party->load(['addresses', 'activeTariffSetting']);
         $tariffTables = TariffTable::active()->orderBy('name')->get();
+
         return view('parties.edit', compact('party', 'tariffTables'));
     }
 
@@ -113,40 +118,40 @@ class PartyController extends Controller
         return redirect()->route('parties.index')->with('success', 'Cliente actualizado correctamente.');
     }
 
-    public function tariffSetting(Party $party): \Illuminate\Http\JsonResponse
+    public function tariffSetting(Party $party): JsonResponse
     {
         $setting = $party->activeTariffSetting;
 
-        if (!$setting) {
+        if (! $setting) {
             return response()->json([
-                'has_tariff'        => false,
-                'iva_percent'       => (float) ($party->iva_percent ?? 0),
-                'has_insurance'     => (bool) $party->has_insurance,
+                'has_tariff' => false,
+                'iva_percent' => (float) ($party->iva_percent ?? 0),
+                'has_insurance' => (bool) $party->has_insurance,
                 'insurance_percent' => (float) ($party->insurance_percent ?? 0),
             ]);
         }
 
         return response()->json([
-            'has_tariff'        => true,
-            'iva_percent'       => (float) ($party->iva_percent ?? 0),
-            'has_insurance'     => (bool) $party->has_insurance,
+            'has_tariff' => true,
+            'iva_percent' => (float) ($party->iva_percent ?? 0),
+            'has_insurance' => (bool) $party->has_insurance,
             'insurance_percent' => (float) ($party->insurance_percent ?? 0),
-            'billing_mode'      => $setting->billing_mode,
-            'billing_mode_label'=> $setting->billing_mode_label,
-            'minimum_charge'    => (float) ($setting->minimum_charge    ?? 0),
-            'rate_per_ton'      => (float) ($setting->rate_per_ton_custom ?? $setting->tariffTable->rate_per_ton ?? 0),
-            'rate_per_m3'       => (float) ($setting->rate_per_m3_custom  ?? $setting->tariffTable->rate_per_m3  ?? 0),
-            'rate_per_bulto'    => (float) ($setting->rate_per_bulto      ?? 0),
-            'minimum_per_bulto' => (float) ($setting->minimum_per_bulto   ?? 0),
-            'rate_per_pallet'   => (float) ($setting->rate_per_pallet     ?? 0),
-            'minimum_per_pallet'=> (float) ($setting->minimum_per_pallet  ?? 0),
-            'declared_value_pct'=> (float) ($setting->declared_value_pct  ?? 0),
+            'billing_mode' => $setting->billing_mode,
+            'billing_mode_label' => $setting->billing_mode_label,
+            'minimum_charge' => (float) ($setting->minimum_charge ?? 0),
+            'rate_per_ton' => (float) ($setting->rate_per_ton_custom ?? $setting->tariffTable->rate_per_ton ?? 0),
+            'rate_per_m3' => (float) ($setting->rate_per_m3_custom ?? $setting->tariffTable->rate_per_m3 ?? 0),
+            'rate_per_bulto' => (float) ($setting->rate_per_bulto ?? 0),
+            'minimum_per_bulto' => (float) ($setting->minimum_per_bulto ?? 0),
+            'rate_per_pallet' => (float) ($setting->rate_per_pallet ?? 0),
+            'minimum_per_pallet' => (float) ($setting->minimum_per_pallet ?? 0),
+            'declared_value_pct' => (float) ($setting->declared_value_pct ?? 0),
         ]);
     }
 
     public function destroy(Party $party)
     {
-        $hasShipments = \App\Models\Shipment::where('remitente_id', $party->id)
+        $hasShipments = Shipment::where('remitente_id', $party->id)
             ->orWhere('destinatario_id', $party->id)
             ->exists();
 

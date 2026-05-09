@@ -15,9 +15,13 @@ class ShipmentStateMachine extends BaseStateMachine
 {
     // ── Constantes de estado ─────────────────────────────────
     public const STATUS_DTO_ORIGEN = 'Dto origen';
+
     public const STATUS_EN_TRANSITO = 'En transito';
+
     public const STATUS_DTO_DESTINO = 'Dto destino';
+
     public const STATUS_EN_REPARTO = 'En reparto';
+
     public const STATUS_ENTREGADO = 'Entregado';
 
     // ── Interfaz ─────────────────────────────────────────────
@@ -52,6 +56,6 @@ class ShipmentStateMachine extends BaseStateMachine
         return 'ubicacion_actual';
     }
 
-// ── Las Guías no propagan cascada hacia abajo (son el documento base) ──
-// afterTransition() hereda el default (vacío) de BaseStateMachine
+    // ── Las Guías no propagan cascada hacia abajo (son el documento base) ──
+    // afterTransition() hereda el default (vacío) de BaseStateMachine
 }

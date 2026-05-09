@@ -19,10 +19,10 @@ return new class extends Migration
         // Crear tabla de cargas
         Schema::create('loads', function (Blueprint $table) {
             $table->id();
-            
+
             // Relaciones principales
             $table->foreignId('company_id')->constrained()->cascadeOnDelete();
-            
+
             // Numeración
             $table->string('numero'); // Ej: PREFIX-000001
             $table->unique(['company_id', 'numero']);
@@ -60,7 +60,7 @@ return new class extends Migration
 
             $table->timestamps();
             $table->softDeletes();
-            
+
             $table->index('estado');
         });
     }
@@ -71,7 +71,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('loads');
-        
+
         Schema::table('companies', function (Blueprint $table) {
             $table->dropColumn('last_load_number');
         });

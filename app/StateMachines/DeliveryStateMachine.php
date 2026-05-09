@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace App\StateMachines;
 
+use App\Models\StatusHistory;
+use Illuminate\Support\Facades\Auth;
+
 class DeliveryStateMachine extends BaseStateMachine
 {
     public const READY = 'Listo';
+
     public const ON_DELIVERY = 'En reparto';
+
     public const FINISHED = 'Finalizado';
 
     public function validStates(): array
@@ -30,7 +35,7 @@ class DeliveryStateMachine extends BaseStateMachine
             // No permitir finalizar si hay guías con problemas activos aún vinculadas.
             // Deben ser "Devueltas" manualmente a través del modal primero.
             $hasActiveProblems = $this->model->shipments()
-                ->whereHas('problems', fn($q) => $q->where('is_active', true))
+                ->whereHas('problems', fn ($q) => $q->where('is_active', true))
                 ->exists();
 
             if ($hasActiveProblems) {
@@ -46,35 +51,33 @@ class DeliveryStateMachine extends BaseStateMachine
         if ($from === self::READY && $to === self::ON_DELIVERY) {
             // Cascade status change to shipments
             $this->model->shipments()->update(['ubicacion_actual' => 'En reparto']);
-        }
-        elseif ($from === self::ON_DELIVERY && $to === self::READY) {
+        } elseif ($from === self::ON_DELIVERY && $to === self::READY) {
             // Revert state if necessary
             $this->model->shipments()
                 ->where('ubicacion_actual', 'En reparto')
                 ->update(['ubicacion_actual' => 'Dto destino']);
-        }
-        elseif ($to === self::FINISHED) {
+        } elseif ($to === self::FINISHED) {
             // Finalizar guías del reparto (Solo las que NO fueron devueltas manualmente)
             foreach ($this->model->shipments as $shipment) {
                 // Si llegamos aquí y hay una con problema activo, la ignoramos (no debería pasar por el canTransitionTo)
                 if ($shipment->hasActiveProblem()) {
-                    continue; 
+                    continue;
                 }
 
                 // Transicionar la guía normal a entregado
                 $shipment->update(['ubicacion_actual' => 'Entregado']);
 
                 // Registrar en historial para mantener consistencia
-                \App\Models\StatusHistory::create([
+                StatusHistory::create([
                     'model_type' => get_class($shipment),
                     'model_id' => $shipment->getKey(),
                     'from_status' => 'En reparto',
                     'to_status' => 'Entregado',
-                    'comment' => 'Entregado desde Reparto ' . $this->model->delivery_number,
-                    'user_id' => \Illuminate\Support\Facades\Auth::id(),
+                    'comment' => 'Entregado desde Reparto '.$this->model->delivery_number,
+                    'user_id' => Auth::id(),
                     'transitioned_at' => now(),
                 ]);
-                
+
                 if (method_exists($shipment, 'logActivity')) {
                     $shipment->logActivity(
                         "Cambio de estado: En reparto ➔ Entregado (Entregado desde Reparto {$this->model->delivery_number})",
