@@ -23,6 +23,11 @@
                 </div>
 
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link :href="route('loads.index')" :active="request()->routeIs('loads.*')">
+                        {{ __('Cargas') }}
+                    </x-nav-link>
+                </div>
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('routes.index')" :active="request()->routeIs('routes.*')">
                         {{ __('Rutas') }}
                     </x-nav-link>
@@ -219,6 +224,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('shipments.index')" :active="request()->routeIs('shipments.index')">
                 {{ __('Guias') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('loads.index')" :active="request()->routeIs('loads.*')">
+                {{ __('Cargas') }}
             </x-responsive-nav-link>
 
             <x-responsive-nav-link :href="route('routes.index')" :active="request()->routeIs('routes.*')">

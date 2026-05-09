@@ -16,8 +16,15 @@ class Company extends Model
         'last_shipment_number',
         'last_route_number',
         'last_dispatch_number',
+        'last_load_number',
         'contra_reembolso_percent',
+        'active',
     ];
+
+    public function scopeActive($query)
+    {
+        return $query->where('active', true);
+    }
 
     public function users()
     {

@@ -16,9 +16,14 @@ class DispatchService
         return DB::transaction(function () use ($data) {
             // Numeración global para despachos (independiente de empresa)
             $lastDispatch = Dispatch::orderByDesc('id')->first();
-            $nextNumber = ($lastDispatch ? (int) filter_var($lastDispatch->dispatch_number, FILTER_SANITIZE_NUMBER_INT) : 0) + 1;
+            // Extracción segura del número final (luego del último guión) para evitar problemas con el nuevo formato
+            $lastNumberPart = $lastDispatch ? explode('-', $lastDispatch->dispatch_number) : [0];
+            $nextNumber = (int) end($lastNumberPart) + 1;
 
-            $data['dispatch_number'] = 'D' . str_pad((string) $nextNumber, 8, '0', STR_PAD_LEFT);
+            $branchId = $data['origin_id'] ?? 0;
+            
+            // Usamos AMI genérico ya que despachos agrupa rutas de múltiples empresas (no tiene company_id)
+            $data['dispatch_number'] = sprintf('AMI-%d-D-%08d', $branchId, $nextNumber);
 
             $dispatch = Dispatch::create($data);
 

@@ -30,7 +30,7 @@ class InvoiceController extends Controller
 
     public function index(): View
     {
-        $companies = Company::all();
+        $companies = Company::active()->orderBy('name')->get();
         $parties   = Party::withoutGlobalScopes()->get();
 
         return view('billing.index', compact('companies', 'parties'));
@@ -135,7 +135,7 @@ class InvoiceController extends Controller
 
     public function invoicesIndex(): View
     {
-        $companies = Company::all();
+        $companies = Company::active()->orderBy('name')->get();
         $parties   = Party::withoutGlobalScopes()->get();
 
         return view('billing.invoices', compact('companies', 'parties'));
@@ -197,7 +197,7 @@ class InvoiceController extends Controller
 
     public function create(): View
     {
-        $companies = Company::all();
+        $companies = Company::active()->orderBy('name')->get();
         $parties   = Party::withoutGlobalScopes()->orderBy('name')->get();
 
         return view('billing.create', compact('companies', 'parties'));
@@ -271,8 +271,9 @@ class InvoiceController extends Controller
         try {
             $invoice = $this->invoiceService->generateInvoice(
                 shipmentIds: $request->validated('shipment_ids'),
-                data: $request->safe()->except(['shipment_ids', 'party_id']),
+                data: $request->safe()->except(['shipment_ids', 'party_id', 'company_id']),
                 partyId: (int) $request->validated('party_id'),
+                companyId: (int) $request->validated('company_id'),
                 isAdmin: auth()->user()?->hasRole('admin') ?? false,
             );
         } catch (\DomainException $e) {
@@ -304,9 +305,10 @@ class InvoiceController extends Controller
         abort_if($invoice->cobrada, 403, 'No se puede editar una factura ya cobrada.');
 
         $invoice->load(['party', 'shipments']);
+        $companies = Company::active()->orderBy('name')->get();
         $parties = Party::withoutGlobalScopes()->orderBy('name')->get();
 
-        return view('billing.edit', compact('invoice', 'parties'));
+        return view('billing.edit', compact('invoice', 'parties', 'companies'));
     }
 
     public function update(UpdateInvoiceRequest $request, Invoice $invoice): RedirectResponse
@@ -340,6 +342,6 @@ class InvoiceController extends Controller
     {
         $this->invoiceService->markAsPaid($invoice);
 
-        return back()->with('success', "Factura #{$invoice->numero} marcada como cobrada. Todas las guias asociadas fueron actualizadas.");
+        return redirect()->route('billing.index')->with('success', "Factura #{$invoice->numero} marcada como cobrada. Todas las guias asociadas fueron actualizadas.");
     }
 }

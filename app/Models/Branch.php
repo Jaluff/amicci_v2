@@ -90,17 +90,26 @@ class Branch extends Model
     }
 
     /**
-     * Genera el número de guía para esta sucursal y empresa.
-     * Formato: {companyPrefix}-{branch.code}-{padded_number}
-     * Ej: AM-1-00000001
+     * Genera el número de documento para esta sucursal y empresa.
+     * Formato: {companyPrefix}-{branch.code}-{letra}-{padded_number}
+     * Ej: AM-1-G-00000001
+     */
+    public function generateDocumentNumber(string $companyPrefix, string $letra, int $lastNumber): string
+    {
+        return sprintf(
+            '%s-%d-%s-%08d',
+            $companyPrefix,
+            $this->code,
+            $letra,
+            $lastNumber
+        );
+    }
+
+    /**
+     * @deprecated Use generateDocumentNumber() instead.
      */
     public function generateShipmentNumber(string $companyPrefix, int $lastNumber): string
     {
-        return sprintf(
-            '%s-%d-%08d',
-            $companyPrefix,
-            $this->code,
-            $lastNumber
-        );
+        return $this->generateDocumentNumber($companyPrefix, 'G', $lastNumber);
     }
 }

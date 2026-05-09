@@ -30,9 +30,9 @@ const RouteModule = (function ($) {
                 { 
                     data: 'empresa', 
                     name: 'companies.prefix',
-                    render: function(data, type, row) {
-                        const color = row.empresa_color || '#6366f1';
-                        return `<span class="px-2 py-1 rounded-full text-[10px] font-bold text-white shadow-sm" style="background-color: ${color}">${data}</span>`;
+                    className: 'text-center',
+                    render: function(data) {
+                        return data; // El HTML viene del servidor
                     }
                 },
                 {
@@ -45,15 +45,11 @@ const RouteModule = (function ($) {
                 },
                 { data: 'route_number', name: 'route_number' },
                 {
-                    data: null,
-                    name: 'origin_destination',
+                    data: 'ruta_corta',
+                    name: 'ruta_corta',
                     orderable: false,
                     searchable: false,
-                    render: function (data) {
-                        const origen = data.origin ? data.origin.name : '-';
-                        const destino = data.destination ? data.destination.name : '-';
-                        return `<strong>${origen}</strong> &rarr; <strong>${destino}</strong>`;
-                    }
+                    className: 'text-center'
                 },
                 {
                     data: null,
@@ -76,6 +72,7 @@ const RouteModule = (function ($) {
                 {
                     data: 'status',
                     name: 'status',
+                    className: 'text-center',
                     render: function (data) {
                         if (!data) return '<span class="dt-badge dt-badge-gray">—</span>';
                         const colores = {
@@ -88,8 +85,8 @@ const RouteModule = (function ($) {
                         return '<span class="dt-badge ' + color + '">' + data + '</span>';
                     }
                 },
-                { data: 'shipments_count', name: 'shipments_count', defaultContent: '0' },
-                { data: 'acciones', name: 'acciones', orderable: false, searchable: false }
+                { data: 'shipments_count', name: 'shipments_count', defaultContent: '0', className: 'text-center' },
+                { data: 'acciones', name: 'acciones', orderable: false, searchable: false, className: 'text-center' }
             ],
             order: [[0, 'desc']],
             /* language: {

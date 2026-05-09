@@ -113,6 +113,8 @@ class TransportRouteController extends Controller
             ->addColumn('bultos', function ($row) {
                 return (int) ($row->bultos_total ?? 0);
             })
+            ->addColumn('origen_nombre', fn($row) => mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->origen_nombre ?? '-')))
+            ->addColumn('destino_nombre', fn($row) => mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->destino_nombre ?? '-')))
             ->addColumn('check', function ($row) {
                 return '<input type="checkbox" class="shipment-checkbox w-4 h-4 text-blue-600 rounded focus:ring-blue-500" 
                     value="' . $row->id . '" 
@@ -182,7 +184,8 @@ class TransportRouteController extends Controller
 
         return \Yajra\DataTables\Facades\DataTables::of($query->orderByDesc('transport_routes.created_at'))
             ->addColumn('empresa', function ($row) {
-                return "<span class='font-bold text-gray-700 dark:text-gray-300'>{$row->empresa_prefix}</span>";
+                $color = $row->empresa_color ?? '#6366f1';
+                return "<span class='px-2 py-1 rounded-full text-[10px] font-bold text-white shadow-sm' style='background-color: {$color}'>{$row->empresa_prefix}</span>";
             })
             ->editColumn('route_number', function ($row) {
                 $numberHtml = "<span class='font-mono font-bold text-gray-800 dark:text-gray-200'>{$row->route_number}</span>";
@@ -190,6 +193,14 @@ class TransportRouteController extends Controller
                     $numberHtml .= " <span class='text-red-500 animate-pulse font-bold ml-1' style='color: #dc2626 !important;' title='Contiene guías con problemas abiertos'>⚠</span>";
                 }
                 return $numberHtml;
+            })
+            ->addColumn('ruta_corta', function ($row) {
+                $or = mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->origin?->name ?? '-'));
+                $ds = mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->destination?->name ?? '-'));
+                return "<div class='flex flex-col gap-0.5 items-center'>
+                            <span class='px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 text-[9px] font-bold w-fit'>$or</span>
+                            <span class='px-1.5 py-0.5 rounded bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 text-[9px] font-bold w-fit'>$ds</span>
+                        </div>";
             })
             ->addColumn('acciones', function ($row) {
                 $editUrl = route('routes.edit', $row->id);
@@ -208,14 +219,14 @@ class TransportRouteController extends Controller
                         </form>";
                 }
 
-                return "<div class='flex items-center gap-2'>
+                return "<div class='flex items-center gap-2 justify-center'>
                         <a href='{$editUrl}' title='Editar' class='inline-flex items-center justify-center p-2 rounded-md bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/40 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-800/60 dark:hover:text-blue-300 transition-colors'>
                         <svg xmlns='http://www.w3.org/2000/svg' class='w-4 h-4' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/><path d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'/></svg>
                     </a>
                     {$deleteForm}
                     </div>";
             })
-            ->rawColumns(['acciones', 'route_number', 'empresa'])
+            ->rawColumns(['acciones', 'route_number', 'empresa', 'ruta_corta'])
             ->make(true);
     }
 

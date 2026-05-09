@@ -100,12 +100,12 @@
                             <th class="p-4 font-semibold border-b dark:border-gray-600">Fecha</th>
                             <th class="p-4 font-semibold border-b dark:border-gray-600">Número</th>
                             <th class="p-4 font-semibold border-b dark:border-gray-600">Conductor</th>
-                            <th class="p-4 font-semibold border-b dark:border-gray-600">Origen - Destino</th>
-                            <th class="p-4 font-semibold border-b dark:border-gray-600">Estado</th>
+                            <th class="p-4 font-semibold border-b dark:border-gray-600 text-center">Origen / Destino</th>
+                            <th class="p-4 font-semibold border-b dark:border-gray-600 text-center">Estado</th>
                             <th class="p-4 font-semibold border-b dark:border-gray-600">Detalles Transporte</th>
                             <th class="p-4 font-semibold border-b dark:border-gray-600">Costo</th>
-                            <th class="p-4 font-semibold border-b dark:border-gray-600">Total Rutas</th>
-                            <th class="p-4 font-semibold border-b dark:border-gray-600">Acciones</th>
+                            <th class="p-4 font-semibold border-b dark:border-gray-600 text-center">Total Rutas</th>
+                            <th class="p-4 font-semibold border-b dark:border-gray-600 text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">

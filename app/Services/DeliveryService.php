@@ -16,10 +16,11 @@ class DeliveryService
         return DB::transaction(function () use ($data) {
             // Se usa la empresa enviada en los datos para la numeración
             $company = \App\Models\Company::lockForUpdate()->findOrFail($data['company_id']);
-            $company->last_route_number++;
+            $company->last_delivery_number++;
             $company->save();
 
-            $data['delivery_number'] = $company->prefix . '-REP' . str_pad((string) $company->last_route_number, 8, '0', STR_PAD_LEFT);
+            $branchId = $data['location_id'] ?? 0;
+            $data['delivery_number'] = sprintf('%s-%d-E-%08d', $company->prefix, $branchId, $company->last_delivery_number);
 
             $shipments = [];
             if (!empty($data['shipments'])) {

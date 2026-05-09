@@ -233,8 +233,8 @@ class ShipmentController extends Controller
                 return '<span class="font-bold text-gray-800 dark:text-gray-200">' . mb_strtoupper($row->destinatario_nombre ?? '-') . '</span>';
             })
             ->addColumn('ruta_corta', function ($row) {
-                $or = mb_strtoupper($row->origen_nombre ?? '-');
-                $ds = mb_strtoupper($row->destino_nombre ?? '-');
+                $or = mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->origen_nombre ?? '-'));
+                $ds = mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->destino_nombre ?? '-'));
                 return "<div class='flex flex-col gap-0.5'>
                             <span class='px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 text-[9px] font-bold w-fit'>$or</span>
                             <span class='px-1.5 py-0.5 rounded bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 text-[9px] font-bold w-fit'>$ds</span>

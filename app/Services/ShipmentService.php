@@ -49,8 +49,8 @@ class ShipmentService
                 $company->last_shipment_number++;
                 $company->save();
 
-                $number = $company->prefix . '-' . str_pad(
-                    $company->last_shipment_number,
+                $number = $company->prefix . '-0-G-' . str_pad(
+                    (string) $company->last_shipment_number,
                     8,
                     '0',
                     STR_PAD_LEFT

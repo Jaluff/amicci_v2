@@ -62,6 +62,9 @@ document.addEventListener("DOMContentLoaded", function () {
             btn.prop("disabled", count === 0);
         }
 
+        // Sincronizar company_id
+        $("#invoice_company_id").val($("#filter_company_id").val());
+
         // Reconstruir hidden inputs de shipment_ids
         const container = $("#shipment-ids-container");
         // En modo edit, limpiamos y re-generamos todos
@@ -209,6 +212,11 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Sincronizar cliente del filtro → select del formulario y recargar tabla
+    $("#filter_company_id").on("change", function () {
+        table.ajax.reload();
+    });
+
+    // Sincronizar cliente del filtro → select del formulario y recargar tabla
     $("#filter_party_id").on("change", function () {
         const val = $(this).val();
         if (val && $("#party_select").length) {
@@ -240,4 +248,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (isEditMode) {
         updateSummary();
     }
+
+    // Carga inicial
+    table.ajax.reload();
 });

@@ -14,6 +14,7 @@ class StoreInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'company_id'    => ['required', 'integer', 'exists:companies,id'],
             'party_id'      => ['required', 'integer', 'exists:parties,id'],
             'shipment_ids'  => ['required', 'array', 'min:1'],
             'shipment_ids.*'=> ['integer', 'exists:shipments,id'],

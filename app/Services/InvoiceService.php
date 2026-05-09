@@ -25,10 +25,12 @@ class InvoiceService
         array $shipmentIds,
         array $data,
         int $partyId,
+        int $companyId,
         bool $isAdmin = false,
     ): Invoice {
-        return DB::transaction(function () use ($shipmentIds, $data, $partyId, $isAdmin): Invoice {
+        return DB::transaction(function () use ($shipmentIds, $data, $partyId, $companyId, $isAdmin): Invoice {
             $invoice = Invoice::create([
+                'company_id'     => $companyId,
                 'party_id'       => $partyId,
                 'numero'         => $data['numero'],
                 'fecha_factura'  => $data['fecha_factura'],

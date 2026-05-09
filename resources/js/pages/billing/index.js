@@ -199,6 +199,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }).appendTo("#form-generate-invoice");
         });
 
+        // Pasar company_id del filtro al modal
+        $("#modal_invoice_company_id").val($("#filter_company_id").val());
+
         // Preseleccionar el cliente del filtro si existe
         const filteredPartyId = $("#filter_party_id").val();
         if (filteredPartyId) {

@@ -99,6 +99,18 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/deliveries/{delivery}', [\App\Http\Controllers\DeliveryController::class , 'destroy'])->name('deliveries.destroy');
     Route::post('/deliveries/{delivery}/return-shipment/{shipment}', [\App\Http\Controllers\DeliveryController::class , 'returnShipment'])->name('deliveries.return-shipment');
 
+    // Cargas (Full Truckloads)
+    Route::get('/loads', [\App\Http\Controllers\LoadController::class, 'index'])->name('loads.index');
+    Route::get('/loads/datatable', [\App\Http\Controllers\LoadController::class, 'datatable'])->name('loads.datatable');
+    Route::get('/loads/create', [\App\Http\Controllers\LoadController::class, 'create'])->name('loads.create');
+    Route::post('/loads', [\App\Http\Controllers\LoadController::class, 'store'])->name('loads.store');
+    Route::get('/loads/{load}/edit', [\App\Http\Controllers\LoadController::class, 'edit'])->name('loads.edit');
+    Route::put('/loads/{load}', [\App\Http\Controllers\LoadController::class, 'update'])->name('loads.update');
+    Route::delete('/loads/{load}', [\App\Http\Controllers\LoadController::class, 'destroy'])->name('loads.destroy');
+    Route::post('/loads/{load}/invoice', [\App\Http\Controllers\LoadController::class, 'invoice'])->name('loads.invoice');
+    Route::post('/loads/{load}/pay', [\App\Http\Controllers\LoadController::class, 'pay'])->name('loads.pay');
+    Route::post('/loads/{load}/change-state', [\App\Http\Controllers\LoadController::class, 'changeState'])->name('loads.change-state');
+
     // State Machine — transiciones de estado (aplica a todos los documentos logísticos)
     Route::post('/status/transition', [\App\Http\Controllers\StatusTransitionController::class , 'transition'])->name('status.transition');
     Route::get('/status/available', [\App\Http\Controllers\StatusTransitionController::class , 'available'])->name('status.available');

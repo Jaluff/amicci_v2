@@ -34,18 +34,16 @@ const DispatchModule = (function ($) {
                     defaultContent: 'No asignado'
                 },
                 {
-                    data: null,
+                    data: 'ruta_corta',
+                    name: 'ruta_corta',
                     orderable: false,
                     searchable: false,
-                    render: function (data) {
-                        const origen = data.origin ? data.origin.name : '-';
-                        const destino = data.destination ? data.destination.name : '-';
-                        return `${origen} → ${destino}`;
-                    }
+                    className: 'text-center'
                 },
                 {
                     data: 'status',
                     name: 'status',
+                    className: 'text-center',
                     render: function (data) {
                         if (!data) return '<span class="dt-badge dt-badge-gray">—</span>';
                         const colores = {
@@ -78,8 +76,8 @@ const DispatchModule = (function ($) {
                         return `$${parseFloat(data).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
                     }
                 },
-                { data: 'routes_count', name: 'routes_count', defaultContent: '0' },
-                { data: 'acciones', name: 'acciones', orderable: false, searchable: false }
+                { data: 'routes_count', name: 'routes_count', defaultContent: '0', className: 'text-center' },
+                { data: 'acciones', name: 'acciones', orderable: false, searchable: false, className: 'text-center' }
             ],
             order: [[0, 'desc']],
         });

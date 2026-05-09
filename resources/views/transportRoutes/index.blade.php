@@ -102,14 +102,16 @@
                     id="routes-table" data-url="{{ route('routes.datatable') }}">
                     <thead class="bg-gray-50 dark:bg-gray-900">
                         <tr class="text-left">
-                            <th class="p-4 font-semibold border-b dark:border-gray-600">Empresa</th>
+                            <th class="p-4 font-semibold border-b dark:border-gray-600 text-center w-12" title="Empresa">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mx-auto text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                            </th>
                             <th class="p-4 font-semibold border-b dark:border-gray-600">Fecha</th>
                             <th class="p-4 font-semibold border-b dark:border-gray-600">Número</th>
-                            <th class="p-4 font-semibold border-b dark:border-gray-600">Origen - Destino</th>
+                            <th class="p-4 font-semibold border-b dark:border-gray-600 text-center">Origen / Destino</th>
                             <th class="p-4 font-semibold border-b dark:border-gray-600">Transporte</th>
-                            <th class="p-4 font-semibold border-b dark:border-gray-600">Estado</th>
-                            <th class="p-4 font-semibold border-b dark:border-gray-600">Total Guías</th>
-                            <th class="p-4 font-semibold border-b dark:border-gray-600">Acciones</th>
+                            <th class="p-4 font-semibold border-b dark:border-gray-600 text-center">Estado</th>
+                            <th class="p-4 font-semibold border-b dark:border-gray-600 text-center">Total Guías</th>
+                            <th class="p-4 font-semibold border-b dark:border-gray-600 text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">

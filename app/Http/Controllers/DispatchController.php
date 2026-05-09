@@ -84,6 +84,14 @@ class DispatchController extends Controller
             ->addColumn('fecha', function ($row) {
                 return $row->created_at ? $row->created_at->format('d/m/Y') : '-';
             })
+            ->addColumn('ruta_corta', function ($row) {
+                $or = mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->origin?->name ?? '-'));
+                $ds = mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->destination?->name ?? '-'));
+                return "<div class='flex flex-col gap-0.5 items-center'>
+                            <span class='px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 text-[9px] font-bold w-fit'>$or</span>
+                            <span class='px-1.5 py-0.5 rounded bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 text-[9px] font-bold w-fit'>$ds</span>
+                        </div>";
+            })
             ->addColumn('acciones', function ($row) use ($isAdminOrSupervisor) {
                 $editUrl = route('dispatches.edit', $row->id);
                 $deleteUrl = route('dispatches.destroy', $row->id);
@@ -147,7 +155,7 @@ class DispatchController extends Controller
                     </div>
                 </div>";
             })
-            ->rawColumns(['acciones', 'dispatch_number'])
+            ->rawColumns(['acciones', 'dispatch_number', 'ruta_corta'])
             ->make(true);
     }
 
@@ -188,8 +196,8 @@ class DispatchController extends Controller
                     data-estado="' . $row->status . '"
                     data-has-problem="' . ($row->problem_count > 0 ? 'true' : 'false') . '">';
             })
-            ->addColumn('origen_nombre', fn($row) => $row->origin?->name ?? $row->origin?->nombre ?? '-')
-            ->addColumn('destino_nombre', fn($row) => $row->destination?->name ?? $row->destination?->nombre ?? '-')
+            ->addColumn('origen_nombre', fn($row) => mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->origin?->name ?? $row->origin?->nombre ?? '-')))
+            ->addColumn('destino_nombre', fn($row) => mb_strtoupper(str_ireplace('SUCURSAL ', '', $row->destination?->name ?? $row->destination?->nombre ?? '-')))
             ->rawColumns(['check', 'empresa'])
             ->make(true);
     }
