@@ -90,6 +90,30 @@ $addr = $isEdit ? $party->primaryAddress : null;
                 </div>
             </div>
         </div>
+
+        {{-- Contacto principal del cliente --}}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Teléfono Principal</label>
+                <input type="text" name="phone" value="{{ old('phone', $party->phone ?? '') }}"
+                    class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    placeholder="Ej: 261 4000000">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Teléfono Secundario</label>
+                <input type="text" name="phone_secondary" value="{{ old('phone_secondary', $party->phone_secondary ?? '') }}"
+                    class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    placeholder="Ej: 261 5000000">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Correo Electrónico</label>
+                <input type="email" name="email" value="{{ old('email', $party->email ?? '') }}"
+                    class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    placeholder="Ej: contacto@empresa.com">
+            </div>
+        </div>
     </div>
 
     <!-- Direcciones y Contacto (Polimórficas) -->

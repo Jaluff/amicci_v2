@@ -14,13 +14,16 @@ class UpdatePartyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'document' => 'nullable|string|max:100',
-            'document_type' => 'nullable|string|max:50',
-            'tax_status' => 'nullable|string|max:100',
-            'iva_percent' => 'nullable|numeric|min:0|max:100',
-            'has_insurance' => 'nullable|in:true,false,1,0',
+            'name'              => 'required|string|max:255',
+            'document'          => 'nullable|string|max:100',
+            'document_type'     => 'nullable|string|max:50',
+            'tax_status'        => 'nullable|string|max:100',
+            'iva_percent'       => 'nullable|numeric|min:0|max:100',
+            'has_insurance'     => 'nullable|in:true,false,1,0',
             'insurance_percent' => 'nullable|numeric|min:0|max:100',
+            'phone'             => 'nullable|string|max:50',
+            'phone_secondary'   => 'nullable|string|max:50',
+            'email'             => 'nullable|email|max:255',
 
             // Array of addresses (optional)
             'addresses' => 'nullable|array',
