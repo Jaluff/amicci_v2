@@ -191,8 +191,8 @@ $(document).ready(function () {
                     render: function (data, type, row) {
                         let html = data;
                         if (row.has_active_problem > 0) {
-                            html += ` <span class="text-red-500 font-bold ml-1 cursor-pointer btn-open-spm" 
-                                data-shipment-id="${row.id}" data-shipment-numero="${row.numero}" title="Problema activo">⚠</span>`;
+                            html += ` <span class="text-amber-500 font-bold ml-1 cursor-pointer btn-open-spm" 
+                                data-shipment-id="${row.id}" data-shipment-numero="${row.numero}" title="Problema activo" style="color: #f59e0b !important;">⚠</span>`;
                         } else if (row.has_resolved_problem > 0) {
                             html += ` <span class="text-green-500 font-bold ml-1 cursor-pointer btn-open-spm" 
                                 data-shipment-id="${row.id}" data-shipment-numero="${row.numero}" title="Problema resuelto">✓</span>`;
@@ -293,10 +293,10 @@ $(document).ready(function () {
                 
                 let problemIcon = '';
                 if (hasActiveProblem) {
-                    problemIcon = ` <span class="text-red-600 font-bold ml-1 animate-pulse cursor-pointer btn-open-spm" 
+                    problemIcon = ` <span class="text-amber-500 font-bold ml-1 animate-pulse cursor-pointer btn-open-spm" 
                         data-shipment-id="${id}"
                         data-shipment-numero="${numero}"
-                        style="color: #dc2626 !important;"
+                        style="color: #f59e0b !important;"
                         title="Tiene un problema activo. Click para ver/resolver.">⚠</span>`;
                 } else if (hasResolvedProblem) {
                     problemIcon = ` <span class="text-green-600 font-bold ml-1 cursor-pointer btn-open-spm" 
@@ -350,6 +350,10 @@ $(document).ready(function () {
     $(document).on('documentProblemStored', function (e, data) {
         if (dtAvailable) {
             dtAvailable.ajax.reload(null, false);
+        }
+        // Si estamos en edición y hay tabla de guías seleccionadas, recargamos la página para actualizar el icono de la vista
+        if ($('#delivery-form').length && $('#selected-shipments-table').length) {
+            window.location.reload();
         }
     });
 

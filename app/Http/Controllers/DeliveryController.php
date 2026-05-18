@@ -148,7 +148,7 @@ class DeliveryController extends Controller
             ->editColumn('delivery_number', function ($row) {
                 $numberHtml = "<span class='font-mono font-bold text-gray-800 dark:text-gray-200'>{$row->delivery_number}</span>";
                 if ($row->problem_count > 0) {
-                    $numberHtml .= " <span class='text-red-500 animate-pulse font-bold ml-1' style='color: #dc2626 !important;' title='Contiene guías con problemas abiertos'>⚠</span>";
+                    $numberHtml .= " <span class='text-amber-500 animate-pulse font-bold ml-1' style='color: #f59e0b !important;' title='Contiene guías con problemas abiertos'>⚠</span>";
                 }
 
                 return $numberHtml;

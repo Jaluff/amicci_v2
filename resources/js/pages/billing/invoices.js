@@ -4,13 +4,14 @@ import "datatables.net-buttons-dt";
 import "datatables.net-buttons/js/buttons.html5.mjs";
 import "datatables.net-buttons/js/buttons.colVis.mjs";
 import select2 from "select2";
+import { partyAjaxConfig } from "../../shared/select2Ajax";
 
 window.$ = window.jQuery = $;
 select2();
 
 document.addEventListener("DOMContentLoaded", function () {
     if ($("#filter_party_id").length) {
-        $("#filter_party_id").select2({ placeholder: "Buscar cliente...", allowClear: true, width: "100%" });
+        $("#filter_party_id").select2(Object.assign({ placeholder: "Buscar cliente...", allowClear: true, width: "100%" }, partyAjaxConfig));
     }
 
     const tableEl = document.getElementById("invoices-list-table");

@@ -106,10 +106,10 @@
                     <td class="p-3 text-sm text-gray-800 dark:text-gray-200">
                         {{ $shipment->numero }}
                         @if($shipment->hasActiveProblem())
-                            <span class="text-red-600 font-bold ml-1 animate-pulse cursor-pointer btn-open-spm" 
+                            <span class="text-amber-500 font-bold ml-1 animate-pulse cursor-pointer btn-open-spm" 
                                 data-shipment-id="{{ $shipment->id }}"
                                 data-shipment-numero="{{ $shipment->numero }}"
-                                style="color: #dc2626 !important;"
+                                style="color: #f59e0b !important;"
                                 title="Tiene un problema reporte activo. Click para ver/resolver.">⚠</span>
                         @endif
                         <input type="hidden" name="shipments[]" value="{{ $shipment->id }}">

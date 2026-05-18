@@ -48,13 +48,15 @@ class TransportRouteController extends Controller
             ->whereHas('companies', function ($q) use ($company_id) {
                 $q->where('companies.id', $company_id);
             })
-            ->permitted()
             ->orderBy('code')
             ->get();
 
+        $userBranch = $user->branches->first();
+        $defaultOriginId = $userBranch ? $userBranch->id : null;
+
         $selected_company = $companies->firstWhere('id', $company_id);
 
-        return view('transportRoutes.create', compact('branches', 'selected_company'));
+        return view('transportRoutes.create', compact('branches', 'selected_company', 'defaultOriginId'));
     }
 
     public function availableShipments(Request $request)
@@ -197,7 +199,7 @@ class TransportRouteController extends Controller
             ->editColumn('route_number', function ($row) {
                 $numberHtml = "<span class='font-mono font-bold text-gray-800 dark:text-gray-200'>{$row->route_number}</span>";
                 if ($row->problem_count > 0) {
-                    $numberHtml .= " <span class='text-red-500 animate-pulse font-bold ml-1' style='color: #dc2626 !important;' title='Contiene guías con problemas abiertos'>⚠</span>";
+                    $numberHtml .= " <span class='text-amber-500 animate-pulse font-bold ml-1' style='color: #f59e0b !important;' title='Contiene guías con problemas abiertos'>⚠</span>";
                 }
 
                 return $numberHtml;
@@ -254,9 +256,10 @@ class TransportRouteController extends Controller
     public function edit(TransportRoute $route): View
     {
         $branches = Branch::where('active', true)
-            ->permitted()
             ->orderBy('code')
             ->get();
+
+        $defaultOriginId = $route->origin_id;
 
         $route->load(['shipments' => function ($q) {
             $q->select([
@@ -277,7 +280,7 @@ class TransportRouteController extends Controller
 
         $route->load('dispatch');
 
-        return view('transportRoutes.edit', compact('route', 'branches'));
+        return view('transportRoutes.edit', compact('route', 'branches', 'defaultOriginId'));
     }
 
     public function update(StoreRouteRequest $request, TransportRoute $route)

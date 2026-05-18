@@ -50,12 +50,8 @@ class ShipmentService
                 $company->last_shipment_number++;
                 $company->save();
 
-                $number = $company->prefix.'-0-G-'.str_pad(
-                    (string) $company->last_shipment_number,
-                    8,
-                    '0',
-                    STR_PAD_LEFT
-                );
+                $prefix = substr($company->prefix, 0, 1);
+                $number = sprintf('%s0G-%06d', $prefix, $company->last_shipment_number);
             }
 
             $data['numero'] = $number;

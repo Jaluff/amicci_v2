@@ -18,7 +18,7 @@ class StoreDispatchRequest extends FormRequest
         return [
 
             'origin_id' => ['required', 'exists:branches,id'],
-            'destination_id' => ['required', 'exists:branches,id', 'different:origin_id'],
+            'destination_id' => ['required', 'exists:branches,id'],
             'driver_id' => ['required', 'exists:drivers,id'],
             'status' => ['required', 'in:Cargado,En viaje,Arribado'],
             'seal_number' => ['nullable', 'string', 'max:255'],
@@ -35,7 +35,7 @@ class StoreDispatchRequest extends FormRequest
         return [
             'origin_id.required' => 'El origen es obligatorio.',
             'destination_id.required' => 'El destino es obligatorio.',
-            'destination_id.different' => 'El destino debe ser distinto al origen.',
+            'destination_id.exists' => 'El destino seleccionado no es válido.',
             'driver_id.required' => 'El conductor es obligatorio.',
             'status.in' => 'El estado no es válido.',
         ];

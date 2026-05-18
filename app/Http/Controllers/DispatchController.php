@@ -79,7 +79,7 @@ class DispatchController extends Controller
             ->editColumn('dispatch_number', function ($row) {
                 $numberHtml = "<span class='font-mono font-bold text-gray-800 dark:text-gray-200'>{$row->dispatch_number}</span>";
                 if ($row->problem_count > 0) {
-                    $numberHtml .= " <span class='text-red-500 animate-pulse font-bold ml-1' style='color: #dc2626 !important;' title='Contiene guías con problemas abiertos'>⚠</span>";
+                    $numberHtml .= " <span class='text-amber-500 animate-pulse font-bold ml-1' style='color: #f59e0b !important;' title='Contiene guías con problemas abiertos'>⚠</span>";
                 }
 
                 return $numberHtml;
@@ -211,11 +211,13 @@ class DispatchController extends Controller
     {
         $drivers = Driver::all(['id', 'name', 'dni']);
         $branches = Branch::where('active', true)
-            ->permitted()
             ->orderBy('code')
             ->get();
 
-        return view('dispatches.create', compact('drivers', 'branches'));
+        $userBranch = auth()->user()->branches->first();
+        $defaultOriginId = $userBranch ? $userBranch->id : null;
+
+        return view('dispatches.create', compact('drivers', 'branches', 'defaultOriginId'));
     }
 
     public function store(StoreDispatchRequest $request)
@@ -235,9 +237,10 @@ class DispatchController extends Controller
     {
         $drivers = Driver::all(['id', 'name', 'dni']);
         $branches = Branch::where('active', true)
-            ->permitted()
             ->orderBy('code')
             ->get();
+
+        $defaultOriginId = $dispatch->origin_id;
 
         $dispatch->load(['routes' => function ($q) {
             $q->select(['transport_routes.id', 'route_number', 'origin_id', 'destination_id', 'dispatch_id', 'status'])
@@ -245,7 +248,7 @@ class DispatchController extends Controller
                 ->withCount('shipments');
         }])->loadCount('shipments');
 
-        return view('dispatches.edit', compact('dispatch', 'drivers', 'branches'));
+        return view('dispatches.edit', compact('dispatch', 'drivers', 'branches', 'defaultOriginId'));
     }
 
     public function update(UpdateDispatchRequest $request, Dispatch $dispatch)

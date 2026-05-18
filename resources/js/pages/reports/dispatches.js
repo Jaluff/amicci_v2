@@ -4,13 +4,23 @@ import "datatables.net-buttons-dt";
 import "datatables.net-buttons/js/buttons.html5.mjs";
 import "datatables.net-buttons/js/buttons.colVis.mjs";
 import select2 from "select2";
+import { partyAjaxConfig } from "../../shared/select2Ajax";
 
 window.$ = window.jQuery = $;
 select2(); // Initialize select2 on local jQuery instance
 
 document.addEventListener("DOMContentLoaded", function () {
-    // Initialize select2 for multiple selections
-    const select2Selectors = ['#filter_party_id', '#filter_origin_id', '#filter_destination_id', '#filter_ubicacion_actual'];
+    // Initialize select2 for multiple selections (AJAX)
+    if ($("#filter_party_id").length) {
+        $("#filter_party_id").select2(Object.assign({
+            placeholder: "Buscar cliente(s)...",
+            allowClear: true,
+            width: '100%'
+        }, partyAjaxConfig));
+    }
+
+    // Initialize select2 for multiple selections (Normal)
+    const select2Selectors = ['#filter_origin_id', '#filter_destination_id', '#filter_ubicacion_actual'];
     select2Selectors.forEach(selector => {
         if ($(selector).length) {
             $(selector).select2({

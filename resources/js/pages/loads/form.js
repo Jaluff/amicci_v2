@@ -1,12 +1,15 @@
 import $ from 'jquery';
 import 'select2';
 
+import { partyAjaxConfig } from '../../shared/select2Ajax';
+
 $(function () {
     // Inicializar Select2 para clientes
     $('.select2-party').select2({
         placeholder: "Buscar cliente...",
         allowClear: true,
-        width: '100%'
+        width: '100%',
+        ...partyAjaxConfig
     });
 
     // Inicializar Select2 para sucursales

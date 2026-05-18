@@ -1,6 +1,7 @@
 import $ from "jquery";
 import "datatables.net-dt";
 import select2 from "select2";
+import { partyAjaxConfig } from "../../shared/select2Ajax";
 
 window.$ = window.jQuery = $;
 select2();
@@ -8,20 +9,20 @@ select2();
 document.addEventListener("DOMContentLoaded", function () {
     // Select2 para el filtro de cliente
     if ($("#filter_party_id").length) {
-        $("#filter_party_id").select2({
+        $("#filter_party_id").select2(Object.assign({
             placeholder: "Seleccione un cliente...",
             allowClear: true,
             width: "100%",
-        });
+        }, partyAjaxConfig));
     }
 
     // Select2 para el select de cliente en el formulario de generación
     if ($("#party_select").length) {
-        $("#party_select").select2({
+        $("#party_select").select2(Object.assign({
             placeholder: "Seleccione un cliente...",
             allowClear: false,
             width: "100%",
-        });
+        }, partyAjaxConfig));
     }
 
     const tableEl = document.getElementById("available-shipments-table");
@@ -220,7 +221,13 @@ document.addEventListener("DOMContentLoaded", function () {
     $("#filter_party_id").on("change", function () {
         const val = $(this).val();
         if (val && $("#party_select").length) {
-            $("#party_select").val(val).trigger("change");
+            const partyName = $(this).find("option:selected").text();
+            if ($("#party_select").find("option[value='" + val + "']").length) {
+                $("#party_select").val(val).trigger("change");
+            } else {
+                var newOption = new Option(partyName, val, true, true);
+                $("#party_select").append(newOption).trigger('change');
+            }
         }
         table.ajax.reload();
     });

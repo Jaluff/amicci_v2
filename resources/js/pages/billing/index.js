@@ -4,6 +4,7 @@ import "datatables.net-buttons-dt";
 import "datatables.net-buttons/js/buttons.html5.mjs";
 import "datatables.net-buttons/js/buttons.colVis.mjs";
 import select2 from "select2";
+import { partyAjaxConfig } from "../../shared/select2Ajax";
 
 window.$ = window.jQuery = $;
 select2();
@@ -12,20 +13,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Select2 para el filtro de cliente
     if ($("#filter_party_id").length) {
-        $("#filter_party_id").select2({
+        $("#filter_party_id").select2(Object.assign({
             placeholder: "Buscar cliente...",
             allowClear: true,
             width: "100%",
-        });
+        }, partyAjaxConfig));
     }
 
     if ($("#invoice_party_id").length) {
-        $("#invoice_party_id").select2({
+        $("#invoice_party_id").select2(Object.assign({
             placeholder: "Seleccione cliente...",
             allowClear: true,
             width: "100%",
             dropdownParent: $('#modal-generate-invoice')
-        });
+        }, partyAjaxConfig));
     }
 
     const tableEl = document.getElementById("invoices-table");
@@ -205,9 +206,15 @@ document.addEventListener("DOMContentLoaded", function () {
         // Preseleccionar el cliente del filtro si existe
         const filteredPartyId = $("#filter_party_id").val();
         if (filteredPartyId) {
-            $("#invoice_party_id").val(filteredPartyId).trigger("change");
+            const partyName = $("#filter_party_id option:selected").text();
+            if ($("#invoice_party_id").find("option[value='" + filteredPartyId + "']").length) {
+                $("#invoice_party_id").val(filteredPartyId).trigger("change");
+            } else {
+                var newOption = new Option(partyName, filteredPartyId, true, true);
+                $("#invoice_party_id").append(newOption).trigger("change");
+            }
         } else {
-            $("#invoice_party_id").val("").trigger("change");
+            $("#invoice_party_id").val(null).trigger("change");
         }
         
         $("#modal-generate-invoice").removeClass("hidden");

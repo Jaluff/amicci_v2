@@ -34,9 +34,6 @@
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cliente</label>
                         <select id="filter_party_id" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm text-sm">
                             <option value=""></option>
-                            @foreach($parties as $party)
-                                <option value="{{ $party->id }}">{{ $party->name }}</option>
-                            @endforeach
                         </select>
                     </div>
                     <div>
@@ -143,9 +140,6 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cliente *</label>
                             <select name="party_id" id="invoice_party_id" required class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm">
                                 <option value=""></option>
-                                @foreach($parties as $party)
-                                    <option value="{{ $party->id }}">{{ $party->name }} ({{ $party->tax_id }})</option>
-                                @endforeach
                             </select>
                         </div>
                         

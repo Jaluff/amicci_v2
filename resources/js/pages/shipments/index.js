@@ -27,6 +27,7 @@ $(function () {
             }
         },
         columns: [
+            { data: 'updated_at', name: 'shipments.updated_at', visible: false, searchable: false },
             { 
                 data: 'empresa', 
                 name: 'companies.prefix', 
@@ -58,7 +59,7 @@ $(function () {
             },
             { data: 'acciones', name: 'acciones', orderable: false, searchable: false, responsivePriority: 1, className: 'text-center' },
         ],
-        order: [[1, 'desc']],
+        order: [[0, 'desc']],
     });
 
     $('#btn-filter').on('click', function () {

@@ -15,10 +15,9 @@ class DispatchReportController extends Controller
     {
         // Datos para los filtros
         $companies = Company::all();
-        $parties = Party::withoutGlobalScopes()->get();
         $ubicaciones = Ubicacion::all();
 
-        return view('reports.dispatches.index', compact('companies', 'parties', 'ubicaciones'));
+        return view('reports.dispatches.index', compact('companies', 'ubicaciones'));
     }
 
     public function datatable(Request $request)

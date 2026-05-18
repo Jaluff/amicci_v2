@@ -135,7 +135,7 @@ class LoadController extends Controller
         // Pasamos todas las companies al compact para compatibilidad con _form,
         // pero la vista forzará el selected_company
         $companies = Company::active()->orderBy('name')->get();
-        $parties = Party::orderBy('name')->get();
+        $parties = collect([]);
         $branches = Branch::orderBy('name')->get();
         $drivers = Driver::orderBy('name')->get();
 
@@ -151,7 +151,8 @@ class LoadController extends Controller
             $company->save();
 
             $branchId = $data['origen_id'] ?? 0;
-            $numeroCarga = sprintf('%s-%d-C-%08d', $company->prefix, $branchId, $company->last_load_number);
+            $prefix = substr($company->prefix, 0, 1);
+            $numeroCarga = sprintf('%s%dC-%06d', $prefix, $branchId, $company->last_load_number);
 
             return Load::create([
                 ...$data,
@@ -166,7 +167,8 @@ class LoadController extends Controller
     public function edit(Load $load): View
     {
         $companies = Company::active()->orderBy('name')->get();
-        $parties = Party::orderBy('name')->get();
+        $load->load(['remitente', 'destinatario']);
+        $parties = collect([$load->remitente, $load->destinatario])->filter()->unique('id');
         $branches = Branch::orderBy('name')->get();
         $drivers = Driver::orderBy('name')->get();
 

@@ -10,6 +10,7 @@ use App\Models\Shipment;
 use App\Models\TariffTable;
 use App\Services\PartyService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
 class PartyController extends Controller
@@ -100,6 +101,26 @@ class PartyController extends Controller
                 'id' => $party->id,
                 'name' => $party->name,
             ],
+        ]);
+    }
+
+    public function ajaxSearch(Request $request): JsonResponse
+    {
+        $search = $request->input('q');
+
+        $query = Party::withoutGlobalScope('company')->orderBy('name');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('document', 'like', "%{$search}%");
+            });
+        }
+
+        $parties = $query->limit(5)->get(['id', 'name as text']);
+
+        return response()->json([
+            'results' => $parties,
         ]);
     }
 

@@ -59,6 +59,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/shipments/{shipment}', [ShipmentController::class, 'destroy'])->name('shipments.destroy');
 
     // Clientes (Remitentes y Destinatarios)
+    Route::get('/parties/ajax-search', [PartyController::class, 'ajaxSearch'])->name('parties.ajax-search');
     Route::post('/parties/ajax-store', [PartyController::class, 'ajaxStore'])->name('parties.ajax-store');
     Route::get('/parties/datatable', [PartyController::class, 'datatable'])->name('parties.datatable');
     Route::get('/parties/{party}/tariff-setting', [PartyController::class, 'tariffSetting'])->name('parties.tariff-setting');

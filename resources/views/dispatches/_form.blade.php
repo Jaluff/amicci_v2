@@ -80,7 +80,7 @@
             required {{ $isEdit && $dispatch->routes->count() > 0 ? 'tabindex=-1' : '' }}>
             <option value="">Seleccione origen</option>
             @foreach($branches as $branch)
-            <option value="{{ $branch->id }}" @selected(old('origin_id', $dispatch->origin_id) == $branch->id)>
+            <option value="{{ $branch->id }}" @selected(old('origin_id', $dispatch->origin_id ?? ($defaultOriginId ?? null)) == $branch->id)>
                 {{ $branch->name }}
             </option>
             @endforeach

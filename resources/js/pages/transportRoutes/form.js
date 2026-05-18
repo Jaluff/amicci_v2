@@ -33,20 +33,7 @@ $(function () {
         const branchSelect = $('#branch_id');
 
         const updateOptions = function () {
-            const originVal = originSelect.val();
-
-            // Resetear las opciones del destino
-            destSelect.find('option').prop('disabled', false);
-
-            if (originVal) {
-                // Bloquear el valor elegido en origen dentro de destino
-                destSelect.find(`option[value="${originVal}"]`).prop('disabled', true);
-
-                // Por precaución, si por estado viejo el destino resulta ser el origen, lo limpiamos
-                if (destSelect.val() === originVal) {
-                    destSelect.val('');
-                }
-            }
+            // Ya no bloqueamos el destino si es igual al origen
         };
 
         originSelect.on('change', function () {
@@ -130,7 +117,7 @@ $(function () {
                     render: function (data, type, row) {
                         let html = data;
                         if (row.has_active_problem > 0) {
-                            html += ' <span class="text-red-500 font-bold ml-1 animate-pulse" title="Problema activo">⚠</span>';
+                            html += ' <span class="text-amber-500 font-bold ml-1 animate-pulse" title="Problema activo">⚠</span>';
                         }
                         return html;
                     }
@@ -219,10 +206,10 @@ $(function () {
                 const estado = $(this).data('estado');
                 const bultos = $(this).data('bultos');
                 const hasProblem = $(this).data('has-problem') === true || $(this).data('has-problem') === 'true';
-                const problemIcon = hasProblem ? ` <span class="text-red-600 font-bold ml-1 animate-pulse cursor-pointer btn-open-spm" 
+                const problemIcon = hasProblem ? ` <span class="text-amber-500 font-bold ml-1 animate-pulse cursor-pointer btn-open-spm" 
                     data-shipment-id="${id}"
                     data-shipment-numero="${numero}"
-                    style="color: #dc2626 !important;"
+                    style="color: #f59e0b !important;"
                     title="Tiene un problema activo. Click para ver.">⚠</span>` : '';
 
                 const coloresMap = {
@@ -247,7 +234,7 @@ $(function () {
                         </td>
                         <td class="p-3 text-sm text-gray-800 dark:text-gray-200">${bultos}</td>
                         <td class="p-3 text-center">
-                            <button type="button" class="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/40 p-1 rounded transition btn-remove-shipment font-bold text-lg leading-none" title="Remover">&times;</button>
+                            <button type="button" class="text-amber-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/40 p-1 rounded transition btn-remove-shipment font-bold text-lg leading-none" title="Remover">&times;</button>
                         </td>
                     </tr>
                 `;
@@ -273,4 +260,9 @@ $(function () {
         toggleHeaderLock();
     });
 
+});
+$(document).on('documentProblemStored', function (e, data) {
+    if ($('#route-form').length && $('#selected-shipments-table').length) {
+        window.location.reload();
+    }
 });

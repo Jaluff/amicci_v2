@@ -21,9 +21,6 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cliente(s)</label>
                         <select id="filter_party_id" multiple class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm text-sm">
-                            @foreach($parties as $party)
-                            <option value="{{ $party->id }}">{{ $party->name }}</option>
-                            @endforeach
                         </select>
                     </div>
                     <div>

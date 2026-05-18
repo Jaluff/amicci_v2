@@ -25,7 +25,7 @@ class StoreRouteRequest extends FormRequest
         return [
             'company_id' => ['required', 'exists:companies,id'],
             'origin_id' => ['required', 'exists:branches,id'],
-            'destination_id' => ['required', 'exists:branches,id', 'different:origin_id'],
+            'destination_id' => ['required', 'exists:branches,id'],
             'status' => ['required', 'in:Cargada,Entregada,En viaje,Con problemas'],
 
             'shipments' => ['nullable', 'array'],
@@ -45,7 +45,6 @@ class StoreRouteRequest extends FormRequest
             'origin_id.exists' => 'El origen seleccionado no es válido.',
             'destination_id.required' => 'El campo destino es obligatorio.',
             'destination_id.exists' => 'El destino seleccionado no es válido.',
-            'destination_id.different' => 'El destino debe ser diferente al origen.',
             'status.required' => 'El estado es obligatorio.',
             'status.in' => 'El estado seleccionado no es válido.',
             'shipments.array' => 'El formato de las guías es inválido.',

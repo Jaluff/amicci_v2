@@ -19,6 +19,7 @@ class Company extends Model
         'last_route_number',
         'last_dispatch_number',
         'last_load_number',
+        'last_delivery_number',
         'contra_reembolso_percent',
         'active',
     ];

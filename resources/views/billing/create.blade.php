@@ -28,9 +28,6 @@
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cliente</label>
                         <select id="filter_party_id" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm text-sm">
                             <option value=""></option>
-                            @foreach($parties as $party)
-                                <option value="{{ $party->id }}">{{ $party->name }}</option>
-                            @endforeach
                         </select>
                     </div>
                     <div>
@@ -119,11 +116,6 @@
                                 <select id="party_select" name="party_id" required
                                     class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm text-sm @error('party_id') border-red-500 @enderror">
                                     <option value=""></option>
-                                    @foreach($parties as $party)
-                                        <option value="{{ $party->id }}" {{ old('party_id') == $party->id ? 'selected' : '' }}>
-                                            {{ $party->name }}
-                                        </option>
-                                    @endforeach
                                 </select>
                             </div>
                             <div>

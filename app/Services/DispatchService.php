@@ -25,8 +25,8 @@ class DispatchService
 
             $branchId = $data['origin_id'] ?? 0;
 
-            // Usamos AMI genérico ya que despachos agrupa rutas de múltiples empresas (no tiene company_id)
-            $data['dispatch_number'] = sprintf('AMI-%d-D-%08d', $branchId, $nextNumber);
+            // Usamos A genérico ya que despachos agrupa rutas de múltiples empresas (no tiene company_id)
+            $data['dispatch_number'] = sprintf('A%dD-%06d', $branchId, $nextNumber);
 
             $dispatch = Dispatch::create($data);
 

@@ -97,8 +97,8 @@ class Branch extends Model
     public function generateDocumentNumber(string $companyPrefix, string $letra, int $lastNumber): string
     {
         return sprintf(
-            '%s-%d-%s-%08d',
-            $companyPrefix,
+            '%s%d%s-%06d',
+            substr($companyPrefix, 0, 1),
             $this->code,
             $letra,
             $lastNumber

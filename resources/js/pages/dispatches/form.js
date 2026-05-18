@@ -33,12 +33,7 @@ $(function () {
         const branchSelect = $('#branch_id');
 
         const updateOptions = function () {
-            const originVal = originSelect.val();
-            destSelect.find('option').prop('disabled', false);
-            if (originVal) {
-                destSelect.find(`option[value="${originVal}"]`).prop('disabled', true);
-                if (destSelect.val() === originVal) destSelect.val('');
-            }
+            // Ya no bloqueamos el destino si es igual al origen
         };
 
         originSelect.on('change', function () {
@@ -119,11 +114,11 @@ $(function () {
                     render: function (data, type, row) {
                         let html = data;
                         if (row.problem_count > 0) {
-                            html += ` <span class="text-red-500 font-bold ml-1 animate-pulse cursor-pointer problem-badge" 
+                            html += ` <span class="text-amber-500 font-bold ml-1 animate-pulse cursor-pointer problem-badge" 
                                 data-model-type="route" 
                                 data-model-id="${row.id}" 
                                 data-label="Ruta #${data}" 
-                                style="color: #dc2626 !important;"
+                                style="color: #f59e0b !important;"
                                 title="Contiene guías con problemas">⚠</span>`;
                         }
                         return html;
@@ -207,11 +202,11 @@ $(function () {
                 const estado = $(this).data('estado');
                 const rutas = $(this).data('rutas');
                 const hasProblem = $(this).data('has-problem') === true || $(this).data('has-problem') === 'true';
-                const problemIcon = hasProblem ? ` <span class="text-red-500 font-bold ml-1 animate-pulse cursor-pointer problem-badge" 
+                const problemIcon = hasProblem ? ` <span class="text-amber-500 font-bold ml-1 animate-pulse cursor-pointer problem-badge" 
                     data-model-type="route" 
                     data-model-id="${id}" 
                     data-label="Ruta #${numero}" 
-                    style="color: #dc2626 !important;"
+                    style="color: #f59e0b !important;"
                     title="Contiene guías con problemas">⚠</span>` : '';
 
                 const coloresMap = {
@@ -235,7 +230,7 @@ $(function () {
                         </td>
                         <td class="p-3 text-sm text-gray-800 dark:text-gray-200">${rutas}</td>
                         <td class="p-3 text-center">
-                            <button type="button" class="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/40 p-1 rounded transition btn-remove-route font-bold text-lg leading-none" title="Remover">&times;</button>
+                            <button type="button" class="text-amber-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/40 p-1 rounded transition btn-remove-route font-bold text-lg leading-none" title="Remover">&times;</button>
                         </td>
                     </tr>
                 `;
@@ -305,4 +300,9 @@ $(function () {
     $('#check-all-print').on('change', function() {
         $('.print-guide-checkbox').prop('checked', $(this).is(':checked'));
     });
+});
+$(document).on('documentProblemStored', function (e, data) {
+    if ($('#dispatch-form').length && $('#selected-routes-table').length) {
+        window.location.reload();
+    }
 });

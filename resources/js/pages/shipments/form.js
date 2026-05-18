@@ -1,3 +1,5 @@
+import { partyAjaxConfig } from '../../shared/select2Ajax';
+
 /**
  * Formulario de guías (shipments).
  * - Select2 con búsqueda, validación origen≠destino, remitente≠destinatario.
@@ -306,13 +308,29 @@
             recalcularFlete();
         });
 
+        // Actualizar sucursal oculta al cambiar origen
+        $('#origen_id').on('change', function() {
+            var branchId = $(this).find('option:selected').data('branch');
+            if (branchId) {
+                $('#branch_id').val(branchId);
+            }
+        });
+        
+        // Ejecutar evento al cargar si ya hay un origen
+        if ($('#origen_id').val()) {
+            $('#origen_id').trigger('change');
+        }
+
         // Al cambiar checkbox de contra-reembolso
         $('input[name="contra_reembolso"]').on('change', function () {
             recalcularCargosCliente();
         });
 
+        // Opciones de Select2 con AJAX para clientes (remitentes y destinatarios)
+        var partyAjaxOpts = Object.assign({}, opts, partyAjaxConfig);
+
         // Al cambiar remitente → recargar tarifa solo si él paga
-        $('#remitente_id').select2(opts).on('change', function () {
+        $('#remitente_id').select2(partyAjaxOpts).on('change', function () {
             var senderVal = $(this).val();
             if ($('input[name="flete_a_pagar_en"]:checked').val() === 'origen') {
                 loadTariff(senderVal);
@@ -320,7 +338,7 @@
         });
 
         // Al cambiar destinatario → recargar tarifa solo si él paga
-        $('#destinatario_id').select2(opts).on('change', function () {
+        $('#destinatario_id').select2(partyAjaxOpts).on('change', function () {
             var recVal = $(this).val();
             if ($('input[name="flete_a_pagar_en"]:checked').val() === 'destino') {
                 loadTariff(recVal);

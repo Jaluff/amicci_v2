@@ -31,9 +31,8 @@ class InvoiceController extends Controller
     public function index(): View
     {
         $companies = Company::active()->orderBy('name')->get();
-        $parties = Party::withoutGlobalScopes()->get();
 
-        return view('billing.index', compact('companies', 'parties'));
+        return view('billing.index', compact('companies'));
     }
 
     /**
@@ -139,9 +138,8 @@ class InvoiceController extends Controller
     public function invoicesIndex(): View
     {
         $companies = Company::active()->orderBy('name')->get();
-        $parties = Party::withoutGlobalScopes()->get();
 
-        return view('billing.invoices', compact('companies', 'parties'));
+        return view('billing.invoices', compact('companies'));
     }
 
     public function invoicesDatatable(Request $request): mixed
@@ -202,9 +200,8 @@ class InvoiceController extends Controller
     public function create(): View
     {
         $companies = Company::active()->orderBy('name')->get();
-        $parties = Party::withoutGlobalScopes()->orderBy('name')->get();
 
-        return view('billing.create', compact('companies', 'parties'));
+        return view('billing.create', compact('companies'));
     }
 
     /**
@@ -312,9 +309,8 @@ class InvoiceController extends Controller
 
         $invoice->load(['party', 'shipments']);
         $companies = Company::active()->orderBy('name')->get();
-        $parties = Party::withoutGlobalScopes()->orderBy('name')->get();
 
-        return view('billing.edit', compact('invoice', 'parties', 'companies'));
+        return view('billing.edit', compact('invoice', 'companies'));
     }
 
     public function update(UpdateInvoiceRequest $request, Invoice $invoice): RedirectResponse

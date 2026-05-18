@@ -34,39 +34,7 @@
     <div class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
         <h3 class="font-bold text-gray-800 dark:text-white mb-3">📋 INFORMACIÓN GENERAL</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-            @php
-                $userBranch = $branches->first();
-            @endphp
-            @if(!$isEdit)
-                <div>
-                    <label class="font-medium text-gray-700 dark:text-gray-300 block">Sucursal</label>
-                    @if($branches->count() > 1)
-                        <select name="branch_id" id="branch_id"
-                            class="w-full py-2 px-2 mt-0.5 rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900"
-                            required>
-                            @foreach($branches as $b)
-                                <option value="{{ $b->id }}" data-ubicacion="{{ $b->ubicacion_id }}"
-                                    @selected(old('branch_id') == $b->id)>
-                                    {{ $b->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    @else
-                        <p class="mt-1 text-sm font-semibold text-gray-700 dark:text-gray-200">
-                            {{ $userBranch?->name ?? '—' }}
-                        </p>
-                        <input type="hidden" name="branch_id" id="branch_id" value="{{ old('branch_id', $userBranch?->id) }}">
-                    @endif
-                </div>
-            @else
-                <div>
-                    <label class="font-medium text-gray-700 dark:text-gray-300 block">Sucursal</label>
-                    <p class="mt-1 text-sm font-semibold text-gray-700 dark:text-gray-200">
-                        {{ $shipment->branch?->name ?? '—' }}
-                    </p>
-                    <input type="hidden" name="branch_id" id="branch_id" value="{{ $shipment->branch_id }}">
-                </div>
-            @endif
+            <input type="hidden" name="branch_id" id="branch_id" value="{{ old('branch_id', $shipment->branch_id ?? '') }}">
             <div>
                 <label class="font-medium text-gray-700 dark:text-gray-300 block">Fecha</label>
                 <x-text-input id="fecha" name="fecha" type="date"
@@ -81,13 +49,14 @@
             <div>
                 <label class="font-medium text-gray-700 dark:text-gray-300">Origen *</label>
                 @php
+                    $userBranch = $branches->first();
                     $defaultOrigenId = $isEdit ? ($shipment->origen_id ?? $shipment->origin_id) : ($userBranch?->ubicacion_id);
                 @endphp
                 <select name="origen_id" id="origen_id"
                     class="w-full py-2 px-2  mt-1 rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900"
                     required>
                     @foreach($ubicaciones as $u)
-                        <option value="{{ $u->id }}" @selected($defaultOrigenId == $u->id)>{{ $u->nombre }}</option>
+                        <option value="{{ $u->id }}" data-branch="{{ $u->branch_id }}" @selected($defaultOrigenId == $u->id)>{{ $u->nombre }}</option>
                     @endforeach
                 </select>
             </div>
@@ -113,6 +82,9 @@
                 <select name="remitente_id" id="remitente_id"
                     class="w-full py-2 px-2 mt-1 rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900"
                     required>
+                    @if(!$isEdit)
+                        <option value="">Seleccionar Remitente...</option>
+                    @endif
                     @foreach($parties as $p)
                         <option value="{{ $p->id }}" @selected($isEdit && ($shipment->remitente_id ?? $shipment->sender_id) == $p->id)>{{ $p->name }}</option>
                     @endforeach
@@ -126,6 +98,9 @@
                 <select name="destinatario_id" id="destinatario_id"
                     class="w-full py-2 px-2 mt-1 rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900"
                     required>
+                    @if(!$isEdit)
+                        <option value="">Seleccionar Destinatario...</option>
+                    @endif
                     @foreach($parties as $p)
                         <option value="{{ $p->id }}" @selected($isEdit && ($shipment->destinatario_id ?? $shipment->recipient_id) == $p->id)>{{ $p->name }}</option>
                     @endforeach

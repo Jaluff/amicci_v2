@@ -41,6 +41,7 @@ class ShipmentController extends Controller
                 'shipments.flete',
                 'shipments.total',
                 'shipments.ubicacion_actual',
+                'shipments.updated_at',
                 'shipments.delivery_id',
                 'shipments.transport_route_id',
                 'deliveries.delivery_number',
@@ -111,7 +112,7 @@ class ShipmentController extends Controller
             }
         }
 
-        return DataTables::of($query->orderByDesc('shipments.fecha'))
+        return DataTables::of($query->orderByDesc('shipments.updated_at'))
             ->addColumn('empresa', function ($row) {
                 return $row->empresa_prefix ?? '-';
             })
@@ -126,10 +127,10 @@ class ShipmentController extends Controller
                 $html = "<span class='font-mono font-bold text-gray-800 dark:text-gray-200'>{$row->numero}</span>";
 
                 if ($row->has_active_problem > 0) {
-                    $html .= " <span class='text-red-500 animate-pulse cursor-pointer btn-open-spm ml-1'
+                    $html .= " <span class='text-amber-500 animate-pulse cursor-pointer btn-open-spm ml-1'
                         data-shipment-id='{$row->id}'
                         data-shipment-numero='{$numero}'
-                        style='color: #dc2626 !important;'
+                        style='color: #f59e0b !important;'
                         title='Tiene un problema activo. Click para ver/resolver.'>⚠</span>";
                 } elseif ($row->has_resolved_problem > 0) {
                     $html .= " <span class='text-green-500 font-bold ml-1 cursor-pointer btn-open-spm' 
@@ -278,7 +279,7 @@ class ShipmentController extends Controller
         }
 
         $ubicaciones = Ubicacion::orderBy('nombre')->get();
-        $parties = Party::withoutGlobalScope('company')->orderBy('name')->get();
+        $parties = collect([]);
 
         $branches = Branch::where('active', true)
             ->whereHas('companies', function ($q) use ($company_id) {
@@ -333,7 +334,8 @@ class ShipmentController extends Controller
     public function edit(Shipment $shipment)
     {
         $ubicaciones = Ubicacion::orderBy('nombre')->get();
-        $parties = Party::withoutGlobalScope('company')->orderBy('name')->get();
+        $shipment->load(['sender', 'recipient']);
+        $parties = collect([$shipment->sender, $shipment->recipient])->filter()->unique('id');
 
         $user = auth()->user();
         $branches = Branch::where('active', true)

@@ -115,6 +115,7 @@
                     style="width:100%">
                     <thead class="bg-gray-50 dark:bg-gray-900">
                         <tr class="text-left">
+                            <th>ID</th>
                             <th>Empresa</th>
                             <th>Fecha</th>
                             <th>Número</th>

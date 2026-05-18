@@ -1,4 +1,4 @@
-    <?php
+<?php
 
 namespace App\Services;
 
@@ -12,23 +12,23 @@ class PartyService
     {
         return DB::transaction(function () use ($data) {
             $party = Party::create([
-                'name'              => $data['name'],
-                'document'          => $data['document'] ?? null,
-                'document_type'     => $data['document_type'] ?? null,
-                'tax_status'        => $data['tax_status'] ?? null,
-                'iva_percent'       => $data['iva_percent'] ?? 0,
-                'has_insurance'     => filter_var($data['has_insurance'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'name' => $data['name'],
+                'document' => $data['document'] ?? null,
+                'document_type' => $data['document_type'] ?? null,
+                'tax_status' => $data['tax_status'] ?? null,
+                'iva_percent' => $data['iva_percent'] ?? 0,
+                'has_insurance' => filter_var($data['has_insurance'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 'insurance_percent' => $data['insurance_percent'] ?? null,
-                'phone'             => $data['phone'] ?? null,
-                'phone_secondary'   => $data['phone_secondary'] ?? null,
-                'email'             => $data['email'] ?? null,
+                'phone' => $data['phone'] ?? null,
+                'phone_secondary' => $data['phone_secondary'] ?? null,
+                'email' => $data['email'] ?? null,
             ]);
 
-            if (! empty($data['addresses'])) {
+            if (!empty($data['addresses'])) {
                 $this->syncAddresses($party, $data['addresses']);
             }
 
-            if (! empty($data['tariff']['billing_mode'])) {
+            if (!empty($data['tariff']['billing_mode'])) {
                 $this->saveTariffSetting($party, $data['tariff']);
             }
 
@@ -40,16 +40,16 @@ class PartyService
     {
         return DB::transaction(function () use ($party, $data) {
             $party->update([
-                'name'              => $data['name'],
-                'document'          => $data['document'] ?? null,
-                'document_type'     => $data['document_type'] ?? null,
-                'tax_status'        => $data['tax_status'] ?? null,
-                'iva_percent'       => $data['iva_percent'] ?? 0,
-                'has_insurance'     => filter_var($data['has_insurance'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'name' => $data['name'],
+                'document' => $data['document'] ?? null,
+                'document_type' => $data['document_type'] ?? null,
+                'tax_status' => $data['tax_status'] ?? null,
+                'iva_percent' => $data['iva_percent'] ?? 0,
+                'has_insurance' => filter_var($data['has_insurance'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 'insurance_percent' => $data['insurance_percent'] ?? null,
-                'phone'             => $data['phone'] ?? null,
-                'phone_secondary'   => $data['phone_secondary'] ?? null,
-                'email'             => $data['email'] ?? null,
+                'phone' => $data['phone'] ?? null,
+                'phone_secondary' => $data['phone_secondary'] ?? null,
+                'email' => $data['email'] ?? null,
             ]);
 
             if (isset($data['addresses'])) {
@@ -60,7 +60,7 @@ class PartyService
             }
 
             // Actualizar configuración tarifaria
-            if (! empty($data['tariff']['billing_mode'])) {
+            if (!empty($data['tariff']['billing_mode'])) {
                 $this->saveTariffSetting($party, $data['tariff']);
             } elseif (isset($data['tariff'])) {
                 // Si viene el array tariff pero sin billing_mode, es porque se desmarcó el checkbox
@@ -103,7 +103,7 @@ class PartyService
                 continue;
             }
 
-            $isPrimary = $hasPrimary ? ! empty($addrData['is_primary']) : ($index === 0);
+            $isPrimary = $hasPrimary ? !empty($addrData['is_primary']) : ($index === 0);
 
             $address = $party->addresses()->updateOrCreate(
                 ['id' => $addrData['id'] ?? null],

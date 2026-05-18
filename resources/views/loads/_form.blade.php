@@ -79,7 +79,7 @@
                 <option value="">Seleccione remitente</option>
                 @foreach($parties as $party)
                     <option value="{{ $party->id }}" @selected(old('remitente_id', $load->remitente_id ?? null) == $party->id)>
-                        {{ $party->name }} ({{ $party->tax_id }})
+                        {{ $party->name }} {{ $party->document ? "({$party->document})" : '' }}
                     </option>
                 @endforeach
             </select>
@@ -93,7 +93,7 @@
                 <option value="">Seleccione destinatario</option>
                 @foreach($parties as $party)
                     <option value="{{ $party->id }}" @selected(old('destinatario_id', $load->destinatario_id ?? null) == $party->id)>
-                        {{ $party->name }} ({{ $party->tax_id }})
+                        {{ $party->name }} {{ $party->document ? "({$party->document})" : '' }}
                     </option>
                 @endforeach
             </select>

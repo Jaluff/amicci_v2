@@ -20,7 +20,6 @@ class TariffTable extends Model
         'valid_from',
         'valid_until',
         'is_active',
-        'contra_reembolso_percent',
     ];
 
     protected $casts = [
