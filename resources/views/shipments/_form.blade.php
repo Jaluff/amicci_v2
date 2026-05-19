@@ -387,6 +387,30 @@
                 Guardar
             @endif
         </button>
+
+        @if($isEdit && $shipment->ubicacion_actual === 'Dto destino' && is_null($shipment->transport_route_id) && is_null($shipment->delivery_id))
+            <button type="submit" name="action" value="revert_to_origin"
+                onclick="return confirm('¿Seguro que desea devolver esta guía a Dto Origen?');"
+                class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+                </svg>
+                Revertir a Origen
+            </button>
+        @elseif(!$isEdit || $shipment->ubicacion_actual === 'Dto origen')
+            <button type="submit" name="action" value="save_to_destination"
+                onclick="return confirm('¿Seguro que desea guardar esta guía directamente en Dto Destino, saltando el proceso de Ruta/Despacho?');"
+                class="inline-flex items-center px-4 py-2 bg-amber-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-amber-700 focus:bg-amber-700 active:bg-amber-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+                </svg>
+                @if($isEdit)
+                    Actualizar a Destino
+                @else
+                    Guardar en Destino
+                @endif
+            </button>
+        @endif
         <button type="submit" name="action" value="save_and_print" id="btn_save_and_print"
             class="inline-flex items-center px-4 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 focus:bg-emerald-700 active:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

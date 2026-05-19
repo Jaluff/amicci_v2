@@ -313,6 +313,10 @@ class ShipmentController extends Controller
         $data = collect($validated)->except('items')->toArray();
         // company_id ya viene en $data gracias al Request validado
 
+        if ($request->input('action') === 'save_to_destination') {
+            $data['ubicacion_actual'] = 'Dto destino';
+        }
+
         // Validación extra de seguridad (doble check)
         if (! auth()->user()->companies->contains('id', $data['company_id'])) {
             abort(403, 'No tienes permiso para crear guías en esta empresa.');
@@ -364,6 +368,12 @@ class ShipmentController extends Controller
         }
         $items = $validated['items'];
         $data = collect($validated)->except('items')->toArray();
+
+        if ($request->input('action') === 'save_to_destination') {
+            $data['ubicacion_actual'] = 'Dto destino';
+        } elseif ($request->input('action') === 'revert_to_origin') {
+            $data['ubicacion_actual'] = 'Dto origen';
+        }
 
         $service->update($shipment, $data, $items);
 

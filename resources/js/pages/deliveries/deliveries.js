@@ -149,7 +149,10 @@ $(document).ready(function () {
         if (!dtAvailable) {
             initAvailableShipmentsTable();
         } else {
-            dtAvailable.ajax.reload(null, false);
+            // Resetear búsqueda y paginación a la página 1
+            dtAvailable.search('');
+            dtAvailable.page('first');
+            dtAvailable.ajax.reload(null, true); // true = reset paging
             updateSelectedCount();
         }
     });
