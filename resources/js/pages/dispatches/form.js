@@ -2,7 +2,7 @@ $(function () {
     const modal = $('#routes-modal');
     const tableBody = $('#selected-routes-table tbody');
     let dtAvailable;
-    let selectedStorage = new Set();
+    let selectedStorage = new Map();
 
     // Prevenir submit con Enter
     $('#dispatch-form').on('keypress', function (e) {
@@ -13,7 +13,7 @@ $(function () {
 
     // Cargar rutas preexistentes (modo edición)
     $('.route-row input[name="routes[]"]').each(function () {
-        selectedStorage.add($(this).val());
+        selectedStorage.set($(this).val(), null);
     });
 
     function toggleHeaderLock() {
@@ -161,10 +161,18 @@ $(function () {
 
     // Checkbox individual
     $(document).on('change', '.route-checkbox', function () {
+        const id = $(this).val();
         if ($(this).is(':checked')) {
-            selectedStorage.add($(this).val());
+            selectedStorage.set(id, {
+                numero: $(this).data('numero'),
+                origen: $(this).data('origen'),
+                destino: $(this).data('destino'),
+                estado: $(this).data('estado'),
+                rutas: $(this).data('rutas'),
+                hasProblem: $(this).data('has-problem')
+            });
         } else {
-            selectedStorage.delete($(this).val());
+            selectedStorage.delete(id);
             $('#check-all-routes').prop('checked', false);
         }
         updateSelectedCount();
@@ -175,10 +183,18 @@ $(function () {
         const isChecked = $(this).is(':checked');
         $('.route-checkbox').each(function () {
             $(this).prop('checked', isChecked);
+            const id = $(this).val();
             if (isChecked) {
-                selectedStorage.add($(this).val());
+                selectedStorage.set(id, {
+                    numero: $(this).data('numero'),
+                    origen: $(this).data('origen'),
+                    destino: $(this).data('destino'),
+                    estado: $(this).data('estado'),
+                    rutas: $(this).data('rutas'),
+                    hasProblem: $(this).data('has-problem')
+                });
             } else {
-                selectedStorage.delete($(this).val());
+                selectedStorage.delete(id);
             }
         });
         updateSelectedCount();
@@ -190,18 +206,18 @@ $(function () {
 
     // Confirmar selección
     $('.btn-confirm-routes').on('click', function () {
-        $('.route-checkbox:checked').each(function () {
-            const id = $(this).val();
+        selectedStorage.forEach(function (data, id) {
+            if (!data) return;
 
             if (tableBody.find(`tr[data-id="${id}"]`).length === 0) {
                 tableBody.find('.empty-row').remove();
 
-                const numero = $(this).data('numero');
-                const origen = $(this).data('origen');
-                const destino = $(this).data('destino');
-                const estado = $(this).data('estado');
-                const rutas = $(this).data('rutas');
-                const hasProblem = $(this).data('has-problem') === true || $(this).data('has-problem') === 'true';
+                const numero = data.numero;
+                const origen = data.origen;
+                const destino = data.destino;
+                const estado = data.estado;
+                const rutas = data.rutas;
+                const hasProblem = data.hasProblem === true || data.hasProblem === 'true';
                 const problemIcon = hasProblem ? ` <span class="text-amber-500 font-bold ml-1 animate-pulse cursor-pointer problem-badge" 
                     data-model-type="route" 
                     data-model-id="${id}" 
@@ -240,6 +256,7 @@ $(function () {
 
         modal.addClass('hidden');
         toggleHeaderLock();
+        $('.assigned-count').text(tableBody.find('.route-row').length);
     });
 
     // Remover ruta de la tabla principal
@@ -254,6 +271,7 @@ $(function () {
             tableBody.append('<tr class="empty-row"><td colspan="5" class="p-4 text-center text-gray-500 text-sm">Aún no se han asignado rutas</td></tr>');
         }
         toggleHeaderLock();
+        $('.assigned-count').text(tableBody.find('.route-row').length);
     });
     // --- MODAL DE IMPRESIÓN DE GUÍAS POR RUTA ---
     const printModal = $('#print-route-modal');

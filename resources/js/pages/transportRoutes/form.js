@@ -2,7 +2,7 @@ $(function () {
     const modal = $('#shipments-modal');
     const tableBody = $('#selected-shipments-table tbody');
     let dtAvailable;
-    let selectedStorage = new Set();
+    let selectedStorage = new Map();
 
     // Evitar que el form se envíe al presionar enter accidentalmente (común con DataTables si se busca)
     $('#route-form').on('keypress', function (e) {
@@ -11,9 +11,9 @@ $(function () {
         }
     });
 
-    // Rellenamos el Set con las guías que ya venían seleccionadas (en modo edición)
+    // Rellenamos el Map con las guías que ya venían seleccionadas (en modo edición)
     $('.shipment-row input[name="shipments[]"]').each(function () {
-        selectedStorage.add($(this).val());
+        selectedStorage.set($(this).val(), null); // Inicializamos con null, no necesitamos los datos para las que ya están en el DOM principal
     });
 
     function toggleHeaderLock() {
@@ -163,10 +163,18 @@ $(function () {
 
     // Eventos Modal - Checkbox
     $(document).on('change', '.shipment-checkbox', function () {
+        const id = $(this).val();
         if ($(this).is(':checked')) {
-            selectedStorage.add($(this).val());
+            selectedStorage.set(id, {
+                numero: $(this).data('numero'),
+                remitente: $(this).data('remitente'),
+                destinatario: $(this).data('destinatario'),
+                estado: $(this).data('estado'),
+                bultos: $(this).data('bultos'),
+                hasProblem: $(this).data('has-problem')
+            });
         } else {
-            selectedStorage.delete($(this).val());
+            selectedStorage.delete(id);
             $('#check-all-shipments').prop('checked', false);
         }
         updateSelectedCount();
@@ -176,10 +184,18 @@ $(function () {
         const isChecked = $(this).is(':checked');
         $('.shipment-checkbox').each(function () {
             $(this).prop('checked', isChecked);
+            const id = $(this).val();
             if (isChecked) {
-                selectedStorage.add($(this).val());
+                selectedStorage.set(id, {
+                    numero: $(this).data('numero'),
+                    remitente: $(this).data('remitente'),
+                    destinatario: $(this).data('destinatario'),
+                    estado: $(this).data('estado'),
+                    bultos: $(this).data('bultos'),
+                    hasProblem: $(this).data('has-problem')
+                });
             } else {
-                selectedStorage.delete($(this).val());
+                selectedStorage.delete(id);
             }
         });
         updateSelectedCount();
@@ -191,21 +207,22 @@ $(function () {
 
     // Confirmar adición desde el Modal hacia el Formulario subyacente
     $('.btn-confirm-shipments').on('click', function () {
-        // Recorremos los checkboxes del DOM actual en DT
-        $('.shipment-checkbox:checked').each(function () {
-            const id = $(this).val();
+        // Recorremos el Map con todas las selecciones (incluso las de otras páginas)
+        selectedStorage.forEach(function (data, id) {
+            // Si data es null, significa que ya venía cargado de edición y ya está en la tabla principal
+            if (!data) return;
 
             // Verificamos si la fila ya ha sido agregada a la tabla para evitar duplicados
             if (tableBody.find(`tr[data-id="${id}"]`).length === 0) {
                 // Removemos row "vacío" si existe
                 tableBody.find('.empty-row').remove();
 
-                const numero = $(this).data('numero');
-                const remitente = $(this).data('remitente');
-                const destinatario = $(this).data('destinatario');
-                const estado = $(this).data('estado');
-                const bultos = $(this).data('bultos');
-                const hasProblem = $(this).data('has-problem') === true || $(this).data('has-problem') === 'true';
+                const numero = data.numero;
+                const remitente = data.remitente;
+                const destinatario = data.destinatario;
+                const estado = data.estado;
+                const bultos = data.bultos;
+                const hasProblem = data.hasProblem === true || data.hasProblem === 'true';
                 const problemIcon = hasProblem ? ` <span class="text-amber-500 font-bold ml-1 animate-pulse cursor-pointer btn-open-spm" 
                     data-shipment-id="${id}"
                     data-shipment-numero="${numero}"
@@ -244,6 +261,7 @@ $(function () {
 
         modal.addClass('hidden');
         toggleHeaderLock();
+        $('.assigned-count').text(tableBody.find('.shipment-row').length);
     });
 
     // Remover guía de la tabla principal
@@ -255,9 +273,10 @@ $(function () {
         row.remove();
 
         if (tableBody.find('.shipment-row').length === 0) {
-            tableBody.append('<tr class="empty-row"><td colspan="5" class="p-4 text-center text-gray-500 text-sm">Aún no se han asignado guías</td></tr>');
+            tableBody.append('<tr class="empty-row"><td colspan="6" class="p-4 text-center text-gray-500 text-sm">Aún no se han asignado guías</td></tr>');
         }
         toggleHeaderLock();
+        $('.assigned-count').text(tableBody.find('.shipment-row').length);
     });
 
 });

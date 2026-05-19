@@ -114,7 +114,10 @@
 
 <div class="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
     <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">Rutas Asignadas</h3>
+        <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+            Rutas Asignadas
+            <span class="assigned-count text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/40 px-2 py-0.5 rounded-full text-sm">{{ isset($dispatch) ? count($dispatch->routes ?? []) : 0 }}</span>
+        </h3>
         @if(!isset($dispatch) || !$dispatch->exists || $dispatch->status === 'Cargado')
         <button type="button"
             class="btn-open-routes-modal bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 font-medium py-1.5 px-3 rounded text-sm transition-colors cursor-pointer">

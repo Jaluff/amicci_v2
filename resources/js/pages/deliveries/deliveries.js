@@ -106,7 +106,7 @@ $(document).ready(function () {
     const modal = $('#shipments-modal');
     const tableBody = $('#selected-shipments-table tbody');
     let dtAvailable;
-    let selectedStorage = new Set();
+    let selectedStorage = new Map();
 
     $('#delivery-form').on('keypress', function (e) {
         if (e.which === 13 && e.target.tagName !== 'TEXTAREA') {
@@ -115,7 +115,7 @@ $(document).ready(function () {
     });
 
     $('.shipment-row input[name="shipments[]"]').each(function () {
-        selectedStorage.add($(this).val());
+        selectedStorage.set($(this).val(), null);
     });
 
     function toggleHeaderLock() {
@@ -239,10 +239,19 @@ $(document).ready(function () {
     }
 
     $(document).on('change', '.shipment-checkbox', function () {
+        const id = $(this).val();
         if ($(this).is(':checked')) {
-            selectedStorage.add($(this).val());
+            selectedStorage.set(id, {
+                numero: $(this).data('numero'),
+                origen: $(this).data('origen'),
+                destino: $(this).data('destino'),
+                estado: $(this).data('estado'),
+                bultos: $(this).data('bultos'),
+                hasProblem: $(this).data('has-problem'),
+                hasResolvedProblem: $(this).data('has-resolved-problem')
+            });
         } else {
-            selectedStorage.delete($(this).val());
+            selectedStorage.delete(id);
             $('#check-all-shipments').prop('checked', false);
         }
         updateSelectedCount();
@@ -252,10 +261,19 @@ $(document).ready(function () {
         const isChecked = $(this).is(':checked');
         $('.shipment-checkbox').each(function () {
             $(this).prop('checked', isChecked);
+            const id = $(this).val();
             if (isChecked) {
-                selectedStorage.add($(this).val());
+                selectedStorage.set(id, {
+                    numero: $(this).data('numero'),
+                    origen: $(this).data('origen'),
+                    destino: $(this).data('destino'),
+                    estado: $(this).data('estado'),
+                    bultos: $(this).data('bultos'),
+                    hasProblem: $(this).data('has-problem'),
+                    hasResolvedProblem: $(this).data('has-resolved-problem')
+                });
             } else {
-                selectedStorage.delete($(this).val());
+                selectedStorage.delete(id);
             }
         });
         updateSelectedCount();
@@ -266,17 +284,17 @@ $(document).ready(function () {
     }
 
     $('.btn-confirm-shipments').on('click', function () {
-        $('.shipment-checkbox:checked').each(function () {
-            const id = $(this).val();
+        selectedStorage.forEach(function (data, id) {
+            if (!data) return;
 
             if (tableBody.find(`tr[data-id="${id}"]`).length === 0) {
                 tableBody.find('.empty-row').remove();
 
-                const numero = $(this).data('numero');
-                const origen = $(this).data('origen');
-                const destino = $(this).data('destino');
-                const estado = $(this).data('estado');
-                const bultos = $(this).data('bultos');
+                const numero = data.numero;
+                const origen = data.origen;
+                const destino = data.destino;
+                const estado = data.estado;
+                const bultos = data.bultos;
 
                 const coloresMap = {
                     'Dto origen': 'dt-badge-indigo',
@@ -288,8 +306,8 @@ $(document).ready(function () {
                 };
                 const coloresStr = coloresMap[estado] || 'dt-badge-gray';
 
-                const hasActiveProblem = $(this).data('has-problem') === true || $(this).data('has-problem') === 'true';
-                const hasResolvedProblem = $(this).data('has-resolved-problem') === true || $(this).data('has-resolved-problem') === 'true';
+                const hasActiveProblem = data.hasProblem === true || data.hasProblem === 'true';
+                const hasResolvedProblem = data.hasResolvedProblem === true || data.hasResolvedProblem === 'true';
                 
                 let problemIcon = '';
                 if (hasActiveProblem) {
@@ -330,6 +348,7 @@ $(document).ready(function () {
 
         modal.addClass('hidden');
         toggleHeaderLock();
+        $('.assigned-count').text(tableBody.find('.shipment-row').length);
     });
 
     // === Remover Guía de la tabla ===
@@ -344,6 +363,7 @@ $(document).ready(function () {
             tableBody.append('<tr class="empty-row"><td colspan="6" class="p-4 text-center text-gray-500 text-sm">Aún no se han asignado guías</td></tr>');
         }
         toggleHeaderLock();
+        $('.assigned-count').text(tableBody.find('.shipment-row').length);
     });
 
     // === Escuchar evento de problemas resueltos/creados ===
