@@ -64,8 +64,11 @@ class DeliveryStateMachine extends BaseStateMachine
                     continue;
                 }
 
-                // Transicionar la guía normal a entregado
-                $shipment->update(['ubicacion_actual' => 'Entregado']);
+                // Transicionar la guía normal a entregado y registrar la fecha de entrega
+                $shipment->update([
+                    'ubicacion_actual' => 'Entregado',
+                    'fecha_entrega' => now(),
+                ]);
 
                 // Registrar en historial para mantener consistencia
                 StatusHistory::create([

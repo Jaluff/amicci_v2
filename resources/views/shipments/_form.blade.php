@@ -177,7 +177,7 @@
                 <p class="text-xs font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider mb-1">N°
                     Factura</p>
                 <p class="text-lg font-bold text-indigo-700 dark:text-indigo-300">
-                    {{ $isEdit && $shipment->numero_factura ? $shipment->numero_factura : '—' }}
+                    {{ $isEdit && $shipment->invoice_id ? $shipment->invoice->numero : '—' }}
                 </p>
             </div>
 

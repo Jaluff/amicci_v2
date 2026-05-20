@@ -34,6 +34,7 @@ class ShipmentController extends Controller
     public function datatable(Request $request)
     {
         $query = Shipment::query()
+            ->with(['problems', 'items'])
             ->select([
                 'shipments.id',
                 'shipments.numero',
@@ -52,8 +53,6 @@ class ShipmentController extends Controller
                 'destino.nombre as destino_nombre',
                 'remitente.name as remitente_nombre',
                 'destinatario.name as destinatario_nombre',
-                DB::raw('(SELECT COALESCE(SUM(si.cantidad), 0) FROM shipment_items si WHERE si.shipment_id = shipments.id) as bultos_total'),
-                DB::raw('(SELECT COALESCE(SUM(si.monto_valor_declarado), 0) FROM shipment_items si WHERE si.shipment_id = shipments.id) as valor_declarado_total'),
                 'companies.prefix as empresa_prefix',
                 'companies.color as empresa_color',
             ])
@@ -66,14 +65,6 @@ class ShipmentController extends Controller
             ->leftJoin('transport_routes', 'shipments.transport_route_id', '=', 'transport_routes.id')
             ->leftJoin('dispatches', 'transport_routes.dispatch_id', '=', 'dispatches.id')
             ->whereNull('shipments.deleted_at')
-            ->withCount([
-                'problems as has_active_problem' => function ($q) {
-                    $q->where('is_active', true);
-                },
-                'problems as has_resolved_problem' => function ($q) {
-                    $q->where('is_active', false);
-                },
-            ])
             ->whereIn('shipments.company_id', auth()->user()->companies->pluck('id'));
 
         if ($request->filled('company_id')) {
@@ -117,22 +108,25 @@ class ShipmentController extends Controller
                 return $row->empresa_prefix ?? '-';
             })
             ->addColumn('bultos', function ($row) {
-                return (int) ($row->bultos_total ?? 0);
+                return (int) $row->items->sum('cantidad');
             })
             ->addColumn('valor_declarado', function ($row) {
-                return '$ '.number_format($row->valor_declarado_total ?? 0, 2);
+                return '$ '.number_format($row->items->sum('monto_valor_declarado'), 2);
             })
             ->editColumn('numero', function ($row) {
+                $has_active_problem = $row->problems->where('is_active', true)->isNotEmpty();
+                $has_resolved_problem = $row->problems->where('is_active', false)->isNotEmpty();
+
                 $numero = htmlspecialchars($row->numero ?? '', ENT_QUOTES);
                 $html = "<span class='font-mono font-bold text-gray-800 dark:text-gray-200'>{$row->numero}</span>";
 
-                if ($row->has_active_problem > 0) {
+                if ($has_active_problem) {
                     $html .= " <span class='text-amber-500 animate-pulse cursor-pointer btn-open-spm ml-1'
                         data-shipment-id='{$row->id}'
                         data-shipment-numero='{$numero}'
                         style='color: #f59e0b !important;'
                         title='Tiene un problema activo. Click para ver/resolver.'>⚠</span>";
-                } elseif ($row->has_resolved_problem > 0) {
+                } elseif ($has_resolved_problem) {
                     $html .= " <span class='text-green-500 font-bold ml-1 cursor-pointer btn-open-spm' 
                         data-shipment-id='{$row->id}' 
                         data-shipment-numero='{$numero}'

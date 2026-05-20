@@ -13,6 +13,7 @@ $(function () {
     $('#shipmentsTable').DataTable({
         processing: true,
         serverSide: true,
+        pageLength: 20,
         ajax: {
             url: $('#shipmentsTable').data('url'),
             data: function (d) {
