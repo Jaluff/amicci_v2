@@ -84,42 +84,44 @@
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
                     <thead class="bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300">
                         <tr>
-                            <th class="p-2 border-b text-left">Fecha</th>
-                            <th class="p-2 border-b text-left"># Guía</th>
-                            <th class="p-2 border-b text-left">Remitente</th>
-                            <th class="p-2 border-b text-left">Destinatario</th>
-                            <th class="p-2 border-b text-left">Ubicación</th>
-                            <th class="p-2 border-b text-right">Flete</th>
-                            <th class="p-2 border-b text-right">Seguro</th>
-                            <th class="p-2 border-b text-right">Com. Contr.</th>
-                            <th class="p-2 border-b text-right">Ret. Merc.</th>
-                            <th class="p-2 border-b text-right font-bold text-indigo-600">Total</th>
+                            <th class="p-2 border-b text-left whitespace-nowrap">Fecha</th>
+                            <th class="p-2 border-b text-left whitespace-nowrap">F. Entrega</th>
+                            <th class="p-2 border-b text-left whitespace-nowrap"># Guía</th>
+                            <th class="p-2 border-b text-left whitespace-nowrap">Remitente</th>
+                            <th class="p-2 border-b text-left whitespace-nowrap">Destinatario</th>
+                            <th class="p-2 border-b text-left whitespace-nowrap">Ubicación</th>
+                            <th class="p-2 border-b text-left whitespace-nowrap">Flete</th>
+                            <th class="p-2 border-b text-left whitespace-nowrap">Seguro</th>
+                            <th class="p-2 border-b text-left whitespace-nowrap">Com. Contr.</th>
+                            <th class="p-2 border-b text-left whitespace-nowrap">Ret. Merc.</th>
+                            <th class="p-2 border-b text-left font-bold text-indigo-600 whitespace-nowrap">Total</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         @forelse($invoice->shipments as $shipment)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
-                            <td class="p-2 text-gray-700 dark:text-gray-300">{{ $shipment->fecha?->format('d/m/Y') ?? '-' }}</td>
-                            <td class="p-2 font-mono font-semibold text-gray-800 dark:text-gray-200">{{ $shipment->numero }}</td>
-                            <td class="p-2 text-gray-700 dark:text-gray-300">{{ $shipment->sender?->name ?? '-' }}</td>
-                            <td class="p-2 text-gray-700 dark:text-gray-300">{{ $shipment->recipient?->name ?? '-' }}</td>
-                            <td class="p-2 text-gray-700 dark:text-gray-300">{{ $shipment->ubicacion_actual ?? '-' }}</td>
-                            <td class="p-2 text-right text-gray-700 dark:text-gray-300">$ {{ number_format($shipment->flete, 2, ',', '.') }}</td>
-                            <td class="p-2 text-right text-gray-700 dark:text-gray-300">$ {{ number_format($shipment->seguro, 2, ',', '.') }}</td>
-                            <td class="p-2 text-right text-gray-700 dark:text-gray-300">$ {{ number_format($shipment->monto_contra_reembolso, 2, ',', '.') }}</td>
-                            <td class="p-2 text-right text-gray-700 dark:text-gray-300">$ {{ number_format($shipment->retencion_mercaderia, 2, ',', '.') }}</td>
-                            <td class="p-2 text-right font-bold text-indigo-700 dark:text-indigo-300">$ {{ number_format($shipment->total, 2, ',', '.') }}</td>
+                            <td class="p-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $shipment->fecha?->format('d/m/Y') ?? '-' }}</td>
+                            <td class="p-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $shipment->fecha_entrega?->format('d/m/Y') ?? '-' }}</td>
+                            <td class="p-2 font-mono font-semibold text-gray-800 dark:text-gray-200 whitespace-nowrap">{{ $shipment->numero }}</td>
+                            <td class="p-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $shipment->sender?->name ?? '-' }}</td>
+                            <td class="p-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $shipment->recipient?->name ?? '-' }}</td>
+                            <td class="p-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $shipment->ubicacion_actual ?? '-' }}</td>
+                            <td class="p-2 text-left text-gray-700 dark:text-gray-300 whitespace-nowrap">$ {{ number_format($shipment->flete, 2, ',', '.') }}</td>
+                            <td class="p-2 text-left text-gray-700 dark:text-gray-300 whitespace-nowrap">$ {{ number_format($shipment->seguro, 2, ',', '.') }}</td>
+                            <td class="p-2 text-left text-gray-700 dark:text-gray-300 whitespace-nowrap">$ {{ number_format($shipment->monto_contra_reembolso, 2, ',', '.') }}</td>
+                            <td class="p-2 text-left text-gray-700 dark:text-gray-300 whitespace-nowrap">$ {{ number_format($shipment->retencion_mercaderia, 2, ',', '.') }}</td>
+                            <td class="p-2 text-left font-bold text-indigo-700 dark:text-indigo-300 whitespace-nowrap">$ {{ number_format($shipment->total, 2, ',', '.') }}</td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="10" class="p-4 text-center text-gray-500 dark:text-gray-400">Sin guías asociadas.</td>
+                            <td colspan="11" class="p-4 text-center text-gray-500 dark:text-gray-400">Sin guías asociadas.</td>
                         </tr>
                         @endforelse
                     </tbody>
                     <tfoot class="bg-indigo-50 dark:bg-indigo-900/30 border-t-2 border-indigo-200 dark:border-indigo-700 font-bold">
                         <tr>
-                            <td colspan="9" class="p-2 text-right text-gray-700 dark:text-gray-300">TOTAL FACTURA:</td>
-                            <td class="p-2 text-right text-indigo-700 dark:text-indigo-300 text-lg">
+                            <td colspan="10" class="p-2 text-left text-gray-700 dark:text-gray-300">TOTAL FACTURA:</td>
+                            <td class="p-2 text-left text-indigo-700 dark:text-indigo-300 text-lg">
                                 $ {{ number_format($invoice->total, 2, ',', '.') }}
                             </td>
                         </tr>
