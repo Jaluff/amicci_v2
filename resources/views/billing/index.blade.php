@@ -84,17 +84,18 @@
                        class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 display w-full text-left text-sm whitespace-nowrap">
                     <thead class="bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300">
                         <tr>
-                            <th class="p-2 border-b w-8 text-center">
+                            <th class="p-2 border-b w-8 !text-center">
                                 <input type="checkbox" id="select-all" class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer">
                             </th>
-                            <th class="p-2 border-b">Fecha</th>
-                            <th class="p-2 border-b"># Guía</th>
-                            <th class="p-2 border-b">Remitente</th>
-                            <th class="p-2 border-b">Destinatario</th>
-                            <th class="p-2 border-b">Factura</th>
-                            <th class="p-2 border-b">Cobrada</th>
-                            <th class="p-2 border-b text-indigo-600 font-bold">Total</th>
-                            <th class="p-2 border-b text-center">Acciones</th>
+                            <th class="p-2 border-b !text-left">Fecha</th>
+                            <th class="p-2 border-b !text-left">F. Entrega</th>
+                            <th class="p-2 border-b !text-left"># Guía</th>
+                            <th class="p-2 border-b !text-left">Remitente</th>
+                            <th class="p-2 border-b !text-left">Destinatario</th>
+                            <th class="p-2 border-b !text-left">Factura</th>
+                            <th class="p-2 border-b !text-center">Cobrada</th>
+                            <th class="p-2 border-b !text-left text-indigo-600 font-bold">Total</th>
+                            <th class="p-2 border-b !text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700"></tbody>

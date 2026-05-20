@@ -96,8 +96,11 @@
                                 <x-dropdown-link :href="route('reports.dispatches.index')">
                                     {{ __('Reporte de Guías') }}
                                 </x-dropdown-link>
-                                <x-dropdown-link :href="route('billing.index')" :active="request()->routeIs('billing.*')">
-                                    {{ __('Facturación') }}
+                                <x-dropdown-link :href="route('billing.index')" :active="request()->routeIs('billing.index')">
+                                    {{ __('Generar Factura') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('billing.invoices')" :active="request()->routeIs('billing.invoices')">
+                                    {{ __('Listar Facturas') }}
                                 </x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
@@ -281,8 +284,11 @@
                             :active="request()->routeIs('reports.dispatches.*')">
                             {{ __('Reporte de Guías') }}
                         </x-responsive-nav-link>
-                        <x-responsive-nav-link :href="route('billing.index')" :active="request()->routeIs('billing.*')">
-                            {{ __('Facturación') }}
+                        <x-responsive-nav-link :href="route('billing.index')" :active="request()->routeIs('billing.index')">
+                            {{ __('Generar Factura') }}
+                        </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('billing.invoices')" :active="request()->routeIs('billing.invoices')">
+                            {{ __('Listar Facturas') }}
                         </x-responsive-nav-link>
                     </div>
                 </div>

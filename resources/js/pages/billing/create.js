@@ -113,6 +113,7 @@ document.addEventListener("DOMContentLoaded", function () {
         columns: [
             { data: "selection",              name: "selection",              orderable: false, searchable: false },
             { data: "fecha",                  name: "fecha" },
+            { data: "fecha_entrega",          name: "fecha_entrega" },
             { data: "numero",                 name: "numero" },
             { data: "sender_name",            name: "sender.name",            searchable: false },
             { data: "recipient_name",         name: "recipient.name",         searchable: false },

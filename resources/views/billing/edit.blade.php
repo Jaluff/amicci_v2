@@ -109,6 +109,7 @@
                                     <input type="checkbox" id="selectAll" class="rounded border-gray-300 dark:border-gray-600 w-4 h-4">
                                 </th>
                                 <th class="p-2 border-b">Fecha</th>
+                                <th class="p-2 border-b">F. Entrega</th>
                                 <th class="p-2 border-b"># Guía</th>
                                 <th class="p-2 border-b">Remitente</th>
                                 <th class="p-2 border-b">Destinatario</th>

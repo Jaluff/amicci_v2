@@ -14,6 +14,7 @@ $(function () {
         processing: true,
         serverSide: true,
         pageLength: 20,
+        lengthMenu: [[10, 20, 50, 100, -1], [10, 20, 50, 100, "Todas"]],
         ajax: {
             url: $('#shipmentsTable').data('url'),
             data: function (d) {
@@ -40,8 +41,8 @@ $(function () {
             },
             { data: 'fecha', name: 'shipments.fecha', responsivePriority: 2 },
             { data: 'numero', name: 'shipments.numero', responsivePriority: 1 },
-            { data: 'remitente_upper', name: 'remitente.name', responsivePriority: 3 },
-            { data: 'destinatario_upper', name: 'destinatario.name', responsivePriority: 3 },
+            { data: 'remitente_upper', name: 'remitente.name', responsivePriority: 3, className: '!whitespace-normal min-w-[150px]' },
+            { data: 'destinatario_upper', name: 'destinatario.name', responsivePriority: 3, className: '!whitespace-normal min-w-[150px]' },
             { data: 'ruta_corta', name: 'origen.nombre', orderable: false, responsivePriority: 6 },
             { data: 'despacho', name: 'dispatches.dispatch_number', responsivePriority: 4 },
             { data: 'reparto', name: 'deliveries.delivery_number', responsivePriority: 4 },

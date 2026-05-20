@@ -72,14 +72,14 @@
                        class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 display w-full text-left text-sm whitespace-nowrap">
                     <thead class="bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300">
                         <tr>
-                            <th class="p-2 border-b">Fecha Emisión</th>
-                            <th class="p-2 border-b"># Factura</th>
-                            <th class="p-2 border-b">Cliente</th>
-                            <th class="p-2 border-b">Recibo</th>
-                            <th class="p-2 border-b">Cant. Guías</th>
-                            <th class="p-2 border-b">Cobrada</th>
-                            <th class="p-2 border-b text-indigo-600 font-bold">Total</th>
-                            <th class="p-2 border-b text-center">Acciones</th>
+                            <th class="p-2 border-b !text-left whitespace-nowrap">Fecha Emisión</th>
+                            <th class="p-2 border-b !text-left whitespace-nowrap">Fecha Cobro</th>
+                            <th class="p-2 border-b !text-left whitespace-nowrap"># Factura</th>
+                            <th class="p-2 border-b !text-left whitespace-nowrap">Cliente</th>
+                            <th class="p-2 border-b !text-left whitespace-nowrap">Recibo</th>
+                            <th class="p-2 border-b !text-left whitespace-nowrap">Cant. Guías</th>
+                            <th class="p-2 border-b !text-left text-indigo-600 font-bold whitespace-nowrap">Total</th>
+                            <th class="p-2 border-b !text-center whitespace-nowrap">Acciones</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700"></tbody>

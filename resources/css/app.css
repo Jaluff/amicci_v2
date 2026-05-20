@@ -70,7 +70,8 @@ table.dataTable thead td {
     font-weight: 600;
     letter-spacing: 0.02em;
     font-size: 0.8rem;
-    text-align: center !important;
+    text-align: left !important;
+    white-space: nowrap;
 }
 
 /* Celdas */
@@ -79,6 +80,8 @@ table.dataTable tbody td {
     color: #374151;
     border-top: 1px solid #e5e7eb;
     font-size: 0.8rem;
+    text-align: left !important;
+    white-space: nowrap;
 }
 
 /* Filas alternadas */

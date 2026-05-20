@@ -95,6 +95,7 @@ class InvoiceController extends Controller
 
         return DataTables::of($query->orderByDesc('shipments.fecha'))
             ->editColumn('fecha', fn ($row) => $row->fecha?->format('d/m/Y') ?? '-')
+            ->editColumn('fecha_entrega', fn ($row) => $row->fecha_entrega?->format('d/m/Y') ?? '-')
             ->addColumn('sender_name', fn ($row) => $row->sender?->name ?? '-')
             ->addColumn('recipient_name', fn ($row) => $row->recipient?->name ?? '-')
             ->addColumn('invoice_badge', function (Shipment $row): string {
@@ -177,9 +178,10 @@ class InvoiceController extends Controller
             ->editColumn('fecha_factura', fn ($row) => $row->fecha_factura?->format('d/m/Y') ?? '-')
             ->addColumn('party_name', fn ($row) => $row->party?->name ?? '-')
             ->addColumn('shipments_count', fn ($row) => $row->shipments_count ?? 0)
-            ->editColumn('cobrada', fn ($row) => $row->cobrada
-                ? '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Cobrada</span>'
-                : '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">Pendiente</span>'
+
+            ->editColumn('fecha_cobro', fn ($row) => $row->fecha_cobro 
+                ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">' . $row->fecha_cobro->format('d/m/Y') . '</span>' 
+                : '<span class="text-gray-400 dark:text-gray-500">-</span>'
             )
             ->editColumn('total', fn ($row) => '$ '.number_format($row->total, 2, ',', '.'))
             ->addColumn('actions', function (Invoice $row): string {
@@ -189,7 +191,7 @@ class InvoiceController extends Controller
 
                 return $html;
             })
-            ->rawColumns(['cobrada', 'actions'])
+            ->rawColumns(['fecha_cobro', 'actions'])
             ->make(true);
     }
 
@@ -248,6 +250,7 @@ class InvoiceController extends Controller
                     value="'.$row->id.'" data-total="'.$row->total.'" '.$disabled.' '.$title.'>';
             })
             ->editColumn('fecha', fn ($row) => $row->fecha?->format('d/m/Y') ?? '-')
+            ->editColumn('fecha_entrega', fn ($row) => $row->fecha_entrega?->format('d/m/Y') ?? '-')
             ->addColumn('sender_name', fn ($row) => $row->sender?->name ?? '-')
             ->addColumn('recipient_name', fn ($row) => $row->recipient?->name ?? '-')
             ->addColumn('invoice_badge', function (Shipment $row): string {
