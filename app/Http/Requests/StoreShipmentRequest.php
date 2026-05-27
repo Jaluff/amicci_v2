@@ -47,7 +47,7 @@ class StoreShipmentRequest extends FormRequest
             'iva_percent' => 'nullable|numeric|min:0',
             'total' => 'numeric|min:0',
             'notas' => 'nullable|string',
-            'items' => 'required|array|min:1',
+            'items' => 'required|array|min:1|max:10',
             'items.*.tipo_paquete' => 'required|in:bultos,palets,sobres',
             'items.*.cantidad' => 'required|integer|min:1',
             'items.*.numero_remito' => 'nullable|string',

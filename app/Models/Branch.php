@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Traits\HasAddresses;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -11,16 +12,26 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Branch extends Model
 {
+    use HasAddresses;
+
     protected $fillable = [
         'name',
         'ubicacion_id',
         'code',
         'active',
+        'address_line1',
+        'city',
+        'state',
+        'zip_code',
+        'phone',
+        'email',
+        'is_primary',
     ];
 
     protected $casts = [
         'active' => 'boolean',
         'code' => 'integer',
+        'is_primary' => 'boolean',
     ];
 
     /**

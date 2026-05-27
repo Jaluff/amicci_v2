@@ -58,9 +58,10 @@ class CompanyController extends Controller
      */
     public function edit(Company $company)
     {
-        $company->load('addresses'); // Cargar todas las direcciones polimórficas
+        $company->load('branches');
+        $branches = \App\Models\Branch::where('active', true)->orderBy('name')->get();
 
-        return view('company.edit', compact('company'));
+        return view('company.edit', compact('company', 'branches'));
     }
 
     /**
@@ -86,22 +87,9 @@ class CompanyController extends Controller
             'stamping_headquarters' => ['nullable', 'string', 'max:100'],
             'start_of_activities' => ['nullable', 'date'],
 
-            // Legacy ones inside companies (opcional)
-            'address_line1' => ['nullable', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:100'],
-            'email' => ['nullable', 'email', 'max:255'],
-
-            // Array of addresses
-            'addresses' => ['array'],
-            'addresses.*.id' => ['nullable'],
-            'addresses.*.type' => ['required', 'string', 'max:50'],
-            'addresses.*.address_line1' => ['required', 'string', 'max:255'],
-            'addresses.*.city' => ['nullable', 'string', 'max:100'],
-            'addresses.*.state' => ['nullable', 'string', 'max:100'],
-            'addresses.*.zip_code' => ['nullable', 'string', 'max:20'],
-            'addresses.*.phone' => ['nullable', 'string', 'max:100'],
-            'addresses.*.email' => ['nullable', 'email', 'max:255'],
-            'addresses.*.is_primary' => ['nullable'],
+            // Sucursales
+            'branches' => ['nullable', 'array'],
+            'branches.*' => ['integer', 'exists:branches,id'],
         ]);
 
         $company->update([
@@ -119,47 +107,10 @@ class CompanyController extends Controller
             'establishment' => $validated['establishment'] ?? null,
             'stamping_headquarters' => $validated['stamping_headquarters'] ?? null,
             'start_of_activities' => $validated['start_of_activities'] ?? null,
-
-            // Dejar intactos los campos de dirección heredados; se actualizarán después con la Direccion Principal
         ]);
 
-        // Sincronizar (crear/actualizar/borrar) múltiples direcciones polimórficas
-        $existingAddressesIds = [];
-        if ($request->has('addresses')) {
-            // Check if there is at least one primary. If not, make first one primary.
-            $hasPrimary = collect($validated['addresses'])->contains('is_primary', true);
-
-            foreach ($validated['addresses'] as $index => $addrData) {
-                $isPrimary = $hasPrimary ? ! empty($addrData['is_primary']) : ($index === 0);
-
-                $address = $company->addresses()->updateOrCreate(
-                    ['id' => $addrData['id'] ?? null],
-                    [
-                        'type' => $addrData['type'] ?? 'Sucursal',
-                        'address_line1' => $addrData['address_line1'],
-                        'city' => $addrData['city'] ?? null,
-                        'state' => $addrData['state'] ?? null,
-                        'zip_code' => $addrData['zip_code'] ?? null,
-                        'phone' => $addrData['phone'] ?? null,
-                        'email' => $addrData['email'] ?? null,
-                        'is_primary' => $isPrimary,
-                    ]
-                );
-                $existingAddressesIds[] = $address->id;
-
-                // Actualizar los legacy records de company si es primaria
-                if ($isPrimary) {
-                    $company->update([
-                        'address_line1' => $addrData['address_line1'],
-                        'phone' => $addrData['phone'] ?? null,
-                        'email' => $addrData['email'] ?? null,
-                    ]);
-                }
-            }
-        }
-
-        // Eliminar las que fueron quitadas en el frontend
-        $company->addresses()->whereNotIn('id', $existingAddressesIds)->delete();
+        $branchesToSync = $validated['branches'] ?? [];
+        $company->branches()->sync($branchesToSync);
 
         return redirect()->route('companies.index')->with('success', "Datos de la empresa '{$company->name}' actualizados correctamente.");
     }

@@ -404,6 +404,15 @@ import { partyAjaxConfig } from '../../shared/select2Ajax';
 
         // ── Agregar / quitar ítems ────────────────────────────────────────
         $(document).on('click', '#add-item', function () {
+            var $rows = $('#items-container .item-row');
+            if ($rows.length >= 10) {
+                if (window.toastr) {
+                    window.toastr.warning('Solo se permiten hasta 10 ítems por guía.');
+                } else {
+                    alert('Solo se permiten hasta 10 ítems por guía.');
+                }
+                return;
+            }
             addItemRow();
         });
 

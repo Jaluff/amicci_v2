@@ -22,6 +22,15 @@ class Company extends Model
         'last_delivery_number',
         'contra_reembolso_percent',
         'active',
+        'legal_name',
+        'cuit',
+        'gross_income',
+        'establishment',
+        'stamping_headquarters',
+        'start_of_activities',
+        'address_line1',
+        'phone',
+        'email',
     ];
 
     public function scopeActive($query)

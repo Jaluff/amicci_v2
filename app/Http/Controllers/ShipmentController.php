@@ -404,10 +404,9 @@ class ShipmentController extends Controller
         $shipment->load([
             'origin',
             'destination',
-            'sender',
-            'recipient',
+            'sender.primaryAddress',
+            'recipient.primaryAddress',
             'items',
-            'company.addresses',
         ]);
 
         return view('shipments.print', compact('shipment'));
@@ -428,7 +427,6 @@ class ShipmentController extends Controller
             'sender',
             'recipient',
             'items',
-            'company.addresses',
         ])->get();
 
         $dispatch = $dispatchId ? DispatchModel::with(['driver', 'origin', 'destination'])->find($dispatchId) : null;

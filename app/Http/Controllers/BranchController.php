@@ -63,8 +63,9 @@ class BranchController extends Controller
     public function create()
     {
         $ubicaciones = Ubicacion::orderBy('nombre')->get();
+        $companies = \App\Models\Company::where('active', true)->orderBy('name')->get();
 
-        return view('branches.create', compact('ubicaciones'));
+        return view('branches.create', compact('ubicaciones', 'companies'));
     }
 
     public function store(Request $request)
@@ -74,11 +75,29 @@ class BranchController extends Controller
             'code' => 'required|integer|min:1|max:99|unique:branches,code',
             'ubicacion_id' => 'required|integer|exists:ubicaciones,id',
             'active' => 'boolean',
+            'address_line1' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:100',
+            'state' => 'nullable|string|max:100',
+            'zip_code' => 'nullable|string|max:20',
+            'phone' => 'nullable|string|max:100',
+            'email' => 'nullable|email|max:255',
+            'is_primary' => 'boolean',
+            'companies' => 'nullable|array',
+            'companies.*' => 'integer|exists:companies,id',
         ]);
 
         $data['active'] = $request->boolean('active', true);
+        $data['is_primary'] = $request->boolean('is_primary', false);
 
-        Branch::create($data);
+        if ($data['is_primary']) {
+            Branch::where('is_primary', true)->update(['is_primary' => false]);
+        }
+
+        $branch = Branch::create($data);
+
+        if (!empty($data['companies'])) {
+            $branch->companies()->sync($data['companies']);
+        }
 
         return redirect()->route('branches.index')->with('success', 'Sucursal creada correctamente.');
     }
@@ -86,8 +105,9 @@ class BranchController extends Controller
     public function edit(Branch $branch)
     {
         $ubicaciones = Ubicacion::orderBy('nombre')->get();
+        $companies = \App\Models\Company::where('active', true)->orderBy('name')->get();
 
-        return view('branches.edit', compact('branch', 'ubicaciones'));
+        return view('branches.edit', compact('branch', 'ubicaciones', 'companies'));
     }
 
     public function update(Request $request, Branch $branch)
@@ -97,11 +117,28 @@ class BranchController extends Controller
             'code' => "required|integer|min:1|max:99|unique:branches,code,{$branch->id}",
             'ubicacion_id' => 'required|integer|exists:ubicaciones,id',
             'active' => 'boolean',
+            'address_line1' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:100',
+            'state' => 'nullable|string|max:100',
+            'zip_code' => 'nullable|string|max:20',
+            'phone' => 'nullable|string|max:100',
+            'email' => 'nullable|email|max:255',
+            'is_primary' => 'boolean',
+            'companies' => 'nullable|array',
+            'companies.*' => 'integer|exists:companies,id',
         ]);
 
         $data['active'] = $request->boolean('active', true);
+        $data['is_primary'] = $request->boolean('is_primary', false);
+
+        if ($data['is_primary']) {
+            Branch::where('id', '!=', $branch->id)->where('is_primary', true)->update(['is_primary' => false]);
+        }
 
         $branch->update($data);
+
+        $companiesToSync = $data['companies'] ?? [];
+        $branch->companies()->sync($companiesToSync);
 
         return redirect()->route('branches.index')->with('success', 'Sucursal actualizada correctamente.');
     }
