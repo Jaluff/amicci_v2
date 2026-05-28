@@ -20,6 +20,7 @@ class Branch extends Model
         'code',
         'active',
         'address_line1',
+        'address_line2',
         'city',
         'state',
         'zip_code',

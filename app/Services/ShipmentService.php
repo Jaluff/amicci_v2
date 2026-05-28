@@ -85,6 +85,14 @@ class ShipmentService
 
             $this->recalculateTotals($shipment);
 
+            if ($shipment->invoice_id) {
+                // Sincronizar el total de la factura asociada si se modifican los importes de la guía
+                $invoice = \App\Models\Invoice::find($shipment->invoice_id);
+                if ($invoice) {
+                    app(\App\Services\InvoiceService::class)->recalculateTotal($invoice);
+                }
+            }
+
             $shipment->logActivity('Guía actualizada', 'updated');
 
             return $shipment;

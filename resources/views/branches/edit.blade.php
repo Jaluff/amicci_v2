@@ -80,6 +80,11 @@
                                 <x-text-input name="address_line1" type="text" value="{{ old('address_line1', $branch->address_line1) }}"
                                     class="w-full py-2 px-3 rounded border-gray-300 dark:border-gray-700" />
                             </div>
+                            <div class="md:col-span-2">
+                                <label class="font-medium text-gray-700 dark:text-gray-300 block mb-1">Domicilio Línea 2 (Piso, Dpto, etc.)</label>
+                                <x-text-input name="address_line2" type="text" value="{{ old('address_line2', $branch->address_line2) }}"
+                                    class="w-full py-2 px-3 rounded border-gray-300 dark:border-gray-700" />
+                            </div>
                             <div>
                                 <label class="font-medium text-gray-700 dark:text-gray-300 block mb-1">Ciudad</label>
                                 <x-text-input name="city" type="text" value="{{ old('city', $branch->city) }}"

@@ -25,7 +25,7 @@
 
             .page {
                 margin: 0 !important;
-                padding: 1cm !important;
+                padding: 0.3cm !important;
                 width: 100%;
                 box-sizing: border-box;
                 height: 14.85cm !important;
@@ -140,7 +140,7 @@
                         </div>
                     </div>
 
-                    <div class="text-[9px] leading-tight text-black mt-3 flex gap-2 w-full" style="padding-left: 4%;">
+                    <div class="text-[10px] leading-tight text-black mt-3 flex gap-2 w-full" style="padding-left: 4%;">
                         @php
                             $branches = \App\Models\Branch::where('active', true)->get();
                             $primary = $branches->first(fn($b) => $b->is_primary) ?? $branches->first();
@@ -151,11 +151,15 @@
                         <div class="w-1/2">
                             @if($primary)
                                 <div class="mb-1.5">
-                                    <p class="font-bold mb-0">{{ $primary->name }} -
-                                        {{ $primary->state ?? ($primary->city ?? '') }}
+                                    <p class="font-bold mb-0">{{ $primary->name }}
+                                        {{-- - {{ $primary->state ?? ($primary->city ?? '') }} --}}
                                     </p>
                                     <p class="mb-0">
-                                        {{ $primary->address_line1 }}</br>{{ $primary->city ? $primary->city : '' }}{{ $primary->zip_code ? ' - CP.' . $primary->zip_code : '' }}
+                                        {{ $primary->address_line1 }}
+                                        @if($primary->address_line2)
+                                            <br>{{ $primary->address_line2 }}
+                                        @endif
+                                        <br>{{ $primary->city ? $primary->city : '' }}{{ $primary->zip_code ? ' - CP.' . $primary->zip_code : '' }}
                                     </p>
                                     <p class="mb-0">Tel. {{ $primary->phone ?? '' }} </br> {{ $primary->email ?? '' }}</p>
                                 </div>
@@ -172,10 +176,15 @@
                         <div class="w-1/2 text-right">
                             @foreach($secondaries as $sec)
                                 <div class="mb-1.5">
-                                    <p class="font-bold mb-0">{{ $sec->name }} - {{ $sec->state ?? ($sec->city ?? ' ') }}
+                                    <p class="font-bold mb-0">{{ $sec->name }}
+                                        {{-- - {{ $sec->state ?? ($sec->city ?? ' ') }} --}}
                                     </p>
                                     <p class="mb-0">
-                                        {{ $sec->address_line1 }}</br>{{ $sec->city ? $sec->city : '' }}{{ $sec->zip_code ? ' - CP.' . $sec->zip_code : '' }}
+                                        {{ $sec->address_line1 }}
+                                        @if($sec->address_line2)
+                                            <br>{{ $sec->address_line2 }}
+                                        @endif
+                                        <br>{{ $sec->city ? $sec->city : '' }}{{ $sec->zip_code ? ' - CP.' . $sec->zip_code : '' }}
                                     </p>
                                     <p class="mb-0">Tel. {{ $sec->phone ?? '' }} </br> {{ $sec->email ?? '' }}</p>
                                 </div>
@@ -185,7 +194,7 @@
                 </div>
 
                 <!-- Col 2: Right Side (35%) -->
-                <div class="w-[45%] flex flex-col pt-2 pb-1.5 pl-8 pr-3 bg-white">
+                <div class="w-[45%] flex flex-col pt-2 pb-1.5 pl-8 pr-1 bg-white">
                     <div class="flex items-center justify-between w-full mb-1">
                         <div class="flex items-center gap-1.5">
                             <span class="text-[13px] font-bold">FECHA:</span>
@@ -204,40 +213,17 @@
                         DOCUMENTO NO VALIDO COMO FACTURA
                     </div>
 
-                    <div class="mt-2 pr-0 text-left flex flex-col justify-end items-end">
-                        <table class="w-[80%] text-[9.5px] leading-[1.2] text-gray-900 border-none font-medium ">
-                            <tr>
-                                <td class="font-bold text-right">CUIT:</td>
-                                <td class="">{{ $shipment->company?->cuit ?? '' }}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold text-right">Ing. Brutos:</td>
-                                <td class="">{{ $shipment->company?->gross_income ?? '' }}</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold text-right">Establecimiento:</td>
-                                <td class="text-left">{{ $shipment->company?->establishment ?? '' }}</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold tracking-tighter whitespace-nowrap text-right">Sede de Timbrado:
-                                </td>
-                                <td class="text-left">{{ $shipment->company?->stamping_headquarters ?? '' }}</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold tracking-tighter whitespace-nowrap text-right">Fecha Inicio Activ:
-                                </td>
-                                <td class="text-left">{{ $shipment->company?->start_of_activities ?
-    \Carbon\Carbon::parse($shipment->company->start_of_activities)->format('d/m/Y')
-    : ''
-                                    }}</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold text-right pt-0.5" colspan="2" style="font-size: 8.5px;">
-                                    IVA RESPONSABLE INSCRIPTO
-                                </td>
-                            </tr>
-                        </table>
+                    <div class="mt-4 pr-0 text-left flex flex-col justify-end items-end">
+                        <div class="w-[85%] text-[10.5px] leading-[1.2] text-gray-900 font-medium">
+                            <div><span class="font-bold">CUIT:</span> {{ $shipment->company?->cuit ?? '' }}</div>
+                            <div><span class="font-bold">Ing. Brutos:</span> {{ $shipment->company?->gross_income ?? '' }}</div>
+                            <div><span class="font-bold">Establecimiento:</span> {{ $shipment->company?->establishment ?? '' }}</div>
+                            <div class="whitespace-nowrap"><span class="font-bold">Sede de Timbrado:</span> {{ $shipment->company?->stamping_headquarters ?? '' }}</div>
+                            <div class="whitespace-nowrap"><span class="font-bold">Fecha Inicio Activ:</span> {{ $shipment->company?->start_of_activities ? \Carbon\Carbon::parse($shipment->company->start_of_activities)->format('d/m/Y') : '' }}</div>
+                            <div class="font-bold pt-0.5" style="font-size: 9.5px;">
+                                IVA RESPONSABLE INSCRIPTO
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -339,7 +325,8 @@
             </div>
 
             <!-- Items Table & Importes -->
-            <div class="flex border-b-dark" style="height: 14rem; max-height: 14rem; min-height: 14rem; overflow: hidden;">
+            <div class="flex border-b-dark"
+                style="height: 14rem; max-height: 14rem; min-height: 14rem; overflow: hidden;">
                 <!-- Bultos (Left 70%) -->
                 <div class="w-[70%] flex flex-col h-full">
                     <div class="flex bg-header border-b-dark font-bold text-left text-[11px] py-0.5">
@@ -360,7 +347,8 @@
                                     class="w-[25%] text-black uppercase overflow-hidden text-ellipsis whitespace-nowrap pl-1">
                                     {{ $item->numero_remito ?? '-' }}
                                 </div>
-                                <div class="w-[25%] text-black uppercase overflow-hidden text-ellipsis whitespace-nowrap pl-1">
+                                <div
+                                    class="w-[25%] text-black uppercase overflow-hidden text-ellipsis whitespace-nowrap pl-1">
                                     {{ $item->referencia_recepcion ?? '-' }}
                                 </div>
                                 <div class="w-[12%] text-black pl-1">{{ (int) $item->peso }} kg</div>
@@ -469,8 +457,7 @@
                     <div
                         class="mt-1 flex flex-col justify-end absolute bottom-1 h-full w-full left-0 pl-2 pb-1 font-normal">
                         <div class="w-full border-t border-transparent pt-3">
-                            ASEGURADO POR:<br><span
-                                class="font-bold">${{ number_format($shipment->seguro, 2, ',', '.') }}</span>
+                            ASEGURADO POR:<br><span class="font-bold">&nbsp;</span>
                         </div>
                     </div>
                 </div>

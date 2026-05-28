@@ -34,6 +34,14 @@ class Invoice extends Model
         'company_id' => 'integer',
     ];
 
+    /**
+     * El total calculado dinámicamente sumando el total de sus guías.
+     */
+    public function getTotalAttribute(): float
+    {
+        return (float) $this->shipments()->sum('total');
+    }
+
     // Sin global scopes: el filtrado por empresa se hace de forma explícita
 
     // -------------------------------------------------------------------------

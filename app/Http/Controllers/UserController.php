@@ -62,7 +62,7 @@ class UserController extends Controller
         ]);
 
         $user->assignRole($request->role);
-        $user->syncPermissions($request->input('permissions', []));
+        $user->syncPermissions(array_map('intval', $request->input('permissions', [])));
         $user->companies()->sync($request->companies);
         $user->branches()->sync($request->input('branches', []));
 
@@ -118,7 +118,7 @@ class UserController extends Controller
         $user->update($data);
 
         $user->syncRoles([$request->role]);
-        $user->syncPermissions($request->input('permissions', []));
+        $user->syncPermissions(array_map('intval', $request->input('permissions', [])));
         $user->companies()->sync($request->companies);
         $user->branches()->sync($request->input('branches', []));
 

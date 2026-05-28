@@ -12,7 +12,15 @@ class UpdateShipmentRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true; // Autenticación centralizada por middleware/resource logic
+        $shipment = $this->route('shipment');
+
+        // Si la guía ya está facturada
+        if ($shipment && $shipment->invoice_id) {
+            // Requiere el permiso "editar guias facturadas" o ser rol admin
+            return auth()->user()->hasPermissionTo('editar guias facturadas') || auth()->user()->hasRole('admin');
+        }
+
+        return true;
     }
 
     /**

@@ -14,14 +14,36 @@ class CompanySeeder extends Seeder
      */
     public function run(): void
     {
-        $ghiotto = Company::firstOrCreate(
+        $ghiotto = Company::updateOrCreate(
             ['name' => 'Ghiotto'],
-            ['prefix' => 'GH', 'last_shipment_number' => 0]
+            [
+                'prefix' => 'GH',
+                'legal_name' => 'De María Soledad Ghiotto Fabrizio',
+                'cuit' => '27-27325319-5',
+                'color' => '#22b92c',
+                'gross_income' => '913-507812-1',
+                'establishment' => '07-5078121-01',
+                'stamping_headquarters' => '01 S.C.',
+                'start_of_activities' => '2008-03-01',
+                'active' => 1,
+                'contra_reembolso_percent' => 2.00,
+            ]
         );
 
-        $amicci = Company::firstOrCreate(
+        $amicci = Company::updateOrCreate(
             ['name' => 'Amicci'],
-            ['prefix' => 'AM', 'last_shipment_number' => 0]
+            [
+                'prefix' => 'AM',
+                'legal_name' => 'De Transporte Amicci S.A.',
+                'cuit' => '30-71150655-8',
+                'color' => '#f29121',
+                'gross_income' => '913-572741-0',
+                'establishment' => '07-5727410-00',
+                'stamping_headquarters' => '01 Sede Central',
+                'start_of_activities' => '2012-03-01',
+                'active' => 1,
+                'contra_reembolso_percent' => 2.00,
+            ]
         );
 
         $ba = Ubicacion::where('nombre', 'Buenos Aires')->first();

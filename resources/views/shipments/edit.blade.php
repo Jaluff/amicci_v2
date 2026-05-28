@@ -87,7 +87,22 @@ $canCancel = $shipment->ubicacion_actual === \App\StateMachines\ShipmentStateMac
                             <span x-show="showTimeline" style="display: none;">Ocultar Historial</span>
                         </button>
                     </div>
-                    @include('shipments._form')
+                    @php
+                        $isEdit = isset($shipment) && $shipment->exists;
+                        $isFacturada = $isEdit && $shipment->invoice_id;
+                        $hasEditPermission = auth()->user()->hasPermissionTo('editar guias facturadas') || auth()->user()->hasRole('admin');
+                        $isBlocked = $isFacturada && !$hasEditPermission;
+                    @endphp
+
+                    @if($isBlocked)
+                        <div class="mb-4 p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg text-xs dark:bg-amber-950/20 dark:border-amber-900 dark:text-amber-300">
+                            <strong>⚠️ Edición Limitada:</strong> Esta guía ya está asociada a la factura <strong>{{ $shipment->invoice?->numero }}</strong> y no tienes permisos para modificar sus importes/ítems. Comunícate con un administrador.
+                        </div>
+                    @endif
+
+                    <div class="{{ $isBlocked ? 'pointer-events-none opacity-85 select-none' : '' }}">
+                        @include('shipments._form')
+                    </div>
                 </div>
 
                 <!-- Widget de Problemas -->
