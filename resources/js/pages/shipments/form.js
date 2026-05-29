@@ -16,6 +16,9 @@ import { partyAjaxConfig } from '../../shared/select2Ajax';
 
     // ─── Configuración tarifaria cargada del remitente ──────────────────────
     var tariffSetting = null;
+    var previousDestinatarioValue = null;
+    var openAddressModal = null;
+    var revertDestinatario = null;
 
     function parseNum(v) {
         if (!v) return 0;
@@ -337,11 +340,43 @@ import { partyAjaxConfig } from '../../shared/select2Ajax';
             }
         });
 
+        previousDestinatarioValue = $('#destinatario_id').val();
+
         // Al cambiar destinatario → recargar tarifa solo si él paga
         $('#destinatario_id').select2(partyAjaxOpts).on('change', function () {
             var recVal = $(this).val();
             if ($('input[name="flete_a_pagar_en"]:checked').val() === 'destino') {
                 loadTariff(recVal);
+            }
+        }).on('select2:selecting', function () {
+            previousDestinatarioValue = $(this).val();
+        }).on('select2:select', function (e) {
+            var data = e.params.data;
+            var hasAddress = false;
+            console.log('Select2 select triggered:', data);
+
+            if (data) {
+                hasAddress = data.has_address === true || data.has_address === 'true';
+
+                if (data.element) {
+                    var domHasAddr = $(data.element).attr('data-has-address');
+                    console.log('DOM option data-has-address:', domHasAddr);
+                    if (domHasAddr !== undefined) {
+                        hasAddress = domHasAddr === true || domHasAddr === 'true';
+                    }
+                }
+            }
+
+            console.log('Final hasAddress value:', hasAddress);
+
+            if (!hasAddress) {
+                var partyId = $(this).val();
+                console.log('Party has no address, opening modal for ID:', partyId);
+                if (partyId) {
+                    openAddressModal(partyId);
+                }
+            } else {
+                previousDestinatarioValue = $(this).val();
             }
         });
 
@@ -470,7 +505,21 @@ import { partyAjaxConfig } from '../../shared/select2Ajax';
                 success: function (response) {
                     if (response.success && response.party) {
                         var newOption = new Option(response.party.name, response.party.id, true, true);
+                        $(newOption).attr('data-has-address', 'false');
                         $(currentQuickPartyTarget).append(newOption).trigger('change');
+
+                        // Disparar manualmente select2:select para que se verifique la dirección
+                        $(currentQuickPartyTarget).trigger({
+                            type: 'select2:select',
+                            params: {
+                                data: {
+                                    id: response.party.id,
+                                    text: response.party.name,
+                                    has_address: false,
+                                    element: newOption
+                                }
+                            }
+                        });
 
                         window.toastr.success('Cliente creado correctamente');
                         $quickPartyModal.addClass('hidden');
@@ -478,6 +527,68 @@ import { partyAjaxConfig } from '../../shared/select2Ajax';
                 },
                 error: function (xhr) {
                     var msg = 'Ocurrió un error al crear el cliente.';
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        msg = Object.values(xhr.responseJSON.errors)[0][0];
+                    }
+                    window.toastr.error(msg);
+                },
+                complete: function () {
+                    $submitBtn.prop('disabled', false).text(originalText);
+                }
+            });
+        });
+
+        // ─── Modal Rápido de Nueva Dirección ──────────────────────────────────
+        var $quickAddressModal = $('#quick-address-modal');
+        var $quickAddressForm = $('#quick-address-form');
+        var currentAddressPartyId = null;
+
+        openAddressModal = function (partyId) {
+            console.log('openAddressModal function called with partyId:', partyId);
+            console.log('Modal element:', $quickAddressModal);
+            currentAddressPartyId = partyId;
+            $quickAddressForm[0].reset();
+            $quickAddressModal.removeClass('hidden');
+        };
+
+        revertDestinatario = function () {
+            $('#destinatario_id').val(previousDestinatarioValue).trigger('change');
+        };
+
+        $('#btn-close-quick-address, #backdrop-quick-address').on('click', function () {
+            $quickAddressModal.addClass('hidden');
+            revertDestinatario();
+        });
+
+        $quickAddressForm.on('submit', function (e) {
+            e.preventDefault();
+            if (!currentAddressPartyId) return;
+
+            var $submitBtn = $(this).find('button[type="submit"]');
+            var originalText = $submitBtn.text();
+
+            $submitBtn.prop('disabled', true).text('Guardando...');
+
+            $.ajax({
+                url: '/parties/' + currentAddressPartyId + '/ajax-address',
+                method: 'POST',
+                data: $quickAddressForm.serialize(),
+                success: function (response) {
+                    if (response.success) {
+                        // Marcar la opción actual con data-has-address = true
+                        var $selectedOption = $('#destinatario_id').find('option:selected');
+                        $selectedOption.attr('data-has-address', 'true');
+                        $selectedOption.data('has-address', true);
+
+                        // Actualizar previousDestinatarioValue al valor correcto seleccionado
+                        previousDestinatarioValue = $('#destinatario_id').val();
+
+                        window.toastr.success('Dirección agregada correctamente');
+                        $quickAddressModal.addClass('hidden');
+                    }
+                },
+                error: function (xhr) {
+                    var msg = 'Ocurrió un error al agregar la dirección.';
                     if (xhr.responseJSON && xhr.responseJSON.errors) {
                         msg = Object.values(xhr.responseJSON.errors)[0][0];
                     }

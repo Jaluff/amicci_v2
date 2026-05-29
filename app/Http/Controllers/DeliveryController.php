@@ -111,6 +111,8 @@ class DeliveryController extends Controller
                     $statusButtons .= "<button type='button' class='inline-flex items-center gap-1 px-2.5 py-1.5 mb-1 sm:mb-0 rounded-md font-bold text-xs shadow-sm transition-all {$cfg['class']}' data-model-type='delivery' data-model-id='{$row->id}' data-transition='{$transition}' {$confAttr} title='{$cfg['label']}'>{$cfg['label']}</button>";
                 }
 
+                $printUrl = route('deliveries.print', $row->id);
+
                 $deleteForm = '';
                 if ($row->shipments_count == 0 && $currentStatus === DeliveryStateMachine::READY && $isAdminOrSupervisor) {
                     $deleteForm = "
@@ -138,10 +140,13 @@ class DeliveryController extends Controller
                         {$statusButtons}
                         <div class='flex items-center gap-1'>
                             <a href='{$editUrl}' title='Editar' class='inline-flex items-center justify-center p-2 rounded-md bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/40 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-800/60 dark:hover:text-blue-300 transition-colors'>
-                            <svg xmlns='http://www.w3.org/2000/svg' class='w-4 h-4' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/><path d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'/></svg>
-                        </a>
-                        {$devolutionBtn}
-                        {$deleteForm}
+                                <svg xmlns='http://www.w3.org/2000/svg' class='w-4 h-4' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/><path d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'/></svg>
+                            </a>
+                            <a href='{$printUrl}' target='_blank' title='Imprimir Reparto' class='inline-flex items-center justify-center p-2 rounded-md bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 dark:bg-yellow-900/40 dark:text-yellow-400 dark:border-yellow-800 dark:hover:bg-yellow-800/60 transition-colors'>
+                                <svg xmlns='http://www.w3.org/2000/svg' class='w-4 h-4' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 6 2 18 2 18 9'/><path d='M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2'/><rect x='6' y='14' width='12' height='8'/></svg>
+                            </a>
+                            {$devolutionBtn}
+                            {$deleteForm}
                         </div>
                     </div>";
             })
@@ -227,8 +232,8 @@ class DeliveryController extends Controller
             ->get();
 
         $delivery->load(['shipments' => function ($q) {
-            $q->select(['shipments.id', 'shipments.numero', 'shipments.origen_id', 'shipments.destino_id', 'shipments.delivery_id', 'shipments.ubicacion_actual'])
-                ->with(['origin:id,nombre', 'destination:id,nombre'])
+            $q->select(['shipments.id', 'shipments.numero', 'shipments.remitente_id', 'shipments.destinatario_id', 'shipments.delivery_id', 'shipments.ubicacion_actual'])
+                ->with(['sender:id,name', 'recipient:id,name'])
                 ->withCount(['items as bultos' => function ($query) {
                     $query->select(DB::raw('COALESCE(SUM(cantidad), 0)'));
                 }]);
@@ -279,15 +284,15 @@ class DeliveryController extends Controller
                 'shipments.fecha',
                 'shipments.total',
                 'shipments.ubicacion_actual',
-                'origen.nombre as origen_nombre',
-                'destino.nombre as destino_nombre',
+                'remitente.name as remitente_nombre',
+                'destinatario.name as destinatario_nombre',
                 'companies.prefix as empresa_prefix',
                 'companies.color as empresa_color',
                 DB::raw('(SELECT COALESCE(SUM(si.cantidad), 0) FROM shipment_items si WHERE si.shipment_id = shipments.id) as bultos_total'),
             ])
             ->join('companies', 'shipments.company_id', '=', 'companies.id')
-            ->leftJoin('ubicaciones as origen', 'shipments.origen_id', '=', 'origen.id')
-            ->leftJoin('ubicaciones as destino', 'shipments.destino_id', '=', 'destino.id')
+            ->leftJoin('parties as remitente', 'shipments.remitente_id', '=', 'remitente.id')
+            ->leftJoin('parties as destinatario', 'shipments.destinatario_id', '=', 'destinatario.id')
             ->whereNull('shipments.deleted_at')
             ->where('shipments.ubicacion_actual', '=', 'Dto destino')
             ->withCount([
@@ -332,8 +337,8 @@ class DeliveryController extends Controller
                 return '<input type="checkbox" class="shipment-checkbox w-4 h-4 text-blue-600 rounded focus:ring-blue-500" 
                     value="'.$row->id.'" 
                     data-numero="'.$row->numero.'" 
-                    data-origen="'.$row->origen_nombre.'" 
-                    data-destino="'.$row->destino_nombre.'" 
+                    data-remitente="'.$row->remitente_nombre.'" 
+                    data-destinatario="'.$row->destinatario_nombre.'" 
                     data-bultos="'.(int) ($row->bultos_total ?? 0).'" 
                     data-estado="'.$row->ubicacion_actual.'" 
                     data-has-problem="'.($row->has_active_problem > 0 ? 'true' : 'false').'"
@@ -355,5 +360,14 @@ class DeliveryController extends Controller
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 400);
         }
+    }
+
+    public function print(Delivery $delivery): \Illuminate\View\View
+    {
+        $delivery->load(['deliverer', 'location', 'shipments' => function ($q) {
+            $q->with(['sender', 'recipient', 'items']);
+        }]);
+
+        return view('deliveries.print', compact('delivery'));
     }
 }

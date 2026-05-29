@@ -94,8 +94,8 @@
             <thead class="bg-gray-50 dark:bg-gray-900">
                 <tr class="text-left">
                     <th class="p-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Guía N°</th>
-                    <th class="p-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Origen</th>
-                    <th class="p-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Destino</th>
+                    <th class="p-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Remitente</th>
+                    <th class="p-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Destinatario</th>
                     <th class="p-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Estado</th>
                     <th class="p-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Bultos</th>
                     <th class="p-3 text-sm font-semibold text-gray-700 dark:text-gray-300 w-16 text-center">Acciones
@@ -117,9 +117,8 @@
                         @endif
                         <input type="hidden" name="shipments[]" value="{{ $shipment->id }}">
                     </td>
-                    <td class="p-3 text-sm text-gray-800 dark:text-gray-200">{{ $shipment->origin->nombre ?? '-' }}</td>
-                    <td class="p-3 text-sm text-gray-800 dark:text-gray-200">{{ $shipment->destination->nombre ?? '-' }}
-                    </td>
+                    <td class="p-3 text-sm text-gray-800 dark:text-gray-200">{{ $shipment->sender->name ?? '-' }}</td>
+                    <td class="p-3 text-sm text-gray-800 dark:text-gray-200">{{ $shipment->recipient->name ?? '-' }}</td>
                     <td class="p-3 text-sm text-gray-800 dark:text-gray-200">
                         @php
                         $badges = [

@@ -205,8 +205,8 @@ $(document).ready(function () {
                 },
                 { data: 'empresa', name: 'empresa', orderable: false, searchable: false },
                 { data: 'fecha', name: 'shipments.fecha' },
-                { data: 'origen_nombre', name: 'origen.nombre' },
-                { data: 'destino_nombre', name: 'destino.nombre' },
+                { data: 'remitente_nombre', name: 'remitente.name' },
+                { data: 'destinatario_nombre', name: 'destinatario.name' },
                 {
                     data: 'ubicacion_actual',
                     name: 'shipments.ubicacion_actual',
@@ -246,8 +246,8 @@ $(document).ready(function () {
         if ($(this).is(':checked')) {
             selectedStorage.set(id, {
                 numero: $(this).data('numero'),
-                origen: $(this).data('origen'),
-                destino: $(this).data('destino'),
+                remitente: $(this).data('remitente'),
+                destinatario: $(this).data('destinatario'),
                 estado: $(this).data('estado'),
                 bultos: $(this).data('bultos'),
                 hasProblem: $(this).data('has-problem'),
@@ -268,8 +268,8 @@ $(document).ready(function () {
             if (isChecked) {
                 selectedStorage.set(id, {
                     numero: $(this).data('numero'),
-                    origen: $(this).data('origen'),
-                    destino: $(this).data('destino'),
+                    remitente: $(this).data('remitente'),
+                    destinatario: $(this).data('destinatario'),
                     estado: $(this).data('estado'),
                     bultos: $(this).data('bultos'),
                     hasProblem: $(this).data('has-problem'),
@@ -294,8 +294,8 @@ $(document).ready(function () {
                 tableBody.find('.empty-row').remove();
 
                 const numero = data.numero;
-                const origen = data.origen;
-                const destino = data.destino;
+                const remitente = data.remitente;
+                const destinatario = data.destinatario;
                 const estado = data.estado;
                 const bultos = data.bultos;
 
@@ -333,8 +333,8 @@ $(document).ready(function () {
                             ${numero}${problemIcon}
                             <input type="hidden" name="shipments[]" value="${id}">
                         </td>
-                        <td class="p-3 text-sm text-gray-800 dark:text-gray-200">${origen}</td>
-                        <td class="p-3 text-sm text-gray-800 dark:text-gray-200">${destino}</td>
+                        <td class="p-3 text-sm text-gray-800 dark:text-gray-200">${remitente}</td>
+                        <td class="p-3 text-sm text-gray-800 dark:text-gray-200">${destinatario}</td>
                         <td class="p-3 text-sm text-gray-800 dark:text-gray-200">
                             <span class="dt-badge ${coloresStr}">${estado}</span>
                         </td>

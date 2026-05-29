@@ -86,7 +86,12 @@
                         <option value="">Seleccionar Remitente...</option>
                     @endif
                     @foreach($parties as $p)
-                        <option value="{{ $p->id }}" @selected($isEdit && ($shipment->remitente_id ?? $shipment->sender_id) == $p->id)>{{ $p->name }}</option>
+                        @php
+                            $hasRealAddress = $p->addresses->contains(function ($address) {
+                                return !empty(trim($address->address_line1));
+                            });
+                        @endphp
+                        <option value="{{ $p->id }}" @selected($isEdit && ($shipment->remitente_id ?? $shipment->sender_id) == $p->id) data-has-address="{{ $hasRealAddress ? 'true' : 'false' }}">{{ $p->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -102,7 +107,12 @@
                         <option value="">Seleccionar Destinatario...</option>
                     @endif
                     @foreach($parties as $p)
-                        <option value="{{ $p->id }}" @selected($isEdit && ($shipment->destinatario_id ?? $shipment->recipient_id) == $p->id)>{{ $p->name }}</option>
+                        @php
+                            $hasRealAddress = $p->addresses->contains(function ($address) {
+                                return !empty(trim($address->address_line1));
+                            });
+                        @endphp
+                        <option value="{{ $p->id }}" @selected($isEdit && ($shipment->destinatario_id ?? $shipment->recipient_id) == $p->id) data-has-address="{{ $hasRealAddress ? 'true' : 'false' }}">{{ $p->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -428,6 +438,7 @@
 </form>
 
 @include('shipments._party_modal')
+@include('shipments._address_modal')
 
 <script>
     window.GlobalContraPct = {{ (float) (old('contra_reembolso_percent', $selected_company->contra_reembolso_percent ?? ($shipment->company->contra_reembolso_percent ?? 0))) }};

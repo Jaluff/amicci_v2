@@ -117,10 +117,45 @@ class PartyController extends Controller
             });
         }
 
-        $parties = $query->limit(5)->get(['id', 'name as text']);
+        $parties = $query->with('addresses')->limit(5)->get();
+
+        $results = $parties->map(function ($party) {
+            $hasAddress = $party->addresses->contains(function ($address) {
+                return !empty(trim($address->address_line1));
+            });
+
+            return [
+                'id' => $party->id,
+                'text' => $party->name,
+                'has_address' => $hasAddress,
+            ];
+        });
 
         return response()->json([
-            'results' => $parties,
+            'results' => $results,
+        ]);
+    }
+
+    public function ajaxStoreAddress(Request $request, Party $party): JsonResponse
+    {
+        $validated = $request->validate([
+            'address_line1' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'state' => 'required|string|max:255',
+            'type' => 'nullable|string|max:255',
+            'zip_code' => 'nullable|string|max:20',
+            'phone' => 'nullable|string|max:50',
+            'email' => 'nullable|email|max:255',
+        ]);
+
+        $validated['type'] = $validated['type'] ?? 'Principal';
+        $validated['is_primary'] = !$party->addresses()->where('is_primary', true)->exists();
+
+        $address = $party->addresses()->create($validated);
+
+        return response()->json([
+            'success' => true,
+            'address' => $address,
         ]);
     }
 

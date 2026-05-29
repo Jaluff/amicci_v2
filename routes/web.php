@@ -61,6 +61,7 @@ Route::middleware(['auth'])->group(function () {
     // Clientes (Remitentes y Destinatarios)
     Route::get('/parties/ajax-search', [PartyController::class, 'ajaxSearch'])->name('parties.ajax-search');
     Route::post('/parties/ajax-store', [PartyController::class, 'ajaxStore'])->name('parties.ajax-store');
+    Route::post('/parties/{party}/ajax-address', [PartyController::class, 'ajaxStoreAddress'])->name('parties.ajax-address');
     Route::get('/parties/datatable', [PartyController::class, 'datatable'])->name('parties.datatable');
     Route::get('/parties/{party}/tariff-setting', [PartyController::class, 'tariffSetting'])->name('parties.tariff-setting');
     Route::resource('parties', PartyController::class)->except(['show']);
@@ -104,6 +105,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/deliveries/create', [DeliveryController::class, 'create'])->name('deliveries.create');
     Route::post('/deliveries', [DeliveryController::class, 'store'])->name('deliveries.store');
     Route::get('/deliveries/{delivery}/edit', [DeliveryController::class, 'edit'])->name('deliveries.edit');
+    Route::get('/deliveries/{delivery}/print', [DeliveryController::class, 'print'])->name('deliveries.print');
     Route::put('/deliveries/{delivery}', [DeliveryController::class, 'update'])->name('deliveries.update');
     Route::delete('/deliveries/{delivery}', [DeliveryController::class, 'destroy'])->name('deliveries.destroy');
     Route::post('/deliveries/{delivery}/return-shipment/{shipment}', [DeliveryController::class, 'returnShipment'])->name('deliveries.return-shipment');

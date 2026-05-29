@@ -15,7 +15,7 @@
             }
 
             @page {
-                margin: 0;
+                margin: 0.5cm;
                 size: A4 portrait;
             }
 
@@ -25,10 +25,10 @@
 
             .page {
                 margin: 0 !important;
-                padding: 0.3cm !important;
+                padding: 0.2cm !important;
                 width: 100%;
                 box-sizing: border-box;
-                height: 14.85cm !important;
+                height: 13.85cm !important;
                 page-break-after: always;
             }
         }
@@ -333,9 +333,9 @@
                         <div class="w-[10%] pl-1">CANT</div>
                         <div class="w-[15%] pl-1">TIPO</div>
                         <div class="w-[25%] pl-1">REMITO</div>
-                        <div class="w-[25%] pl-1">PART. REC.</div>
                         <div class="w-[12%] pl-1">PESO</div>
                         <div class="w-[13%] pl-1">VOLUMEN</div>
+                        <div class="w-[25%] pl-1">O. CARGA</div>
                     </div>
                     <div class="flex-1 p-0.5 overflow-hidden">
                         @foreach($shipment->items as $item)
@@ -347,13 +347,13 @@
                                     class="w-[25%] text-black uppercase overflow-hidden text-ellipsis whitespace-nowrap pl-1">
                                     {{ $item->numero_remito ?? '-' }}
                                 </div>
-                                <div
-                                    class="w-[25%] text-black uppercase overflow-hidden text-ellipsis whitespace-nowrap pl-1">
-                                    {{ $item->referencia_recepcion ?? '-' }}
-                                </div>
                                 <div class="w-[12%] text-black pl-1">{{ (int) $item->peso }} kg</div>
                                 <div class="w-[13%] text-black pl-1">
                                     {{ $item->volumen ? $item->volumen . ' m³' : '-' }}
+                                </div>
+                                <div
+                                    class="w-[25%] text-black uppercase overflow-hidden text-ellipsis whitespace-nowrap pl-1">
+                                    {{ $item->referencia_orden_carga ?? '-' }}
                                 </div>
                             </div>
                         @endforeach
