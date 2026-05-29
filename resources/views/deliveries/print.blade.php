@@ -74,7 +74,7 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="text-right">
-                        <div class="text-lg font-black text-blue-600 tracking-widest">{{ preg_replace('/[^0-9]/', '', $delivery->delivery_number ?? '0000') }}</div>
+                        <div class="text-lg font-black text-blue-600 tracking-widest">{{ $delivery->delivery_number }}</div>
                         <div class="text-[8px] font-bold text-gray-500 uppercase">Control Interno (Pág. {{ $chunkIndex + 1 }}/{{ $totalChunks }})</div>
                     </div>
                     <div class="text-[9px] text-gray-700 border-l pl-3">Fecha: <strong>{{ now()->format('d/m/Y H:i') }}</strong></div>

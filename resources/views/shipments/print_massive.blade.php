@@ -34,7 +34,7 @@
             </div>
             <div class="flex items-center gap-6">
                 <div class="text-right">
-                    <div class="text-xl font-black text-blue-600 tracking-widest">{{ preg_replace('/[^0-9]/', '', $dispatch->dispatch_number ?? '0000') }}</div>
+                    <div class="text-xl font-black text-blue-600 tracking-widest">{{ $dispatch->dispatch_number }}</div>
                     <div class="text-[9px] font-bold text-gray-500 uppercase">Control Interno</div>
                 </div>
                 <div class="text-[10px] text-gray-700 border-l pl-4">Fecha: <strong>{{ now()->format('d/m/Y H:i') }}</strong></div>

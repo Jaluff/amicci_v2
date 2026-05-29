@@ -124,9 +124,14 @@ class PartyController extends Controller
                 return !empty(trim($address->address_line1));
             });
 
+            $text = $party->name;
+            if (!empty($party->document)) {
+                $text .= ' - ' . $party->document;
+            }
+
             return [
                 'id' => $party->id,
-                'text' => $party->name,
+                'text' => $text,
                 'has_address' => $hasAddress,
             ];
         });

@@ -90,8 +90,12 @@
                             $hasRealAddress = $p->addresses->contains(function ($address) {
                                 return !empty(trim($address->address_line1));
                             });
+                            $optionText = $p->name;
+                            if (!empty($p->document)) {
+                                $optionText .= ' - ' . $p->document;
+                            }
                         @endphp
-                        <option value="{{ $p->id }}" @selected($isEdit && ($shipment->remitente_id ?? $shipment->sender_id) == $p->id) data-has-address="{{ $hasRealAddress ? 'true' : 'false' }}">{{ $p->name }}</option>
+                        <option value="{{ $p->id }}" @selected($isEdit && ($shipment->remitente_id ?? $shipment->sender_id) == $p->id) data-has-address="{{ $hasRealAddress ? 'true' : 'false' }}">{{ $optionText }}</option>
                     @endforeach
                 </select>
             </div>
@@ -111,8 +115,12 @@
                             $hasRealAddress = $p->addresses->contains(function ($address) {
                                 return !empty(trim($address->address_line1));
                             });
+                            $optionText = $p->name;
+                            if (!empty($p->document)) {
+                                $optionText .= ' - ' . $p->document;
+                            }
                         @endphp
-                        <option value="{{ $p->id }}" @selected($isEdit && ($shipment->destinatario_id ?? $shipment->recipient_id) == $p->id) data-has-address="{{ $hasRealAddress ? 'true' : 'false' }}">{{ $p->name }}</option>
+                        <option value="{{ $p->id }}" @selected($isEdit && ($shipment->destinatario_id ?? $shipment->recipient_id) == $p->id) data-has-address="{{ $hasRealAddress ? 'true' : 'false' }}">{{ $optionText }}</option>
                     @endforeach
                 </select>
             </div>
