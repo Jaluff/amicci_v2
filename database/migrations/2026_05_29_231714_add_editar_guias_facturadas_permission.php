@@ -12,10 +12,20 @@ return new class extends Migration
     public function up(): void
     {
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
-        \Spatie\Permission\Models\Permission::firstOrCreate([
-            'name' => 'editar guias facturadas',
-            'guard_name' => 'web'
-        ]);
+        
+        $exists = Illuminate\Support\Facades\DB::table('permissions')
+            ->where('name', 'editar guias facturadas')
+            ->where('guard_name', 'web')
+            ->exists();
+
+        if (!$exists) {
+            Illuminate\Support\Facades\DB::table('permissions')->insert([
+                'name' => 'editar guias facturadas',
+                'guard_name' => 'web',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
 
     /**
@@ -24,9 +34,9 @@ return new class extends Migration
     public function down(): void
     {
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
-        \Spatie\Permission\Models\Permission::where([
-            'name' => 'editar guias facturadas',
-            'guard_name' => 'web'
-        ])->delete();
+        Illuminate\Support\Facades\DB::table('permissions')
+            ->where('name', 'editar guias facturadas')
+            ->where('guard_name', 'web')
+            ->delete();
     }
 };
