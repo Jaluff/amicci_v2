@@ -194,8 +194,8 @@ class DashboardController extends Controller
             ->limit(10)->get()
             ->map(fn ($r) => [
                 'numero' => $r->route_number,
-                'origen' => $r->origin?->nombre ?? '-',
-                'destino' => $r->destination?->nombre ?? '-',
+                'origen' => $r->origin?->name ?? '-',
+                'destino' => $r->destination?->name ?? '-',
                 'guias' => $r->shipments_count,
             ]);
 
@@ -209,8 +209,8 @@ class DashboardController extends Controller
             ->map(fn ($dp) => [
                 'numero' => $dp->dispatch_number,
                 'conductor' => $dp->driver?->name ?? '-',
-                'origen' => $dp->origin?->nombre ?? '-',
-                'destino' => $dp->destination?->nombre ?? '-',
+                'origen' => $dp->origin?->name ?? '-',
+                'destino' => $dp->destination?->name ?? '-',
                 'rutas' => $dp->routes_count,
                 'edit_url' => route('dispatches.edit', $dp->id),
             ]);

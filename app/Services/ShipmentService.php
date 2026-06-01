@@ -60,7 +60,7 @@ class ShipmentService
             $shipment = Shipment::create($data);
 
             foreach ($items as $item) {
-                $shipment->items()->create($item);
+                $shipment->items()->create($this->prepareItemData($item));
             }
 
             $this->recalculateTotals($shipment);
@@ -80,7 +80,7 @@ class ShipmentService
             $shipment->items()->delete();
 
             foreach ($items as $item) {
-                $shipment->items()->create($item);
+                $shipment->items()->create($this->prepareItemData($item));
             }
 
             $this->recalculateTotals($shipment);
@@ -122,5 +122,15 @@ class ShipmentService
             'iva_percent' => $ivaPercent,
             'total' => $subtotal + $tax,
         ]);
+    }
+
+    private function prepareItemData(array $item): array
+    {
+        $item['peso'] = !isset($item['peso']) || $item['peso'] === null || $item['peso'] === '' ? 0 : $item['peso'];
+        $item['volumen'] = !isset($item['volumen']) || $item['volumen'] === null || $item['volumen'] === '' ? 0 : $item['volumen'];
+        $item['monto_valor_declarado'] = !isset($item['monto_valor_declarado']) || $item['monto_valor_declarado'] === null || $item['monto_valor_declarado'] === '' ? 0 : $item['monto_valor_declarado'];
+        $item['monto_seguro_item'] = !isset($item['monto_seguro_item']) || $item['monto_seguro_item'] === null || $item['monto_seguro_item'] === '' ? 0 : $item['monto_seguro_item'];
+
+        return $item;
     }
 }

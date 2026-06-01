@@ -109,7 +109,17 @@ class CompanyController extends Controller
             'start_of_activities' => $validated['start_of_activities'] ?? null,
         ]);
 
-        $branchesToSync = $validated['branches'] ?? [];
+        $existingPivot = \DB::table('branch_company')
+            ->where('company_id', $company->id)
+            ->pluck('last_shipment_number', 'branch_id')
+            ->toArray();
+
+        $branchesToSync = [];
+        foreach ($validated['branches'] ?? [] as $branchId) {
+            $branchesToSync[$branchId] = [
+                'last_shipment_number' => $existingPivot[$branchId] ?? 0
+            ];
+        }
         $company->branches()->sync($branchesToSync);
 
         return redirect()->route('companies.index')->with('success', "Datos de la empresa '{$company->name}' actualizados correctamente.");

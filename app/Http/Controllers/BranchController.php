@@ -43,7 +43,7 @@ class BranchController extends Controller
                         </form>
                     </div>";
             })
-            ->addColumn('ubicacion_nombre', fn ($row) => $row->ubicacion?->nombre ?? '—')
+            ->addColumn('ubicacion_nombre', fn($row) => $row->ubicacion?->nombre ?? '—')
             ->addColumn('last_shipment_number', function ($row) {
                 if ($row->companies->isEmpty()) {
                     return '—';
@@ -53,7 +53,7 @@ class BranchController extends Controller
                     return "<span class='font-mono font-bold text-xs'>{$c->prefix}: {$c->pivot->last_shipment_number}</span>";
                 })->implode('<br>');
             })
-            ->addColumn('estado', fn ($row) => $row->active
+            ->addColumn('estado', fn($row) => $row->active
                 ? "<span class='dt-badge dt-badge-green'>Activa</span>"
                 : "<span class='dt-badge dt-badge-gray'>Inactiva</span>")
             ->rawColumns(['acciones', 'estado', 'last_shipment_number'])
@@ -96,9 +96,13 @@ class BranchController extends Controller
 
         $branch = Branch::create($data);
 
-        if (!empty($data['companies'])) {
-            $branch->companies()->sync($data['companies']);
+        $companiesToSync = [];
+        foreach ($data['companies'] ?? [] as $companyId) {
+            $companiesToSync[$companyId] = [
+                'last_shipment_number' => 0
+            ];
         }
+        $branch->companies()->sync($companiesToSync);
 
         return redirect()->route('branches.index')->with('success', 'Sucursal creada correctamente.');
     }
@@ -139,7 +143,17 @@ class BranchController extends Controller
 
         $branch->update($data);
 
-        $companiesToSync = $data['companies'] ?? [];
+        $existingPivot = \DB::table('branch_company')
+            ->where('branch_id', $branch->id)
+            ->pluck('last_shipment_number', 'company_id')
+            ->toArray();
+
+        $companiesToSync = [];
+        foreach ($data['companies'] ?? [] as $companyId) {
+            $companiesToSync[$companyId] = [
+                'last_shipment_number' => $existingPivot[$companyId] ?? 0
+            ];
+        }
         $branch->companies()->sync($companiesToSync);
 
         return redirect()->route('branches.index')->with('success', 'Sucursal actualizada correctamente.');

@@ -416,6 +416,7 @@ class ShipmentController extends Controller
     {
         $ids = $request->input('ids', []);
         $dispatchId = $request->input('dispatch_id');
+        $routeId = $request->input('route_id');
 
         if (empty($ids)) {
             return back()->with('error', 'Debe seleccionar al menos una guía.');
@@ -430,8 +431,9 @@ class ShipmentController extends Controller
         ])->get();
 
         $dispatch = $dispatchId ? DispatchModel::with(['driver', 'origin', 'destination'])->find($dispatchId) : null;
+        $route = $routeId ? \App\Models\TransportRoute::find($routeId) : null;
 
-        return view('shipments.print_massive', compact('shipments', 'dispatch'));
+        return view('shipments.print_massive', compact('shipments', 'dispatch', 'route'));
     }
 
     /**

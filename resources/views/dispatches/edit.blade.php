@@ -150,6 +150,7 @@ $btnConfig = [
                     <form id="form-print-massive" action="{{ route('shipments.print-massive') }}" method="POST" target="_blank">
                         @csrf
                         <input type="hidden" name="dispatch_id" value="{{ $dispatch->id }}">
+                        <input type="hidden" name="route_id" id="modal-route-id-input" value="">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-800/50">
                                 <tr>

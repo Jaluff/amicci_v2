@@ -283,6 +283,7 @@ $(function () {
         const routeId = $(this).data('route-id');
         const routeNumber = $(this).data('route-number');
         
+        $('#modal-route-id-input').val(routeId);
         $('#modal-route-number').text(routeNumber);
         $('#print-guides-body').html('<tr><td colspan="4" class="p-8 text-center text-gray-500">Cargando guías...</td></tr>');
         printModal.removeClass('hidden');

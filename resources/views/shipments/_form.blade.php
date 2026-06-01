@@ -5,10 +5,10 @@
             'tipo_paquete' => 'bultos',
             'cantidad' => 1,
             'numero_remito' => '',
-            'peso' => 0,
-            'volumen' => 0,
-            'monto_valor_declarado' => 0,
-            'monto_seguro_item' => 0,
+            'peso' => '',
+            'volumen' => '',
+            'monto_valor_declarado' => '',
+            'monto_seguro_item' => '',
             'referencia_recepcion' => '',
             'referencia_orden_carga' => ''
         ]
@@ -176,14 +176,14 @@
                 <div class="flex gap-2 mt-1 items-center">
                     <label class="flex items-center gap-1">
                         <input type="radio" name="flete_a_pagar_en" value="origen" @checked(
-                            strtolower(old('flete_a_pagar_en', $isEdit ? ($shipment->flete_a_pagar_en ?? 'origen') : 'origen')) === 'origen'
+                            strtolower(old('flete_a_pagar_en', $isEdit ? ($shipment->flete_a_pagar_en ?? 'destino') : 'destino')) === 'origen'
                         )
                             class="w-3 h-3" />
                         <span class="text-gray-800 dark:text-gray-200 font-medium">Origen</span>
                     </label>
                     <label class="flex items-center gap-1">
                         <input type="radio" name="flete_a_pagar_en" value="destino" @checked(
-                            strtolower(old('flete_a_pagar_en', $isEdit ? ($shipment->flete_a_pagar_en ?? 'origen') : 'origen')) === 'destino'
+                            strtolower(old('flete_a_pagar_en', $isEdit ? ($shipment->flete_a_pagar_en ?? 'destino') : 'destino')) === 'destino'
                         ) class="w-3 h-3" />
                         <span class="text-gray-600 dark:text-gray-400">Destino</span>
                     </label>
@@ -267,12 +267,12 @@
                         <div>
                             <label class="font-medium text-gray-600 dark:text-gray-400 block mb-0.5 text-xs">Peso</label>
                             <x-text-input type="number" step="0.01" name="items[{{ $index }}][peso]"
-                                value="{{ $item->peso ?? 0 }}" class="w-full py-1.5 px-1 text-sm" />
+                                value="{{ $item->peso ?? '' }}" class="w-full py-1.5 px-1 text-sm" />
                         </div>
                         <div>
                             <label class="font-medium text-gray-600 dark:text-gray-400 block mb-0.5 text-xs">Volumen</label>
                             <x-text-input type="number" step="0.01" name="items[{{ $index }}][volumen]"
-                                value="{{ $item->volumen ?? 0 }}" class="w-full py-1.5 px-1 text-sm" />
+                                value="{{ $item->volumen ?? '' }}" class="w-full py-1.5 px-1 text-sm" />
                         </div>
                         <div>
                             <label class="font-medium text-gray-600 dark:text-gray-400 block mb-0.5 text-xs">Orden
@@ -290,7 +290,7 @@
                             <label class="font-medium text-gray-600 dark:text-gray-400 block mb-0.5 text-xs">Valor
                                 declarado</label>
                             <x-text-input type="number" step="0.01" name="items[{{ $index }}][monto_valor_declarado]"
-                                value="{{ $item->monto_valor_declarado ?? 0 }}" class="w-full py-1.5 px-1 text-sm" />
+                                value="{{ $item->monto_valor_declarado ?? '' }}" class="w-full py-1.5 px-1 text-sm" />
                         </div>
                         <div class="flex items-end">
                             <button type="button"
@@ -523,12 +523,12 @@
             </div>
             <div>
                 <label class="font-medium text-gray-600 dark:text-gray-400 block mb-0.5 text-xs">Peso</label>
-                <x-text-input type="number" step="0.01" name="items[__INDEX__][peso]" value="0"
+                <x-text-input type="number" step="0.01" name="items[__INDEX__][peso]" value=""
                     class="w-full py-1.5 px-1 text-sm" />
             </div>
             <div>
                 <label class="font-medium text-gray-600 dark:text-gray-400 block mb-0.5 text-xs">Vol</label>
-                <x-text-input type="number" step="0.01" name="items[__INDEX__][volumen]" value="0"
+                <x-text-input type="number" step="0.01" name="items[__INDEX__][volumen]" value=""
                     class="w-full py-1.5 px-1 text-sm" />
             </div>
             <div>
@@ -543,7 +543,7 @@
             </div>
             <div>
                 <label class="font-medium text-gray-600 dark:text-gray-400 block mb-0.5 text-xs">Valor</label>
-                <x-text-input type="number" step="0.01" name="items[__INDEX__][monto_valor_declarado]" value="0"
+                <x-text-input type="number" step="0.01" name="items[__INDEX__][monto_valor_declarado]" value=""
                     class="w-full py-1.5 px-1 text-sm" />
             </div>
             <div class="flex items-end">
