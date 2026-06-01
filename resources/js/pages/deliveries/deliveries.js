@@ -39,7 +39,12 @@ const DeliveryModule = (function ($) {
                     name: 'load_date',
                     render: function (data) {
                         if (!data) return '-';
-                        return new Date(data).toLocaleDateString('es-AR');
+                        const datePart = data.split(' ')[0].split('T')[0];
+                        const parts = datePart.split('-');
+                        if (parts.length === 3) {
+                            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                        }
+                        return data;
                     }
                 },
                 { data: 'delivery_number', name: 'delivery_number' },

@@ -9,7 +9,17 @@
                 <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200">
                     Editar Factura # {{ $invoice->numero }}
                 </h2>
-                <a href="{{ route('billing.show', $invoice) }}" class="text-sm text-indigo-600 hover:underline">← Ver factura</a>
+                <div class="flex items-center gap-3">
+                    <a href="{{ route('billing.print', $invoice) }}" target="_blank"
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition">
+                        🖨️ Imprimir PDF
+                    </a>
+                    <a href="{{ route('billing.excel', $invoice) }}"
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 transition">
+                        📊 Exportar Excel
+                    </a>
+                    <a href="{{ route('billing.show', $invoice) }}" class="text-sm text-indigo-600 hover:underline">← Ver factura</a>
+                </div>
             </div>
 
             @if($errors->any())

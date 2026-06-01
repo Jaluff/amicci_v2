@@ -143,6 +143,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/billing/available-shipments', [InvoiceController::class, 'availableShipments'])->name('billing.available-shipments');
     Route::post('/billing', [InvoiceController::class, 'store'])->name('billing.store');
     Route::get('/billing/{invoice}', [InvoiceController::class, 'show'])->name('billing.show');
+    Route::get('/billing/{invoice}/print', [InvoiceController::class, 'print'])->name('billing.print');
+    Route::get('/billing/{invoice}/excel', [InvoiceController::class, 'excel'])->name('billing.excel');
     Route::post('/billing/{invoice}/pay', [InvoiceController::class, 'markAsPaid'])->name('billing.pay');
 
     // Edición de facturas — solo admin

@@ -317,9 +317,9 @@
                             </tr>
                         @endif
                     </table>
-                    <div class="absolute bottom-0.5 left-1 w-full pr-2 flex justify-between text-[8px] font-bold">
-                        <div>I.V.A.: <span>{{ $shipment->recipient?->tax_status ?? '0' }}</span></div>
-                        <div>CUIT: <span>{{ $shipment->recipient?->document ?? '' }}</span></div>
+                    <div class="absolute bottom-1 left-2 w-[95%] flex text-[9.5px] font-bold">
+                        <div class="w-1/2">I.V.A.: <span class="font-normal">{{ $shipment->recipient?->tax_status ?? '0' }}</span></div>
+                        <div class="w-1/2">CUIT: <span class="font-normal">{{ $shipment->recipient?->document ?? '' }}</span></div>
                     </div>
                 </div>
             </div>
@@ -357,18 +357,6 @@
                                 </div>
                             </div>
                         @endforeach
-                    </div>
-
-                    <!-- Inner Grid Row -->
-                    <div
-                        class="border-t-dark flex bg-gray-50 text-[8.5px] font-bold p-1 h-6 items-center border-t border-gray-700">
-                        <span class="mr-3">Nº hoja de ruta</span>
-                        <span class="mr-3">Vº Bº Dep.</span>
-                        <span class="mr-3">Repart.</span>
-                        <span class="mr-3">Peso hoja de Ruta</span>
-                        <span class="mr-3">Paso Cobro</span>
-                        <span class="mr-3">C.C.</span>
-                        <span>Fac Nº {{ $shipment->numero_factura ?? '' }}</span>
                     </div>
                 </div>
 
@@ -451,14 +439,14 @@
             <!-- Footer Details -->
             <div class="flex h-16">
                 <!-- Valor Declarado -->
-                <div class="w-1/4 border-r-dark p-2 txt-xs relative font-normal">
-                    VALOR DECLARADO:<br><span
-                        class="font-bold">${{ number_format($shipment->items->sum('monto_valor_declarado'), 2, ',', '.') }}</span>
-                    <div
-                        class="mt-1 flex flex-col justify-end absolute bottom-1 h-full w-full left-0 pl-2 pb-1 font-normal">
-                        <div class="w-full border-t border-transparent pt-3">
-                            ASEGURADO POR:<br><span class="font-bold">&nbsp;</span>
-                        </div>
+                <div class="w-1/4 border-r-dark flex flex-col txt-xs font-normal">
+                    <div class="h-1/2 p-1.5 flex flex-col justify-between" style="border-bottom: 1.5px solid #000;">
+                        <div>VALOR DECLARADO:</div>
+                        <div class="font-bold">${{ number_format($shipment->items->sum('monto_valor_declarado'), 2, ',', '.') }}</div>
+                    </div>
+                    <div class="h-1/2 p-1.5 flex flex-col justify-between">
+                        <div>Nº FACTURA:</div>
+                        <div class="font-bold">{{ $shipment->numero_factura ?? '-' }}</div>
                     </div>
                 </div>
                 <!-- Observaciones -->

@@ -22,6 +22,7 @@ export default defineConfig({
                 'resources/js/pages/billing/index.js',
                 'resources/js/pages/billing/create.js',
                 'resources/js/pages/billing/invoices.js',
+                'resources/js/pages/billing/show.js',
                 'resources/js/pages/loads/index.js',
                 'resources/js/pages/loads/form.js'
             ],

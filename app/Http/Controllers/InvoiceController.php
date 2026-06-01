@@ -185,8 +185,36 @@ class InvoiceController extends Controller
             )
             ->editColumn('total', fn ($row) => '$ '.number_format($row->total, 2, ',', '.'))
             ->addColumn('actions', function (Invoice $row): string {
-                $html = '<div class="flex items-center gap-2">';
-                $html .= '<a href="'.route('billing.show', $row->id).'" class="text-indigo-600 hover:text-indigo-900 text-xs font-medium">Ver Factura</a>';
+                $showUrl = route('billing.show', $row->id);
+                $printUrl = route('billing.print', $row->id);
+                $excelUrl = route('billing.excel', $row->id);
+                $editUrl = route('billing.edit', $row->id);
+                
+                $isAdmin = auth()->user()?->hasRole('admin');
+
+                $html = '<div class="flex items-center justify-center gap-2">';
+                
+                // Ver/Editar
+                if ($isAdmin && !$row->cobrada) {
+                    $html .= '<a href="'.$editUrl.'" title="Editar" class="inline-flex items-center justify-center p-1.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors">';
+                    $html .= '<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+                    $html .= '</a>';
+                } else {
+                    $html .= '<a href="'.$showUrl.'" title="Ver" class="inline-flex items-center justify-center p-1.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-colors">';
+                    $html .= '<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+                    $html .= '</a>';
+                }
+
+                // PDF
+                $html .= '<a href="'.$printUrl.'" target="_blank" title="Imprimir PDF" class="inline-flex items-center justify-center p-1.5 rounded-md bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 transition-colors">';
+                $html .= '<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>';
+                $html .= '</a>';
+
+                // Excel
+                $html .= '<a href="'.$excelUrl.'" title="Exportar Excel" class="inline-flex items-center justify-center p-1.5 rounded-md bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-colors">';
+                $html .= '<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>';
+                $html .= '</a>';
+
                 $html .= '</div>';
 
                 return $html;
@@ -348,5 +376,108 @@ class InvoiceController extends Controller
         $this->invoiceService->markAsPaid($invoice);
 
         return redirect()->route('billing.index')->with('success', "Factura #{$invoice->numero} marcada como cobrada. Todas las guias asociadas fueron actualizadas.");
+    }
+
+    // -------------------------------------------------------------------------
+    // Impresion de Facturas
+    // -------------------------------------------------------------------------
+
+    public function print(Invoice $invoice): View
+    {
+        $invoice->load(['party', 'company', 'shipments.sender', 'shipments.recipient']);
+
+        return view('billing.print', compact('invoice'));
+    }
+
+    public function excel(Invoice $invoice)
+    {
+        $invoice->load([
+            'party',
+            'company',
+            'shipments.sender',
+            'shipments.recipient',
+        ]);
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="Factura_'.$invoice->numero.'.csv"',
+        ];
+
+        $callback = function() use ($invoice) {
+            $file = fopen('php://output', 'w');
+            
+            // UTF-8 BOM for Excel compatibility
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            fputcsv($file, ['FACTURA / LIQUIDACIÓN'], ';');
+            fputcsv($file, ['Número:', $invoice->numero, '', 'Fecha Emisión:', $invoice->fecha_factura?->format('d/m/Y') ?? '-'], ';');
+            fputcsv($file, ['Cliente:', $invoice->party?->name ?? '-', '', 'Empresa:', $invoice->company?->name], ';');
+            fputcsv($file, ['Nº Recibo:', $invoice->numero_recibo ?? '—', '', 'Fecha Cobro:', $invoice->fecha_cobro?->format('d/m/Y') ?? '—'], ';');
+            if ($invoice->notas) {
+                fputcsv($file, ['Notas:', $invoice->notas], ';');
+            }
+            fputcsv($file, [], ';');
+
+            fputcsv($file, [
+                'Fecha',
+                '# Guía',
+                'Remitente',
+                'Destinatario',
+                'Flete',
+                'Seguro',
+                'Com. Contr.',
+                'Ret. Merc.',
+                'Otros Conc.',
+                'Total'
+            ], ';');
+
+            $totalFlete = 0;
+            $totalSeguro = 0;
+            $totalComision = 0;
+            $totalRetencion = 0;
+            $totalOtros = 0;
+            $totalTotal = 0;
+
+            foreach ($invoice->shipments as $shipment) {
+                $totalFlete += $shipment->flete;
+                $totalSeguro += $shipment->seguro;
+                $totalComision += $shipment->monto_contra_reembolso;
+                $totalRetencion += $shipment->retencion_mercaderia;
+                $totalOtros += $shipment->otros_cargos;
+                $totalTotal += $shipment->total;
+
+                fputcsv($file, [
+                    $shipment->fecha?->format('d/m/Y') ?? '-',
+                    $shipment->numero,
+                    $shipment->sender?->name ?? '-',
+                    $shipment->recipient?->name ?? '-',
+                    number_format($shipment->flete, 2, ',', ''),
+                    number_format($shipment->seguro, 2, ',', ''),
+                    number_format($shipment->monto_contra_reembolso, 2, ',', ''),
+                    number_format($shipment->retencion_mercaderia, 2, ',', ''),
+                    number_format($shipment->otros_cargos, 2, ',', ''),
+                    number_format($shipment->total, 2, ',', '')
+                ], ';');
+            }
+
+            fputcsv($file, [], ';');
+
+            fputcsv($file, [
+                'TOTALES',
+                '',
+                '',
+                '',
+                number_format($totalFlete, 2, ',', ''),
+                number_format($totalSeguro, 2, ',', ''),
+                number_format($totalComision, 2, ',', ''),
+                number_format($totalRetencion, 2, ',', ''),
+                number_format($totalOtros, 2, ',', ''),
+                number_format($totalTotal, 2, ',', '')
+            ], ';');
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }
