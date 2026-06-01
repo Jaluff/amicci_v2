@@ -22,7 +22,7 @@ class TransportRouteService
 
             $branchId = $data['origin_id'] ?? 0;
             $prefix = substr($company->prefix, 0, 1);
-            $data['route_number'] = sprintf('%s%dR-%06d', $prefix, $branchId, $company->last_route_number);
+            $data['route_number'] = sprintf('%s%dH-%06d', $prefix, $branchId, $company->last_route_number);
 
             $route = TransportRoute::create($data);
             if (isset($data['shipments'])) {

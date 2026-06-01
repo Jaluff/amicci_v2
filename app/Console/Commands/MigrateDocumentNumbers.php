@@ -47,7 +47,7 @@ class MigrateDocumentNumbers extends Command
                 $num = (int) filter_var(end($parts), FILTER_SANITIZE_NUMBER_INT);
                 $prefix = substr($r->company?->prefix ?? 'A', 0, 1);
                 $branch = count($parts) === 4 ? (int)$parts[1] : (count($parts) === 2 ? $extractBranch($parts[0], $r->origin_id ?? 0) : ($r->origin_id ?? 0));
-                $r->route_number = sprintf('%s%dR-%06d', $prefix, $branch, $num);
+                $r->route_number = sprintf('%s%dH-%06d', $prefix, $branch, $num);
                 $r->save();
             }
 
@@ -70,7 +70,7 @@ class MigrateDocumentNumbers extends Command
                 $num = (int) filter_var(end($parts), FILTER_SANITIZE_NUMBER_INT);
                 $prefix = substr($d->company?->prefix ?? 'A', 0, 1);
                 $branch = count($parts) === 4 ? (int)$parts[1] : (count($parts) === 2 ? $extractBranch($parts[0], $d->location_id ?? 0) : ($d->location_id ?? 0));
-                $d->delivery_number = sprintf('%s%dE-%06d', $prefix, $branch, $num);
+                $d->delivery_number = sprintf('%s%dR-%06d', $prefix, $branch, $num);
                 $d->save();
             }
 

@@ -22,7 +22,7 @@ class DeliveryService
 
             $branchId = $data['location_id'] ?? 0;
             $prefix = substr($company->prefix, 0, 1);
-            $data['delivery_number'] = sprintf('%s%dE-%06d', $prefix, $branchId, $company->last_delivery_number);
+            $data['delivery_number'] = sprintf('%s%dR-%06d', $prefix, $branchId, $company->last_delivery_number);
 
             $shipments = [];
             if (! empty($data['shipments'])) {
