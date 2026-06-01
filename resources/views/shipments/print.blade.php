@@ -372,64 +372,53 @@
                                 <td
                                     class="pl-1 border-r border-gray-400 w-3/5 overflow-hidden text-ellipsis whitespace-nowrap">
                                     Flete</td>
-                                <td class="text-right pr-1 w-2/5">{{ number_format($shipment->flete, 2, ',', '.') }}
+                                <td class="text-right pr-1 w-2/5">{{ $shipment->flete != 0 ? number_format($shipment->flete, 2, ',', '.') : '' }}
                                 </td>
                             </tr>
                             <tr class="border-b border-gray-400">
                                 <td
                                     class="pl-1 border-r border-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">
                                     Seguro</td>
-                                <td class="text-right pr-1">{{ number_format($shipment->seguro, 2, ',', '.') }}</td>
+                                <td class="text-right pr-1">{{ $shipment->seguro != 0 ? number_format($shipment->seguro, 2, ',', '.') : '' }}</td>
                             </tr>
                             <tr class="border-b border-gray-400">
                                 <td
                                     class="pl-1 border-r border-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">
                                     Comisión Contr.</td>
-                                <td class="text-right pr-1">{{ number_format(
-    $shipment->monto_contra_reembolso,
-    2,
-    ',',
-    '.'
-) }}</td>
+                                <td class="text-right pr-1">{{ $shipment->monto_contra_reembolso != 0 ? number_format($shipment->monto_contra_reembolso, 2, ',', '.') : '' }}</td>
                             </tr>
                             <tr class="border-b border-gray-400">
                                 <td
                                     class="pl-1 border-r border-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">
                                     Otros conceptos</td>
-                                <td class="text-right pr-1">{{ number_format($shipment->otros_cargos, 2, ',', '.')
-                                    }}
+                                <td class="text-right pr-1">{{ $shipment->otros_cargos != 0 ? number_format($shipment->otros_cargos, 2, ',', '.') : '' }}
                                 </td>
                             </tr>
                             <tr class="border-b border-gray-400">
                                 <td
                                     class="pl-1 border-r border-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">
                                     Retiro Merc.</td>
-                                <td class="text-right pr-1">{{ number_format(
-    $shipment->retencion_mercaderia,
-    2,
-    ',',
-    '.'
-) }}</td>
+                                <td class="text-right pr-1">{{ $shipment->retencion_mercaderia != 0 ? number_format($shipment->retencion_mercaderia, 2, ',', '.') : '' }}</td>
                             </tr>
                             <tr class="border-b border-gray-400 font-bold text-black">
                                 <td
                                     class="pl-1 border-r border-gray-400 uppercase overflow-hidden text-ellipsis whitespace-nowrap">
                                     Subtotal $:</td>
-                                <td class="text-right pr-1">{{ number_format($shipment->subtotal, 2, ',', '.') }}
+                                <td class="text-right pr-1">{{ $shipment->subtotal != 0 ? number_format($shipment->subtotal, 2, ',', '.') : '' }}
                                 </td>
                             </tr>
                             <tr class="border-b border-gray-400">
                                 <td
                                     class="pl-1 border-r border-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">
                                     Iva Resp. Insc.</td>
-                                <td class="text-right pr-1">{{ number_format($shipment->iva_monto, 2, ',', '.') }}
+                                <td class="text-right pr-1">{{ $shipment->iva_monto != 0 ? number_format($shipment->iva_monto, 2, ',', '.') : '' }}
                                 </td>
                             </tr>
                             <tr class="font-bold text-black text-[11.5px]">
                                 <td
                                     class="pl-1 border-r border-gray-400 uppercase overflow-hidden text-ellipsis whitespace-nowrap">
                                     Total $:</td>
-                                <td class="text-right pr-1">{{ number_format($shipment->total, 2, ',', '.') }}</td>
+                                <td class="text-right pr-1">{{ $shipment->total != 0 ? number_format($shipment->total, 2, ',', '.') : '' }}</td>
                             </tr>
                         </table>
                     </div>
