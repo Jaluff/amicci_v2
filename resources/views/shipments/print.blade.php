@@ -173,7 +173,7 @@
                         </div>
 
                         <!-- Segunda columna de dirección (Otras Sucursales) -->
-                        <div class="w-1/2 text-right">
+                        <div class="w-1/2 text-right pr-3">
                             @foreach($secondaries as $sec)
                                 <div class="mb-0.5">
                                     <p class="font-bold mb-0">{{ $sec->name }}
@@ -194,7 +194,7 @@
                 </div>
 
                 <!-- Col 2: Right Side (35%) -->
-                <div class="w-[45%] flex flex-col pt-1 pb-1 pl-4 pr-1 bg-white">
+                <div class="w-[45%] flex flex-col pt-1 pb-1 pl-10 pr-1 bg-white">
                     <div class="flex items-center justify-between w-full mb-1">
                         <div class="flex items-center gap-1.5">
                             <span class="text-[13px] font-bold">FECHA:</span>
@@ -239,21 +239,29 @@
                         </tr>
                         <tr>
                             <td class="align-top whitespace-nowrap">DOMICILIO:</td>
-                            <td class="uppercase text-[11.5px]">
-                                @php
-                                    $senderAddr = $shipment->sender?->primaryAddress;
-                                @endphp
-                                @if($senderAddr)
-                                    {{ trim($senderAddr->address_line1 . ' ' . $senderAddr->address_line2) }}@php
-                                        $locParts = array_filter([
-                                            $senderAddr->city,
-                                            $senderAddr->state,
-                                            $senderAddr->zip_code,
-                                        ]);
-                                    @endphp@if(!empty($locParts)), {{ implode(', ', $locParts) }}@endif
-                                @else
-                                    {{ $shipment->sender->address ?? '' }}@if($shipment->origin), {{ $shipment->origin->nombre }}@endif
-                                @endif
+                            @php
+                                $senderAddr = $shipment->sender?->primaryAddress;
+                                $senderAddrText = '';
+                                if ($senderAddr) {
+                                    $senderAddrText = trim($senderAddr->address_line1 . ' ' . $senderAddr->address_line2);
+                                    $locParts = array_filter([
+                                        $senderAddr->city,
+                                        $senderAddr->state,
+                                        $senderAddr->zip_code,
+                                    ]);
+                                    if (!empty($locParts)) {
+                                        $senderAddrText .= ', ' . implode(', ', $locParts);
+                                    }
+                                } else {
+                                    $senderAddrText = $shipment->sender->address ?? '';
+                                    if ($shipment->origin) {
+                                        $senderAddrText .= ($senderAddrText ? ', ' : '') . $shipment->origin->nombre;
+                                    }
+                                }
+                                $senderFontSizeClass = strlen($senderAddrText) > 40 ? 'text-[9.5px]' : 'text-[10.5px]';
+                            @endphp
+                            <td class="uppercase {{ $senderFontSizeClass }}">
+                                {{ $senderAddrText }}
                             </td>
                         </tr>
                         @php
@@ -275,26 +283,34 @@
                 <div class="w-1/2 p-1 relative" style="padding-bottom: 14px;">
                     <table class="w-full" style="line-height: 1.1;">
                         <tr>
-                            <td class="w-24 align-top whitespace-nowrap">DESTINATARIO:</td>
+                            <td class="w-28 align-top whitespace-nowrap">DESTINATARIO:</td>
                             <td class="font-bold uppercase">{{ $shipment->recipient->name ?? '' }}</td>
                         </tr>
                         <tr>
                             <td class="align-top whitespace-nowrap">DOMICILIO:</td>
-                            <td class="uppercase text-[11.5px]">
-                                @php
-                                    $recipientAddr = $shipment->recipient?->primaryAddress;
-                                @endphp
-                                @if($recipientAddr)
-                                    {{ trim($recipientAddr->address_line1 . ' ' . $recipientAddr->address_line2) }}@php
-                                        $locPartsDest = array_filter([
-                                            $recipientAddr->city,
-                                            $recipientAddr->state,
-                                            $recipientAddr->zip_code,
-                                        ]);
-                                    @endphp@if(!empty($locPartsDest)), {{ implode(', ', $locPartsDest) }}@endif
-                                @else
-                                    {{ $shipment->recipient->address ?? '' }}@if($shipment->destination), {{ $shipment->destination->nombre }}@endif
-                                @endif
+                            @php
+                                $recipientAddr = $shipment->recipient?->primaryAddress;
+                                $recipientAddrText = '';
+                                if ($recipientAddr) {
+                                    $recipientAddrText = trim($recipientAddr->address_line1 . ' ' . $recipientAddr->address_line2);
+                                    $locPartsDest = array_filter([
+                                        $recipientAddr->city,
+                                        $recipientAddr->state,
+                                        $recipientAddr->zip_code,
+                                    ]);
+                                    if (!empty($locPartsDest)) {
+                                        $recipientAddrText .= ', ' . implode(', ', $locPartsDest);
+                                    }
+                                } else {
+                                    $recipientAddrText = $shipment->recipient->address ?? '';
+                                    if ($shipment->destination) {
+                                        $recipientAddrText .= ($recipientAddrText ? ', ' : '') . $shipment->destination->nombre;
+                                    }
+                                }
+                                $recipientFontSizeClass = strlen($recipientAddrText) > 40 ? 'text-[9.5px]' : 'text-[10.5px]';
+                            @endphp
+                            <td class="uppercase {{ $recipientFontSizeClass }}">
+                                {{ $recipientAddrText }}
                             </td>
                         </tr>
                         @php
@@ -448,7 +464,7 @@
 
         <!-- Texto legal en pie de página -->
         <div class="px-1 text-justify tracking-tighter text-black w-full"
-            style="font-size: 6px; line-height: 1.1; margin-top: 4px;">
+            style="font-size: 7px; line-height: 1.1; margin-top: 4px;">
             NOTA IMPORTANTE: TRANSPORTE AMICCI Requerirá a los cargadores la DECLARACION DE VALORES DE SUS CARGAS, a
             fin
             de
