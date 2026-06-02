@@ -103,7 +103,21 @@ class ShipmentController extends Controller
             }
         }
 
-        return DataTables::of($query->orderByDesc('shipments.updated_at'))
+        if (! $request->has('order')) {
+            $query->orderByDesc('shipments.updated_at');
+        }
+
+        return DataTables::of($query)
+            ->orderColumn('shipments.numero', function ($query, $order) {
+                $query->orderByRaw("REGEXP_REPLACE(SUBSTRING_INDEX(shipments.numero, '-', 1), '[0-9]', '') $order")
+                    ->orderByRaw("CAST(REGEXP_REPLACE(SUBSTRING_INDEX(shipments.numero, '-', 1), '[^0-9]', '') AS UNSIGNED) $order")
+                    ->orderByRaw("CAST(SUBSTRING_INDEX(shipments.numero, '-', -1) AS UNSIGNED) $order");
+            })
+            ->orderColumn('numero', function ($query, $order) {
+                $query->orderByRaw("REGEXP_REPLACE(SUBSTRING_INDEX(shipments.numero, '-', 1), '[0-9]', '') $order")
+                    ->orderByRaw("CAST(REGEXP_REPLACE(SUBSTRING_INDEX(shipments.numero, '-', 1), '[^0-9]', '') AS UNSIGNED) $order")
+                    ->orderByRaw("CAST(SUBSTRING_INDEX(shipments.numero, '-', -1) AS UNSIGNED) $order");
+            })
             ->addColumn('empresa', function ($row) {
                 return $row->empresa_prefix ?? '-';
             })
@@ -118,7 +132,7 @@ class ShipmentController extends Controller
                 $has_resolved_problem = $row->problems->where('is_active', false)->isNotEmpty();
 
                 $numero = htmlspecialchars($row->numero ?? '', ENT_QUOTES);
-                $html = "<span class='font-mono font-bold text-gray-800 dark:text-gray-200'>{$row->numero}</span>";
+                $html = "<span class='font-mono font-bold text-gray-800 dark:text-gray-200 text-[15px]'>{$row->numero}</span>";
 
                 if ($has_active_problem) {
                     $html .= " <span class='text-amber-500 animate-pulse cursor-pointer btn-open-spm ml-1'
