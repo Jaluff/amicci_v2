@@ -57,7 +57,7 @@ class UpdateShipmentRequest extends FormRequest
             'notas' => 'nullable|string',
             'items' => 'required|array|min:1|max:10',
             'items.*.tipo_paquete' => 'required|in:bultos,palets,sobres',
-            'items.*.cantidad' => 'required|integer|min:1',
+            'items.*.cantidad' => 'required|integer|min:0',
             'items.*.numero_remito' => 'nullable|string',
             'items.*.peso' => 'nullable|numeric|min:0',
             'items.*.volumen' => 'nullable|numeric|min:0',

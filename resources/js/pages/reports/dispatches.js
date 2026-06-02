@@ -38,13 +38,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const table = $(tableEl).DataTable({
         processing: true,
-        serverSide: true,
+        serverSide: false,
         responsive: false, // Disabled due to scrollX conflict
         scrollX: true,
-        paging: false,
+        paging: true,
+        pageLength: 30,
+        lengthMenu: [[15, 30, -1], [15, 30, "Todas"]],
+        order: [],
         deferLoading: 0,
         ajax: {
             url: dataUrl,
+            dataSrc: 'data',
             data: function (d) {
                 d.start_date = $("#filter_start_date").val();
                 d.end_date = $("#filter_end_date").val();
@@ -59,7 +63,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 d.delivery_number = $("#filter_delivery_number").val();
             },
         },
-        dom: 'Bfrtip',
+        dom: "<'dt-controls'lBf>rtip",
         buttons: [
             {
                 extend: 'colvis',
@@ -118,6 +122,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Restore "Select All" to unchecked upon physical reload
             $('#selectAll').prop('checked', false);
             updateFooters(this.api());
+            populateLocalFilters(this.api());
         },
         language: {
             url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json",
@@ -159,6 +164,61 @@ document.addEventListener("DOMContentLoaded", function () {
             }
                 
             $(api.column(index).footer()).html(formattedTotal);
+        });
+    }
+
+    function populateLocalFilters(api) {
+        const currentRemitente = $('#local_filter_remitente').val();
+        const currentDestinatario = $('#local_filter_destinatario').val();
+        const currentCobrada = $('#local_filter_cobrada').val();
+
+        const remitentes = new Set();
+        const destinatarios = new Set();
+        const cobradas = new Set();
+
+        api.rows().every(function () {
+            const data = this.data();
+            const sender = data.sender_name || '';
+            const recipient = data.recipient_name || '';
+            let cobradaStr = 'No';
+            if (data.cobrada === 'Sí' || data.cobrada === true || data.cobrada === 1 || data.cobrada === '1') {
+                cobradaStr = 'Sí';
+            }
+
+            const matchesRemitente = !currentRemitente || sender === currentRemitente;
+            const matchesDestinatario = !currentDestinatario || recipient === currentDestinatario;
+            const matchesCobrada = !currentCobrada || cobradaStr === currentCobrada;
+
+            if (matchesDestinatario && matchesCobrada) {
+                if (sender) remitentes.add(sender);
+            }
+            if (matchesRemitente && matchesCobrada) {
+                if (recipient) destinatarios.add(recipient);
+            }
+            if (matchesRemitente && matchesDestinatario) {
+                cobradas.add(cobradaStr);
+            }
+        });
+
+        const remitenteSelect = $('#local_filter_remitente');
+        remitenteSelect.empty().append('<option value="">Todos</option>');
+        Array.from(remitentes).sort().forEach(name => {
+            const selected = name === currentRemitente ? 'selected' : '';
+            remitenteSelect.append(`<option value="${name}" ${selected}>${name}</option>`);
+        });
+
+        const destinatarioSelect = $('#local_filter_destinatario');
+        destinatarioSelect.empty().append('<option value="">Todos</option>');
+        Array.from(destinatarios).sort().forEach(name => {
+            const selected = name === currentDestinatario ? 'selected' : '';
+            destinatarioSelect.append(`<option value="${name}" ${selected}>${name}</option>`);
+        });
+
+        const cobradaSelect = $('#local_filter_cobrada');
+        cobradaSelect.empty().append('<option value="">Todas</option>');
+        Array.from(cobradas).sort().forEach(val => {
+            const selected = val === currentCobrada ? 'selected' : '';
+            cobradaSelect.append(`<option value="${val}" ${selected}>${val}</option>`);
         });
     }
 
@@ -220,5 +280,18 @@ document.addEventListener("DOMContentLoaded", function () {
         if(e.which === 13) {
             table.ajax.reload();
         }
+    });
+
+    // Local filters for already shown records
+    $('#local_filter_remitente').on('change', function () {
+        table.column(3).search(this.value).draw();
+    });
+
+    $('#local_filter_destinatario').on('change', function () {
+        table.column(4).search(this.value).draw();
+    });
+
+    $('#local_filter_cobrada').on('change', function () {
+        table.column(11).search(this.value).draw();
     });
 });

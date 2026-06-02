@@ -257,7 +257,7 @@
                             <label
                                 class="font-medium text-gray-600 dark:text-gray-400 block mb-0.5 text-xs">Cantidad</label>
                             <x-text-input type="number" name="items[{{ $index }}][cantidad]"
-                                value="{{ $item->cantidad ?? 1 }}" min="1" class="w-full py-1.5 px-1 text-sm" required />
+                                value="{{ $item->cantidad ?? 1 }}" min="0" class="w-full py-1.5 px-1 text-sm" required />
                         </div>
                         <div>
                             <label class="font-medium text-gray-600 dark:text-gray-400 block mb-0.5 text-xs">Remito</label>
@@ -514,7 +514,7 @@
             </div>
             <div>
                 <label class="font-medium text-gray-600 dark:text-gray-400 block mb-0.5 text-xs">Cant. *</label>
-                <x-text-input type="number" name="items[__INDEX__][cantidad]" value="1" min="1"
+                <x-text-input type="number" name="items[__INDEX__][cantidad]" value="1" min="0"
                     class="w-full py-1.5 px-1 text-sm" required />
             </div>
             <div>

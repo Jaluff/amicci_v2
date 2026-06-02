@@ -86,6 +86,38 @@
                 </div>
             </div>
 
+            {{-- Filtros locales sobre registros mostrados --}}
+            <div class="mb-4 bg-indigo-50/50 dark:bg-indigo-950/20 p-4 rounded-lg border border-indigo-100 dark:border-indigo-900/50">
+                <h3 class="text-sm font-semibold text-indigo-900 dark:text-indigo-300 mb-3 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 8.293A1 1 0 013 7.586V4z" />
+                    </svg>
+                    Filtrar sobre los registros ya mostrados en la tabla
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="local_filter_remitente" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Remitente</label>
+                        <select id="local_filter_remitente" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm text-sm">
+                            <option value="">Todos</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="local_filter_destinatario" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Destinatario</label>
+                        <select id="local_filter_destinatario" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm text-sm">
+                            <option value="">Todos</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="local_filter_cobrada" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Cobrada</label>
+                        <select id="local_filter_cobrada" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm text-sm">
+                            <option value="">Todas</option>
+                            <option value="Sí">Sí</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             <div class="overflow-x-auto shadow rounded-lg mb-6 max-w-full">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 display w-full text-left text-sm whitespace-nowrap" id="reports-table" data-url="{{ route('reports.dispatches.datatable') }}">
                     <thead class="bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300">
@@ -117,16 +149,16 @@
                     </thead>
                     <tfoot class="bg-indigo-50 dark:bg-indigo-900 border-t-2 border-indigo-200 dark:border-indigo-700 font-bold text-gray-800 dark:text-gray-200">
                         <tr>
-                            <th colspan="14" class="p-2 text-right">TOTALES:</th>
-                            <th class="p-2"></th>
-                            <th class="p-2"></th>
-                            <th class="p-2"></th>
-                            <th class="p-2"></th>
-                            <th class="p-2"></th>
-                            <th class="p-2"></th>
-                            <th class="p-2"></th>
-                            <th class="p-2"></th>
-                            <th class="p-2 text-indigo-700 dark:text-indigo-300"></th>
+                            <th colspan="14" class="p-2 text-left">TOTALES:</th>
+                            <th class="p-2 text-left"></th>
+                            <th class="p-2 text-left"></th>
+                            <th class="p-2 text-left"></th>
+                            <th class="p-2 text-left"></th>
+                            <th class="p-2 text-left"></th>
+                            <th class="p-2 text-left"></th>
+                            <th class="p-2 text-left"></th>
+                            <th class="p-2 text-left"></th>
+                            <th class="p-2 text-indigo-700 dark:text-indigo-300 text-left"></th>
                         </tr>
                     </tfoot>
                     <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
