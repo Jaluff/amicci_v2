@@ -97,22 +97,17 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label for="local_filter_remitente" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Remitente</label>
-                        <select id="local_filter_remitente" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm text-sm">
-                            <option value="">Todos</option>
+                        <select id="local_filter_remitente" multiple class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm text-sm">
                         </select>
                     </div>
                     <div>
                         <label for="local_filter_destinatario" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Destinatario</label>
-                        <select id="local_filter_destinatario" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm text-sm">
-                            <option value="">Todos</option>
+                        <select id="local_filter_destinatario" multiple class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm text-sm">
                         </select>
                     </div>
                     <div>
                         <label for="local_filter_cobrada" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Cobrada</label>
-                        <select id="local_filter_cobrada" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm text-sm">
-                            <option value="">Todas</option>
-                            <option value="Sí">Sí</option>
-                            <option value="No">No</option>
+                        <select id="local_filter_cobrada" multiple class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm text-sm">
                         </select>
                     </div>
                 </div>

@@ -20,7 +20,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Initialize select2 for multiple selections (Normal)
-    const select2Selectors = ['#filter_origin_id', '#filter_destination_id', '#filter_ubicacion_actual'];
+    const select2Selectors = [
+        '#filter_origin_id', '#filter_destination_id', '#filter_ubicacion_actual',
+        '#local_filter_remitente', '#local_filter_destinatario', '#local_filter_cobrada'
+    ];
     select2Selectors.forEach(selector => {
         if ($(selector).length) {
             $(selector).select2({
@@ -35,6 +38,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!tableEl) return;
 
     const dataUrl = tableEl.dataset.url;
+
+    let isPopulating = false;
 
     const table = $(tableEl).DataTable({
         processing: true,
@@ -168,9 +173,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function populateLocalFilters(api) {
-        const currentRemitente = $('#local_filter_remitente').val();
-        const currentDestinatario = $('#local_filter_destinatario').val();
-        const currentCobrada = $('#local_filter_cobrada').val();
+        isPopulating = true;
+
+        const currentRemitente = $('#local_filter_remitente').val() || [];
+        const currentDestinatario = $('#local_filter_destinatario').val() || [];
+        const currentCobrada = $('#local_filter_cobrada').val() || [];
 
         const remitentes = new Set();
         const destinatarios = new Set();
@@ -185,9 +192,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 cobradaStr = 'Sí';
             }
 
-            const matchesRemitente = !currentRemitente || sender === currentRemitente;
-            const matchesDestinatario = !currentDestinatario || recipient === currentDestinatario;
-            const matchesCobrada = !currentCobrada || cobradaStr === currentCobrada;
+            const matchesRemitente = currentRemitente.length === 0 || currentRemitente.includes(sender);
+            const matchesDestinatario = currentDestinatario.length === 0 || currentDestinatario.includes(recipient);
+            const matchesCobrada = currentCobrada.length === 0 || currentCobrada.includes(cobradaStr);
 
             if (matchesDestinatario && matchesCobrada) {
                 if (sender) remitentes.add(sender);
@@ -201,25 +208,30 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         const remitenteSelect = $('#local_filter_remitente');
-        remitenteSelect.empty().append('<option value="">Todos</option>');
+        remitenteSelect.empty();
         Array.from(remitentes).sort().forEach(name => {
-            const selected = name === currentRemitente ? 'selected' : '';
+            const selected = currentRemitente.includes(name) ? 'selected' : '';
             remitenteSelect.append(`<option value="${name}" ${selected}>${name}</option>`);
         });
+        remitenteSelect.trigger('change.select2');
 
         const destinatarioSelect = $('#local_filter_destinatario');
-        destinatarioSelect.empty().append('<option value="">Todos</option>');
+        destinatarioSelect.empty();
         Array.from(destinatarios).sort().forEach(name => {
-            const selected = name === currentDestinatario ? 'selected' : '';
+            const selected = currentDestinatario.includes(name) ? 'selected' : '';
             destinatarioSelect.append(`<option value="${name}" ${selected}>${name}</option>`);
         });
+        destinatarioSelect.trigger('change.select2');
 
         const cobradaSelect = $('#local_filter_cobrada');
-        cobradaSelect.empty().append('<option value="">Todas</option>');
+        cobradaSelect.empty();
         Array.from(cobradas).sort().forEach(val => {
-            const selected = val === currentCobrada ? 'selected' : '';
+            const selected = currentCobrada.includes(val) ? 'selected' : '';
             cobradaSelect.append(`<option value="${val}" ${selected}>${val}</option>`);
         });
+        cobradaSelect.trigger('change.select2');
+
+        isPopulating = false;
     }
 
     function updateRowStyles() {
@@ -284,14 +296,35 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Local filters for already shown records
     $('#local_filter_remitente').on('change', function () {
-        table.column(3).search(this.value).draw();
+        if (isPopulating) return;
+        const selected = $(this).val() || [];
+        if (selected.length === 0) {
+            table.column(3).search('').draw();
+        } else {
+            const escaped = selected.map(val => $.fn.dataTable.util.escapeRegex(val));
+            table.column(3).search('^(' + escaped.join('|') + ')$', true, false).draw();
+        }
     });
 
     $('#local_filter_destinatario').on('change', function () {
-        table.column(4).search(this.value).draw();
+        if (isPopulating) return;
+        const selected = $(this).val() || [];
+        if (selected.length === 0) {
+            table.column(4).search('').draw();
+        } else {
+            const escaped = selected.map(val => $.fn.dataTable.util.escapeRegex(val));
+            table.column(4).search('^(' + escaped.join('|') + ')$', true, false).draw();
+        }
     });
 
     $('#local_filter_cobrada').on('change', function () {
-        table.column(11).search(this.value).draw();
+        if (isPopulating) return;
+        const selected = $(this).val() || [];
+        if (selected.length === 0) {
+            table.column(11).search('').draw();
+        } else {
+            const escaped = selected.map(val => $.fn.dataTable.util.escapeRegex(val));
+            table.column(11).search('^(' + escaped.join('|') + ')$', true, false).draw();
+        }
     });
 });
