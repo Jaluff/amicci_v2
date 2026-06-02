@@ -111,7 +111,7 @@
                 </div>
 
                 <!-- Col 1: Logo & Info (65%) -->
-                <div class="w-[55%] flex flex-col pt-2 pb-1 pr-6" style="border-right: 1.5px solid #000;">
+                <div class="w-[55%] flex flex-col pt-1 pb-0.5 pr-4" style="border-right: 1.5px solid #000;">
                     <div class="flex items-start">
                         <!-- Logo -->
                         <div class="w-[60%] pl-4 flex flex-col items-center">
@@ -140,7 +140,7 @@
                         </div>
                     </div>
 
-                    <div class="text-[10px] leading-tight text-black mt-3 flex gap-2 w-full" style="padding-left: 4%;">
+                    <div class="text-[10px] leading-tight text-black mt-1 flex gap-2 w-full" style="padding-left: 4%;">
                         @php
                             $branches = \App\Models\Branch::where('active', true)->get();
                             $primary = $branches->first(fn($b) => $b->is_primary) ?? $branches->first();
@@ -150,7 +150,7 @@
                         <!-- Primera columna de dirección (Sucursal Principal) -->
                         <div class="w-1/2">
                             @if($primary)
-                                <div class="mb-1.5">
+                                <div class="mb-0.5">
                                     <p class="font-bold mb-0">{{ $primary->name }}
                                         {{-- - {{ $primary->state ?? ($primary->city ?? '') }} --}}
                                     </p>
@@ -175,7 +175,7 @@
                         <!-- Segunda columna de dirección (Otras Sucursales) -->
                         <div class="w-1/2 text-right">
                             @foreach($secondaries as $sec)
-                                <div class="mb-1.5">
+                                <div class="mb-0.5">
                                     <p class="font-bold mb-0">{{ $sec->name }}
                                         {{-- - {{ $sec->state ?? ($sec->city ?? ' ') }} --}}
                                     </p>
@@ -194,7 +194,7 @@
                 </div>
 
                 <!-- Col 2: Right Side (35%) -->
-                <div class="w-[45%] flex flex-col pt-2 pb-1.5 pl-8 pr-1 bg-white">
+                <div class="w-[45%] flex flex-col pt-1 pb-1 pl-4 pr-1 bg-white">
                     <div class="flex items-center justify-between w-full mb-1">
                         <div class="flex items-center gap-1.5">
                             <span class="text-[13px] font-bold">FECHA:</span>
@@ -208,12 +208,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="text-gray-900 uppercase tracking-tighter w-full text-right font-bold pr-2 mb-1"
+                    <div class="text-gray-900 uppercase tracking-tighter w-full text-right font-bold pr-2 mb-0.5"
                         style="font-size: 8px; line-height: 1;">
                         DOCUMENTO NO VALIDO COMO FACTURA
                     </div>
 
-                    <div class="mt-4 pr-0 text-left flex flex-col justify-end items-end">
+                    <div class="mt-1.5 pr-0 text-left flex flex-col justify-end items-end">
                         <div class="w-[85%] text-[10.5px] leading-[1.2] text-gray-900 font-medium">
                             <div><span class="font-bold">CUIT:</span> {{ $shipment->company?->cuit ?? '' }}</div>
                             <div><span class="font-bold">Ing. Brutos:</span> {{ $shipment->company?->gross_income ?? '' }}</div>
@@ -229,35 +229,30 @@
             </div>
 
             <!-- Remitente & Destinatario -->
-            <div class="flex border-b-dark text-[9.5px] leading-tight">
+            <div class="flex border-b-dark text-[13.5px] leading-tight">
                 <!-- Remitente -->
                 <div class="w-1/2 border-r-dark p-1">
                     <table class="w-full" style="line-height: 1.1;">
                         <tr>
-                            <td class="w-16 align-top">REMITENTE:</td>
+                            <td class="w-28 align-top whitespace-nowrap">REMITENTE:</td>
                             <td class="font-bold uppercase">{{ $shipment->sender->name ?? '' }}</td>
                         </tr>
                         <tr>
-                            <td class="align-top">DOMICILIO:</td>
-                            <td class="uppercase">
+                            <td class="align-top whitespace-nowrap">DOMICILIO:</td>
+                            <td class="uppercase text-[11.5px]">
                                 @php
                                     $senderAddr = $shipment->sender?->primaryAddress;
                                 @endphp
                                 @if($senderAddr)
-                                    {{ trim($senderAddr->address_line1 . ' ' . $senderAddr->address_line2) }}
-                                    @php
+                                    {{ trim($senderAddr->address_line1 . ' ' . $senderAddr->address_line2) }}@php
                                         $locParts = array_filter([
                                             $senderAddr->city,
                                             $senderAddr->state,
                                             $senderAddr->zip_code,
                                         ]);
-                                    @endphp
-                                    @if(!empty($locParts))
-                                        <br>{{ implode(', ', $locParts) }}
-                                    @endif
+                                    @endphp@if(!empty($locParts)), {{ implode(', ', $locParts) }}@endif
                                 @else
-                                    {{ $shipment->sender->address ?? '' }}
-                                    @if($shipment->origin)<br>{{ $shipment->origin->nombre }}@endif
+                                    {{ $shipment->sender->address ?? '' }}@if($shipment->origin), {{ $shipment->origin->nombre }}@endif
                                 @endif
                             </td>
                         </tr>
@@ -266,13 +261,13 @@
                         @endphp
                         @if($senderPhone)
                             <tr>
-                                <td class="align-top">TELÉFONO:</td>
+                                <td class="align-top whitespace-nowrap">TELÉFONO:</td>
                                 <td class="uppercase font-bold">{{ $senderPhone }}</td>
                             </tr>
                         @endif
                         <tr>
                             <td class="align-top" colspan="2">FLETE A PAGAR EN: <span class="font-bold ml-2">{{
-    ucfirst($shipment->flete_a_pagar_en ?? '-') }}</span></td>
+    mb_strtoupper($shipment->flete_a_pagar_en ?? '-') }}</span></td>
                         </tr>
                     </table>
                 </div>
@@ -280,30 +275,25 @@
                 <div class="w-1/2 p-1 relative" style="padding-bottom: 14px;">
                     <table class="w-full" style="line-height: 1.1;">
                         <tr>
-                            <td class="w-20 align-top">DESTINATARIO:</td>
+                            <td class="w-24 align-top whitespace-nowrap">DESTINATARIO:</td>
                             <td class="font-bold uppercase">{{ $shipment->recipient->name ?? '' }}</td>
                         </tr>
                         <tr>
-                            <td class="align-top">DOMICILIO:</td>
-                            <td class="uppercase">
+                            <td class="align-top whitespace-nowrap">DOMICILIO:</td>
+                            <td class="uppercase text-[11.5px]">
                                 @php
                                     $recipientAddr = $shipment->recipient?->primaryAddress;
                                 @endphp
                                 @if($recipientAddr)
-                                    {{ trim($recipientAddr->address_line1 . ' ' . $recipientAddr->address_line2) }}
-                                    @php
+                                    {{ trim($recipientAddr->address_line1 . ' ' . $recipientAddr->address_line2) }}@php
                                         $locPartsDest = array_filter([
                                             $recipientAddr->city,
                                             $recipientAddr->state,
                                             $recipientAddr->zip_code,
                                         ]);
-                                    @endphp
-                                    @if(!empty($locPartsDest))
-                                        <br>{{ implode(', ', $locPartsDest) }}
-                                    @endif
+                                    @endphp@if(!empty($locPartsDest)), {{ implode(', ', $locPartsDest) }}@endif
                                 @else
-                                    {{ $shipment->recipient->address ?? '' }}
-                                    @if($shipment->destination)<br>{{ $shipment->destination->nombre }}@endif
+                                    {{ $shipment->recipient->address ?? '' }}@if($shipment->destination), {{ $shipment->destination->nombre }}@endif
                                 @endif
                             </td>
                         </tr>
@@ -312,24 +302,24 @@
                         @endphp
                         @if($recipientPhone)
                             <tr>
-                                <td class="align-top">TELÉFONO:</td>
+                                <td class="align-top whitespace-nowrap">TELÉFONO:</td>
                                 <td class="uppercase font-bold">{{ $recipientPhone }}</td>
                             </tr>
                         @endif
                     </table>
                     <div class="absolute bottom-1 left-2 w-[95%] flex text-[9.5px] font-bold">
-                        <div class="w-1/2">I.V.A.: <span class="font-normal">{{ $shipment->recipient?->tax_status ?? '0' }}</span></div>
-                        <div class="w-1/2">CUIT: <span class="font-normal">{{ $shipment->recipient?->document ?? '' }}</span></div>
+                        <div class="w-1/2">I.V.A.: <span class="font-normal">{{ mb_strtoupper($shipment->recipient?->tax_status ?? '0') }}</span></div>
+                        <div class="w-1/2">CUIT: <span class="font-normal">{{ mb_strtoupper($shipment->recipient?->document ?? '') }}</span></div>
                     </div>
                 </div>
             </div>
 
             <!-- Items Table & Importes -->
             <div class="flex border-b-dark"
-                style="height: 14rem; max-height: 14rem; min-height: 14rem; overflow: hidden;">
+                 style="height: 12rem; max-height: 12rem; min-height: 12rem; overflow: hidden;">
                 <!-- Bultos (Left 70%) -->
                 <div class="w-[70%] flex flex-col h-full">
-                    <div class="flex bg-header border-b-dark font-bold text-left text-[11px] py-0.5">
+                    <div class="flex bg-header border-b-dark font-bold text-left text-[12px] py-0.5">
                         <div class="w-[10%] pl-1">CANT</div>
                         <div class="w-[15%] pl-1">TIPO</div>
                         <div class="w-[25%] pl-1">REMITO</div>
@@ -340,16 +330,18 @@
                     <div class="flex-1 p-0.5 overflow-hidden">
                         @foreach($shipment->items as $item)
                             <div
-                                class="flex text-[10.5px] font-normal items-center text-left leading-none py-0.5 border-b border-gray-200">
+                                class="flex text-[11.5px] font-normal items-center text-left leading-none py-0.5 border-b border-gray-200">
                                 <div class="w-[10%] text-black pl-1">{{ $item->cantidad }}</div>
                                 <div class="w-[15%] text-black pl-1">{{ ucfirst($item->tipo_paquete) }}</div>
                                 <div
                                     class="w-[25%] text-black uppercase overflow-hidden text-ellipsis whitespace-nowrap pl-1">
                                     {{ $item->numero_remito ?? '-' }}
                                 </div>
-                                <div class="w-[12%] text-black pl-1">{{ (int) $item->peso }} kg</div>
+                                <div class="w-[12%] text-black pl-1">
+                                    {{ $item->peso && (float) $item->peso > 0 ? (int) $item->peso . ' kg' : '' }}
+                                </div>
                                 <div class="w-[13%] text-black pl-1">
-                                    {{ $item->volumen ? $item->volumen . ' m³' : '-' }}
+                                    {{ $item->volumen && (float) $item->volumen > 0 ? $item->volumen . ' m³' : '' }}
                                 </div>
                                 <div
                                     class="w-[25%] text-black uppercase overflow-hidden text-ellipsis whitespace-nowrap pl-1">
@@ -362,7 +354,7 @@
 
                 <!-- Importe (Right 30%) -->
                 <div class="w-[30%] border-l-dark flex flex-col h-full">
-                    <div class="bg-header border-b-dark font-bold text-center text-[10px] py-0.5">
+                    <div class="bg-header border-b-dark font-bold text-center text-[11px] py-0.5">
                         IMPORTE
                     </div>
                     <div class="flex-1">
@@ -370,55 +362,55 @@
                             style="table-layout: fixed; line-height: 1.1;">
                             <tr class="border-b border-gray-400">
                                 <td
-                                    class="pl-1 border-r border-gray-400 w-3/5 overflow-hidden text-ellipsis whitespace-nowrap">
+                                    class="pl-0.5 border-r border-gray-400 w-3/5 overflow-hidden text-ellipsis whitespace-nowrap">
                                     Flete</td>
-                                <td class="text-right pr-1 w-2/5">{{ $shipment->flete != 0 ? number_format($shipment->flete, 2, ',', '.') : '' }}
+                                <td class="text-right pr-0.5 w-2/5">{{ $shipment->flete != 0 ? number_format($shipment->flete, 2, ',', '.') : '' }}
                                 </td>
                             </tr>
                             <tr class="border-b border-gray-400">
                                 <td
-                                    class="pl-1 border-r border-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">
+                                    class="pl-0.5 border-r border-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">
                                     Seguro</td>
-                                <td class="text-right pr-1">{{ $shipment->seguro != 0 ? number_format($shipment->seguro, 2, ',', '.') : '' }}</td>
+                                <td class="text-right pr-0.5">{{ $shipment->seguro != 0 ? number_format($shipment->seguro, 2, ',', '.') : '' }}</td>
                             </tr>
                             <tr class="border-b border-gray-400">
                                 <td
-                                    class="pl-1 border-r border-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">
+                                    class="pl-0.5 border-r border-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">
                                     Comisión Contr.</td>
-                                <td class="text-right pr-1">{{ $shipment->monto_contra_reembolso != 0 ? number_format($shipment->monto_contra_reembolso, 2, ',', '.') : '' }}</td>
+                                <td class="text-right pr-0.5">{{ $shipment->monto_contra_reembolso != 0 ? number_format($shipment->monto_contra_reembolso, 2, ',', '.') : '' }}</td>
                             </tr>
                             <tr class="border-b border-gray-400">
                                 <td
-                                    class="pl-1 border-r border-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">
+                                    class="pl-0.5 border-r border-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">
                                     Otros conceptos</td>
-                                <td class="text-right pr-1">{{ $shipment->otros_cargos != 0 ? number_format($shipment->otros_cargos, 2, ',', '.') : '' }}
+                                <td class="text-right pr-0.5">{{ $shipment->otros_cargos != 0 ? number_format($shipment->otros_cargos, 2, ',', '.') : '' }}
                                 </td>
                             </tr>
                             <tr class="border-b border-gray-400">
                                 <td
-                                    class="pl-1 border-r border-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">
+                                    class="pl-0.5 border-r border-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">
                                     Retiro Merc.</td>
-                                <td class="text-right pr-1">{{ $shipment->retencion_mercaderia != 0 ? number_format($shipment->retencion_mercaderia, 2, ',', '.') : '' }}</td>
+                                <td class="text-right pr-0.5">{{ $shipment->retencion_mercaderia != 0 ? number_format($shipment->retencion_mercaderia, 2, ',', '.') : '' }}</td>
                             </tr>
                             <tr class="border-b border-gray-400 font-bold text-black">
                                 <td
-                                    class="pl-1 border-r border-gray-400 uppercase overflow-hidden text-ellipsis whitespace-nowrap">
+                                    class="pl-0.5 border-r border-gray-400 uppercase overflow-hidden text-ellipsis whitespace-nowrap">
                                     Subtotal $:</td>
-                                <td class="text-right pr-1">{{ $shipment->subtotal != 0 ? number_format($shipment->subtotal, 2, ',', '.') : '' }}
+                                <td class="text-right pr-0.5">{{ $shipment->subtotal != 0 ? number_format($shipment->subtotal, 2, ',', '.') : '' }}
                                 </td>
                             </tr>
                             <tr class="border-b border-gray-400">
                                 <td
-                                    class="pl-1 border-r border-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">
+                                    class="pl-0.5 border-r border-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">
                                     Iva Resp. Insc.</td>
-                                <td class="text-right pr-1">{{ $shipment->iva_monto != 0 ? number_format($shipment->iva_monto, 2, ',', '.') : '' }}
+                                <td class="text-right pr-0.5">{{ $shipment->iva_monto != 0 ? number_format($shipment->iva_monto, 2, ',', '.') : '' }}
                                 </td>
                             </tr>
                             <tr class="font-bold text-black text-[11.5px]">
                                 <td
-                                    class="pl-1 border-r border-gray-400 uppercase overflow-hidden text-ellipsis whitespace-nowrap">
+                                    class="pl-0.5 border-r border-gray-400 uppercase overflow-hidden text-ellipsis whitespace-nowrap">
                                     Total $:</td>
-                                <td class="text-right pr-1">{{ $shipment->total != 0 ? number_format($shipment->total, 2, ',', '.') : '' }}</td>
+                                <td class="text-right pr-0.5">{{ $shipment->total != 0 ? number_format($shipment->total, 2, ',', '.') : '' }}</td>
                             </tr>
                         </table>
                     </div>
