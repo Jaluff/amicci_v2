@@ -91,27 +91,97 @@ $addr = $isEdit ? $party->primaryAddress : null;
             </div>
         </div>
 
-        {{-- Contacto principal del cliente --}}
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Teléfono Principal</label>
-                <input type="text" name="phone" value="{{ old('phone', $party->phone ?? '') }}"
-                    class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    placeholder="Ej: 261 4000000">
+        {{-- Contacto principal del cliente y Notificaciones por Correo --}}
+        <div x-data="{ email: '{{ old('email', $party->email ?? '') }}' }">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Teléfono Principal</label>
+                    <input type="text" name="phone" value="{{ old('phone', $party->phone ?? '') }}"
+                        class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        placeholder="Ej: 261 4000000">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Teléfono Secundario</label>
+                    <input type="text" name="phone_secondary" value="{{ old('phone_secondary', $party->phone_secondary ?? '') }}"
+                        class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        placeholder="Ej: 261 5000000">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Correo Electrónico</label>
+                    <input type="email" name="email" x-model="email"
+                        class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        placeholder="Ej: contacto@empresa.com">
+                </div>
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Teléfono Secundario</label>
-                <input type="text" name="phone_secondary" value="{{ old('phone_secondary', $party->phone_secondary ?? '') }}"
-                    class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    placeholder="Ej: 261 5000000">
-            </div>
+            {{-- Sección de Notificaciones por Correo --}}
+            <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-4">
+                <h4 class="font-bold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 19v-8.93a2 2 0 01.89-1.664l8-5.333a2 2 0 012.22 0l8 5.333A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-2.25-1.5a2 2 0 00-2.22 0l-2.25 1.5"></path>
+                    </svg>
+                    Configuración de Notificaciones por Correo Electrónico
+                </h4>
+                
+                <p x-show="!email.trim()" class="text-sm text-amber-600 dark:text-amber-400 mt-2 flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    Debe ingresar un Correo Electrónico arriba para activar las notificaciones.
+                </p>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Correo Electrónico</label>
-                <input type="email" name="email" value="{{ old('email', $party->email ?? '') }}"
-                    class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    placeholder="Ej: contacto@empresa.com">
+                <div x-show="email.trim()" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3" x-transition>
+                    @php
+                        $notifs = old('email_notifications', $party->email_notifications ?? []);
+                    @endphp
+                    <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 cursor-pointer hover:border-indigo-300">
+                        <input type="checkbox" name="email_notifications[]" value="created" @checked(in_array('created', $notifs))
+                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        <div>
+                            <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">Al crear nueva guía</span>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Notificar al cliente cuando se dé de alta la guía en origen.</p>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 cursor-pointer hover:border-indigo-300">
+                        <input type="checkbox" name="email_notifications[]" value="en_transito" @checked(in_array('en_transito', $notifs))
+                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        <div>
+                            <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">Al enviar la guía a destino</span>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Notificar al cliente cuando la guía inicie el viaje en tránsito.</p>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 cursor-pointer hover:border-indigo-300">
+                        <input type="checkbox" name="email_notifications[]" value="dto_destino" @checked(in_array('dto_destino', $notifs))
+                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        <div>
+                            <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">Al arribar a depósito</span>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Notificar al cliente cuando la guía llegue a destino.</p>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 cursor-pointer hover:border-indigo-300">
+                        <input type="checkbox" name="email_notifications[]" value="en_reparto" @checked(in_array('en_reparto', $notifs))
+                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        <div>
+                            <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">Al iniciar reparto</span>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Notificar al cliente cuando la guía salga para entrega.</p>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 cursor-pointer hover:border-indigo-300">
+                        <input type="checkbox" name="email_notifications[]" value="entregado" @checked(in_array('entregado', $notifs))
+                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        <div>
+                            <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">Al entregar la guía</span>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Notificar al cliente cuando la guía sea recibida de conformidad.</p>
+                        </div>
+                    </label>
+                </div>
             </div>
         </div>
     </div>

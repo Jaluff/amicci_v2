@@ -23,7 +23,9 @@ class UpdatePartyRequest extends FormRequest
             'insurance_percent' => 'nullable|numeric|min:0|max:100',
             'phone'             => 'nullable|string|max:50',
             'phone_secondary'   => 'nullable|string|max:50',
-            'email'             => 'nullable|email|max:255',
+            'email'             => 'required_with:email_notifications|nullable|email|max:255',
+            'email_notifications' => 'nullable|array',
+            'email_notifications.*' => 'string|in:created,en_transito,dto_destino,en_reparto,entregado',
 
             // Array of addresses (optional)
             'addresses' => 'nullable|array',

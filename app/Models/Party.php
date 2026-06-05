@@ -22,6 +22,7 @@ class Party extends Model
         'phone',
         'phone_secondary',
         'email',
+        'email_notifications',
         'document',
         'document_type',
         'tax_status',
@@ -29,6 +30,20 @@ class Party extends Model
         'has_insurance',
         'insurance_percent',
     ];
+
+    protected $casts = [
+        'email_notifications' => 'array',
+    ];
+
+    /**
+     * Determina si el cliente desea recibir notificaciones por correo para una etapa específica.
+     */
+    public function wantsNotificationFor(string $stage): bool
+    {
+        return !empty($this->email)
+            && is_array($this->email_notifications)
+            && in_array($stage, $this->email_notifications, true);
+    }
 
     /**
      * Todas las configuraciones tarifarias del cliente (puede tener varias para distintas rutas).

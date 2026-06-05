@@ -100,7 +100,10 @@
                                     {{ __('Generar Factura') }}
                                 </x-dropdown-link>
                                 <x-dropdown-link :href="route('billing.invoices')" :active="request()->routeIs('billing.invoices')">
-                                    {{ __('Listar Facturas') }}
+                                    {{ __('Listado de facturas') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('email-logs.index')" :active="request()->routeIs('email-logs.index')">
+                                    {{ __('Gestión de Correos') }}
                                 </x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
@@ -288,7 +291,10 @@
                             {{ __('Generar Factura') }}
                         </x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('billing.invoices')" :active="request()->routeIs('billing.invoices')">
-                            {{ __('Listar Facturas') }}
+                            {{ __('Listado de facturas') }}
+                        </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('email-logs.index')" :active="request()->routeIs('email-logs.index')">
+                            {{ __('Gestión de Correos') }}
                         </x-responsive-nav-link>
                     </div>
                 </div>
