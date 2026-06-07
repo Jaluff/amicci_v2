@@ -22,6 +22,7 @@ class PartyService
                 'phone' => $data['phone'] ?? null,
                 'phone_secondary' => $data['phone_secondary'] ?? null,
                 'email' => $data['email'] ?? null,
+                'email_notifications' => $data['email_notifications'] ?? null,
             ]);
 
             if (!empty($data['addresses'])) {
@@ -50,6 +51,7 @@ class PartyService
                 'phone' => $data['phone'] ?? null,
                 'phone_secondary' => $data['phone_secondary'] ?? null,
                 'email' => $data['email'] ?? null,
+                'email_notifications' => $data['email_notifications'] ?? null,
             ]);
 
             if (isset($data['addresses'])) {

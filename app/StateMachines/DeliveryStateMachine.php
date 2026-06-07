@@ -50,12 +50,17 @@ class DeliveryStateMachine extends BaseStateMachine
     {
         if ($from === self::READY && $to === self::ON_DELIVERY) {
             // Cascade status change to shipments
-            $this->model->shipments()->update(['ubicacion_actual' => 'En reparto']);
+            $this->model->shipments->each(function ($shipment) {
+                $shipment->update(['ubicacion_actual' => 'En reparto']);
+            });
         } elseif ($from === self::ON_DELIVERY && $to === self::READY) {
             // Revert state if necessary
             $this->model->shipments()
                 ->where('ubicacion_actual', 'En reparto')
-                ->update(['ubicacion_actual' => 'Dto destino']);
+                ->get()
+                ->each(function ($shipment) {
+                    $shipment->update(['ubicacion_actual' => 'Dto destino']);
+                });
         } elseif ($to === self::FINISHED) {
             // Finalizar guías del reparto (Solo las que NO fueron devueltas manualmente)
             foreach ($this->model->shipments as $shipment) {

@@ -17,6 +17,7 @@ use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\StatusTransitionController;
 use App\Http\Controllers\TariffTableController;
 use App\Http\Controllers\TransportRouteController;
+use App\Http\Controllers\EmailLogController;
 use App\Http\Controllers\UbicacionController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -164,6 +165,13 @@ Route::middleware(['auth', 'role:admin|supervisor'])->group(function () {
 
     // Ubicaciones
     Route::resource('ubicaciones', UbicacionController::class)->except(['show', 'create', 'edit']);
+
+    // Gestión de Correos
+    Route::get('/admin/email-logs', [EmailLogController::class, 'index'])->name('email-logs.index');
+    Route::get('/admin/email-logs/stats', [EmailLogController::class, 'stats'])->name('email-logs.stats');
+    Route::get('/admin/email-logs/datatable', [EmailLogController::class, 'datatable'])->name('email-logs.datatable');
+    Route::post('/admin/email-logs/{emailLog}/resend', [EmailLogController::class, 'resend'])->name('email-logs.resend');
+    Route::post('/admin/email-logs/toggle', [EmailLogController::class, 'toggleEmails'])->name('email-logs.toggle');
 });
 
 require __DIR__.'/auth.php';
