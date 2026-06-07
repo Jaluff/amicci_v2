@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('parties', function (Blueprint $table) {
-            $table->json('email_notifications')->nullable()->after('email');
+            $table->text('email_notifications')->nullable()->after('email');
         });
     }
 
