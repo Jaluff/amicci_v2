@@ -87,13 +87,14 @@
                 <tbody class="divide-y divide-gray-200">
                     @php 
                         $totalBultos = 0; 
-                        $totalFlete = 0;
+                        $totalValorDeclarado = 0;
                     @endphp
                     @foreach($shipments as $shipment)
                     @php 
                         $bultos = $shipment->items->sum('cantidad');
                         $totalBultos += $bultos;
-                        $totalFlete += $shipment->flete;
+                        $valorDeclarado = $shipment->items->sum('monto_valor_declarado');
+                        $totalValorDeclarado += $valorDeclarado;
                     @endphp
                     <tr class="hover:bg-gray-50">
                         <td class="p-1 text-center">
@@ -103,7 +104,7 @@
                         <td class="p-1 uppercase text-gray-700 truncate max-w-[200px]">{{ $shipment->sender->name ?? '-' }}</td>
                         <td class="p-1 uppercase text-gray-700 truncate max-w-[200px]">{{ $shipment->recipient->name ?? '-' }}</td>
                         <td class="p-1 text-center font-bold">{{ $bultos }}</td>
-                        <td class="p-1 text-right font-mono">{{ number_format($shipment->flete, 2, ',', '.') }}</td>
+                        <td class="p-1 text-right font-mono">{{ number_format($valorDeclarado, 2, ',', '.') }}</td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -111,7 +112,7 @@
                     <tr class="font-bold bg-gray-100">
                         <td colspan="4" class="p-1 text-right uppercase">Totales</td>
                         <td class="p-1 text-center">{{ $totalBultos }}</td>
-                        <td class="p-1 text-right font-mono">$ {{ number_format($totalFlete, 2, ',', '.') }}</td>
+                        <td class="p-1 text-right font-mono">$ {{ number_format($totalValorDeclarado, 2, ',', '.') }}</td>
                     </tr>
                 </tfoot>
             </table>

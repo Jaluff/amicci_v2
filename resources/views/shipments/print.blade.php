@@ -378,9 +378,9 @@
                             style="table-layout: fixed; line-height: 1.1;">
                             <tr class="border-b border-gray-400">
                                 <td
-                                    class="pl-0.5 border-r border-gray-400 w-3/5 overflow-hidden text-ellipsis whitespace-nowrap">
+                                    class="pl-0.5 border-r border-gray-400 w-1/2 overflow-hidden text-ellipsis whitespace-nowrap">
                                     Flete</td>
-                                <td class="text-right pr-0.5 w-2/5">{{ $shipment->flete != 0 ? number_format($shipment->flete, 2, ',', '.') : '' }}
+                                <td class="text-right pr-0.5 w-1/2">{{ $shipment->flete != 0 ? number_format($shipment->flete, 2, ',', '.') : '' }}
                                 </td>
                             </tr>
                             <tr class="border-b border-gray-400">
@@ -437,7 +437,7 @@
             <div class="flex h-16">
                 <!-- Valor Declarado -->
                 <div class="w-1/4 border-r-dark flex flex-col txt-xs font-normal">
-                    <div class="h-1/2 p-1.5 flex flex-col justify-between" style="border-bottom: 1.5px solid #000;">
+                    <div class="h-1/2 pt-1 pb-1.5 px-1.5 flex flex-col justify-between" style="border-bottom: 1.5px solid #000; font-size: 11px;">
                         <div>VALOR DECLARADO:</div>
                         <div class="font-bold">${{ number_format($shipment->items->sum('monto_valor_declarado'), 2, ',', '.') }}</div>
                     </div>
