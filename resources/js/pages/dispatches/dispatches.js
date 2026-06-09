@@ -76,7 +76,7 @@ const DispatchModule = (function ($) {
                         return `$${parseFloat(data).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
                     }
                 },
-                { data: 'routes_count', name: 'routes_count', defaultContent: '0', className: 'text-center' },
+                { data: 'routes_count', name: 'routes_count', defaultContent: '0', orderable: false, searchable: false, className: 'text-center' },
                 { data: 'acciones', name: 'acciones', orderable: false, searchable: false, className: 'text-center' }
             ],
             order: [[0, 'desc']],

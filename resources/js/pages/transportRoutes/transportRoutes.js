@@ -85,7 +85,7 @@ const RouteModule = (function ($) {
                         return '<span class="dt-badge ' + color + '">' + data + '</span>';
                     }
                 },
-                { data: 'shipments_count', name: 'shipments_count', defaultContent: '0', className: 'text-center' },
+                { data: 'shipments_count', name: 'shipments_count', defaultContent: '0', orderable: false, searchable: false, className: 'text-center' },
                 { data: 'acciones', name: 'acciones', orderable: false, searchable: false, className: 'text-center' }
             ],
             order: [[0, 'desc']],
