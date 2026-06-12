@@ -44,8 +44,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const table = $(tableEl).DataTable({
         processing: true,
         serverSide: false,
-        responsive: false, // Disabled due to scrollX conflict
         scrollX: true,
+        autoWidth: false,
+        stateSave: true,
+        columnDefs: [
+            { width: '1%', targets: '_all' }
+        ],
         paging: true,
         pageLength: 30,
         lengthMenu: [[15, 30, -1], [15, 30, "Todas"]],

@@ -25,6 +25,7 @@ class SendShipmentEmailJob implements ShouldQueue
     public function __construct(EmailLog $emailLog)
     {
         $this->emailLog = $emailLog;
+        $this->afterCommit = true;
     }
 
     /**
