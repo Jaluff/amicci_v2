@@ -55,7 +55,7 @@ class SendGroupedShipmentsEmailJob implements ShouldQueue
 
         try {
             $emailLogs = EmailLog::whereIn('id', $this->emailLogIds)
-                ->with(['shipment.sender', 'shipment.recipient', 'shipment.origin', 'shipment.destination'])
+                ->with(['shipment.sender', 'shipment.recipient', 'shipment.origin', 'shipment.destination', 'shipment.items'])
                 ->get();
 
             if ($emailLogs->isEmpty()) {

@@ -612,3 +612,160 @@ it('sends one grouped email to sender and one grouped email to recipient for sha
     });
 });
 
+it('allows authorized users to preview individual email templates', function () {
+    $user = \App\Models\User::factory()->create();
+    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin']);
+    $user->assignRole('admin');
+
+    $company = Company::create([
+        'name' => 'Amicci Test',
+        'prefix' => 'AM',
+        'active' => true,
+    ]);
+    $user->companies()->attach($company->id);
+
+    $client = Party::create([
+        'name' => 'Client Test',
+        'email' => 'client@example.com',
+        'email_notifications' => ['created'],
+    ]);
+
+    $shipment = Shipment::create([
+        'company_id' => $company->id,
+        'remitente_id' => $client->id,
+        'destinatario_id' => $client->id,
+        'numero' => 'G-PREVIEW-1',
+        'fecha' => now(),
+        'ubicacion_actual' => 'Dto origen',
+    ]);
+
+    $emailLog = EmailLog::create([
+        'shipment_id' => $shipment->id,
+        'company_id' => $company->id,
+        'party_id' => $client->id,
+        'recipient' => 'test@example.com',
+        'stage' => 'created',
+        'status' => 'pending',
+    ]);
+
+    $response = $this->actingAs($user)
+        ->get(route('email-logs.preview', $emailLog));
+
+    $response->assertStatus(200);
+    $response->assertSee('G-PREVIEW-1');
+});
+
+it('denies unauthorized users from previewing email templates', function () {
+    $user = \App\Models\User::factory()->create();
+    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin']);
+    $user->assignRole('admin');
+
+    $company1 = Company::create([
+        'name' => 'Amicci Test 1',
+        'prefix' => 'AM1',
+        'active' => true,
+    ]);
+    $company2 = Company::create([
+        'name' => 'Amicci Test 2',
+        'prefix' => 'AM2',
+        'active' => true,
+    ]);
+    $user->companies()->attach($company1->id);
+
+    $client = Party::create([
+        'name' => 'Client Test',
+        'email' => 'client@example.com',
+        'email_notifications' => ['created'],
+    ]);
+
+    $shipment = Shipment::create([
+        'company_id' => $company2->id,
+        'remitente_id' => $client->id,
+        'destinatario_id' => $client->id,
+        'numero' => 'G-PREVIEW-2',
+        'fecha' => now(),
+        'ubicacion_actual' => 'Dto origen',
+    ]);
+
+    $emailLog = EmailLog::create([
+        'shipment_id' => $shipment->id,
+        'company_id' => $company2->id,
+        'party_id' => $client->id,
+        'recipient' => 'test@example.com',
+        'stage' => 'created',
+        'status' => 'pending',
+    ]);
+
+    $response = $this->actingAs($user)
+        ->get(route('email-logs.preview', $emailLog));
+
+    $response->assertStatus(403);
+});
+
+it('returns shipments_count in datatable response', function () {
+    $user = \App\Models\User::factory()->create();
+    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin']);
+    $user->assignRole('admin');
+
+    $company = Company::create([
+        'name' => 'Amicci Test',
+        'prefix' => 'AM',
+        'active' => true,
+    ]);
+    $user->companies()->attach($company->id);
+
+    $client = Party::create([
+        'name' => 'Client Test',
+        'email' => 'client@example.com',
+        'email_notifications' => ['created'],
+    ]);
+
+    $shipment1 = Shipment::create([
+        'company_id' => $company->id,
+        'remitente_id' => $client->id,
+        'destinatario_id' => $client->id,
+        'numero' => 'G-DT-1',
+        'fecha' => now(),
+        'ubicacion_actual' => 'Dto origen',
+    ]);
+    $shipment2 = Shipment::create([
+        'company_id' => $company->id,
+        'remitente_id' => $client->id,
+        'destinatario_id' => $client->id,
+        'numero' => 'G-DT-2',
+        'fecha' => now(),
+        'ubicacion_actual' => 'Dto origen',
+    ]);
+
+    $now = now();
+    $emailLog1 = EmailLog::create([
+        'shipment_id' => $shipment1->id,
+        'company_id' => $company->id,
+        'party_id' => $client->id,
+        'recipient' => 'test@example.com',
+        'stage' => 'en_transito',
+        'status' => 'pending',
+        'created_at' => $now,
+    ]);
+    $emailLog2 = EmailLog::create([
+        'shipment_id' => $shipment2->id,
+        'company_id' => $company->id,
+        'party_id' => $client->id,
+        'recipient' => 'test@example.com',
+        'stage' => 'en_transito',
+        'status' => 'pending',
+        'created_at' => $now,
+    ]);
+
+    $response = $this->actingAs($user)
+        ->get(route('email-logs.datatable'));
+
+    $response->assertStatus(200);
+    $data = $response->json();
+    
+    $testLog = collect($data['data'])->firstWhere('recipient', 'test@example.com');
+    expect($testLog)->not->toBeNull();
+    expect($testLog['shipments_count'])->toBe(2);
+});
+
+

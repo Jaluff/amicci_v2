@@ -172,6 +172,7 @@ Route::middleware(['auth', 'role:admin|supervisor'])->group(function () {
     Route::get('/admin/email-logs/datatable', [EmailLogController::class, 'datatable'])->name('email-logs.datatable');
     Route::post('/admin/email-logs/{emailLog}/resend', [EmailLogController::class, 'resend'])->name('email-logs.resend');
     Route::post('/admin/email-logs/toggle', [EmailLogController::class, 'toggleEmails'])->name('email-logs.toggle');
+    Route::get('/admin/email-logs/{emailLog}/preview', [EmailLogController::class, 'preview'])->name('email-logs.preview');
 });
 
 require __DIR__.'/auth.php';

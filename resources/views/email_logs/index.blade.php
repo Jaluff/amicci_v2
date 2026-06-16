@@ -252,7 +252,7 @@
                     </div>
                     <div>
                         <span class="text-gray-400 dark:text-gray-500 uppercase tracking-wider block text-[9px] font-semibold">Guía</span>
-                        <span class="font-mono font-bold text-indigo-600 dark:text-indigo-400" x-text="selectedLog.shipment ? selectedLog.shipment.numero : '-'"></span>
+                        <span class="font-mono font-bold text-indigo-600 dark:text-indigo-400" x-text="selectedLog.shipments_count && selectedLog.shipments_count > 1 ? selectedLog.shipments_count + ' guías' : (selectedLog.shipment ? selectedLog.shipment.numero : '-')"></span>
                     </div>
                     <div>
                         <span class="text-gray-400 dark:text-gray-500 uppercase tracking-wider block text-[9px] font-semibold">Empresa</span>
@@ -404,23 +404,33 @@ function loadLogsTable(page = 1) {
             var badgeClass = getStatusBadgeClass(log.status);
             var statusLabel = getStatusLabel(log.status);
             
+            var viewButton = '<a href="/admin/email-logs/' + log.id + '/preview" target="_blank" onclick="event.stopPropagation();" class="p-1 rounded bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/40 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-850 transition-colors inline-flex items-center justify-center shrink-0" title="Ver Correo">' +
+                '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.644M21.964 12.002a1.012 1.012 0 010-.644M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>' +
+                '</a>';
+
             var resendButton = '';
             if (log.status === 'failed') {
-                resendButton = '<button type="button" onclick="event.stopPropagation(); resendMail(' + log.id + ')" class="p-1 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 dark:bg-indigo-900/40 dark:text-indigo-400 dark:border-indigo-800 dark:hover:bg-indigo-850 transition-colors" title="Reenviar">' +
+                resendButton = '<button type="button" onclick="event.stopPropagation(); resendMail(' + log.id + ')" class="p-1 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 dark:bg-indigo-900/40 dark:text-indigo-400 dark:border-indigo-800 dark:hover:bg-indigo-850 transition-colors inline-flex items-center justify-center shrink-0" title="Reenviar">' +
                     '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 19.5L21 12L3 4.5V10.5L14.25 12L3 13.5V19.5Z"/></svg>' +
                     '</button>';
             }
 
             var trClick = "var scope = Alpine.find(document.querySelector('[x-data]')); scope.selectedLog = " + JSON.stringify(log).replace(/"/g, '&quot;') + "; scope.modalOpen = true;";
 
+            var guideCell = (log.shipment ? log.shipment.numero : '-');
+            if (log.shipments_count && log.shipments_count > 1) {
+                guideCell = log.shipments_count + ' guías';
+            }
+
             return '<tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors cursor-pointer" onclick="' + trClick + '">' +
                 '<td class="px-3 py-1.5 text-gray-500 dark:text-gray-400 text-[10px] whitespace-nowrap">' + formatDate(log.created_at) + '</td>' +
-                '<td class="px-3 py-1.5 font-mono font-bold text-indigo-600 dark:text-indigo-400 text-[10px]">' + (log.shipment ? log.shipment.numero : '-') + '</td>' +
+                '<td class="px-3 py-1.5 font-mono font-bold text-indigo-600 dark:text-indigo-400 text-[10px]">' + guideCell + '</td>' +
                 '<td class="px-3 py-1.5 text-gray-600 dark:text-gray-300 text-[10px] max-w-[120px] truncate" title="' + log.recipient + '">' + log.recipient + '</td>' +
                 '<td class="px-3 py-1.5 text-center">' +
                     '<span class="inline-block px-1 rounded text-[8px] font-bold border uppercase ' + badgeClass + '">' + statusLabel + '</span>' +
                 '</td>' +
                 '<td class="px-3 py-1.5 text-center flex items-center justify-center gap-1">' +
+                    viewButton +
                     resendButton +
                 '</td>' +
                 '</tr>';
