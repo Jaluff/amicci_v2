@@ -32,7 +32,7 @@ export default defineConfig({
     server: {
         host: true,
         hmr: {
-            host: '192.168.100.168',
+            host: 'localhost',
         },
     },
 });
