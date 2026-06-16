@@ -18,6 +18,7 @@ class RolesAndAdminSeeder extends Seeder
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
         $operatorRole = Role::firstOrCreate(['name' => 'operador']);
         $supervisorRole = Role::firstOrCreate(['name' => 'supervisor']);
+        $repartidorRole = Role::firstOrCreate(['name' => 'repartidor']);
 
         // Crear una empresa por defecto si es que no existe
         $company = Company::firstOrCreate(

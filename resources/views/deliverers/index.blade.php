@@ -23,6 +23,7 @@
                             <th>Teléfono</th>
                             <th>Email</th>
                             <th>Dirección</th>
+                            <th>Usuario</th>
                             <th data-orderable="false">Acciones</th>
                         </tr>
                     </thead>

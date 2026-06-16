@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Deliverer;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -15,9 +16,12 @@ class DelivererController extends Controller
 
     public function datatable()
     {
-        $query = Deliverer::query();
+        $query = Deliverer::query()->with('user');
 
         return DataTables::of($query)
+            ->addColumn('usuario', function ($row) {
+                return $row->user ? $row->user->name . ' (' . $row->user->email . ')' : '-';
+            })
             ->addColumn('acciones', function ($row) {
                 $editUrl = route('deliverers.edit', $row->id);
                 $deleteUrl = route('deliverers.destroy', $row->id);
@@ -43,7 +47,8 @@ class DelivererController extends Controller
 
     public function create()
     {
-        return view('deliverers.create');
+        $users = User::orderBy('name')->get();
+        return view('deliverers.create', compact('users'));
     }
 
     public function store(Request $request)
@@ -55,6 +60,7 @@ class DelivererController extends Controller
             'license_number' => 'nullable|string|max:100',
             'dni' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
+            'user_id' => 'nullable|integer|exists:users,id',
         ]);
 
         $deliverer = Deliverer::create($validated);
@@ -72,7 +78,8 @@ class DelivererController extends Controller
 
     public function edit(Deliverer $deliverer)
     {
-        return view('deliverers.edit', compact('deliverer'));
+        $users = User::orderBy('name')->get();
+        return view('deliverers.edit', compact('deliverer', 'users'));
     }
 
     public function update(Request $request, Deliverer $deliverer)
@@ -84,6 +91,7 @@ class DelivererController extends Controller
             'license_number' => 'nullable|string|max:100',
             'dni' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
+            'user_id' => 'nullable|integer|exists:users,id',
         ]);
 
         $deliverer->update($validated);

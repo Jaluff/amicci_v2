@@ -1,0 +1,19 @@
+{
+  "name": "Transporte AMICCI",
+  "short_name": "AMICCI",
+  "description": "Sistema de Gestión y Reparto Móvil de Transporte AMICCI",
+  "start_url": "/deliverer/deliveries",
+  "background_color": "#ffffff",
+  "theme_color": "#dc8a18",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/images/logo_amicci.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

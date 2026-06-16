@@ -20,9 +20,14 @@ use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function index(): View
+    public function index(): \Illuminate\View\View|\Illuminate\Http\RedirectResponse
     {
-        $userCompanies = auth()->user()->companies;
+        $user = auth()->user();
+        if ($user->hasRole('repartidor') && !$user->hasAnyRole(['admin', 'supervisor'])) {
+            return redirect()->route('deliverer.index');
+        }
+
+        $userCompanies = $user->companies;
 
         return view('dashboard', compact('userCompanies'));
     }

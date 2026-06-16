@@ -21,6 +21,18 @@
             document.documentElement.classList.remove('dark');
         }
     </script>
+    <!-- PWA Support -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#dc8a18">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker registered.'))
+                    .catch(err => console.log('Service Worker failed:', err));
+            });
+        }
+    </script>
 </head>
 
 <body class="font-sans text-gray-900 antialiased">

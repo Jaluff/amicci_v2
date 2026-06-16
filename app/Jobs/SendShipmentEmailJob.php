@@ -54,6 +54,15 @@ class SendShipmentEmailJob implements ShouldQueue
                 throw new Exception('Guía no encontrada para el log de correo ID: ' . $this->emailLog->id);
             }
 
+            // Evitar enviar si el estado actual de la guía ya no coincide con la etapa del log (por ejemplo, si fue revertido)
+            if ($shipment->ubicacion_actual !== $this->emailLog->stage) {
+                $this->emailLog->update([
+                    'status' => 'failed',
+                    'error_message' => 'Envío omitido: El estado actual de la guía (' . $shipment->ubicacion_actual . ') ya no coincide con la etapa de notificación (' . $this->emailLog->stage . ').',
+                ]);
+                return;
+            }
+
             // We use sendNow to execute synchronously inside the queue worker,
             // so we can catch exceptions and log status precisely.
             Mail::to($this->emailLog->recipient)->sendNow(

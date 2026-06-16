@@ -112,6 +112,16 @@ class DeliveryController extends Controller
                 }
 
                 $printUrl = route('deliveries.print', $row->id);
+                $delivererShowUrl = route('deliverer.show', $row->id);
+
+                $delivererShowBtn = "
+                    <a href='{$delivererShowUrl}' target='_blank' title='Ver Vista Móvil (Repartidor)' class='inline-flex items-center justify-center p-2 rounded-md bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 dark:bg-purple-900/40 dark:text-purple-400 dark:border-purple-800 dark:hover:bg-purple-800/60 transition-colors'>
+                        <svg xmlns='http://www.w3.org/2000/svg' class='w-4 h-4' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'>
+                            <rect x='5' y='2' width='14' height='20' rx='2' ry='2'></rect>
+                            <line x1='12' y1='18' x2='12.01' y2='18'></line>
+                        </svg>
+                    </a>
+                ";
 
                 $deleteForm = '';
                 if ($row->shipments_count == 0 && $currentStatus === DeliveryStateMachine::READY && $isAdminOrSupervisor) {
@@ -139,6 +149,7 @@ class DeliveryController extends Controller
                 return "<div class='flex items-center gap-2 flex-wrap'>
                         {$statusButtons}
                         <div class='flex items-center gap-1'>
+                            {$delivererShowBtn}
                             <a href='{$editUrl}' title='Editar' class='inline-flex items-center justify-center p-2 rounded-md bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/40 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-800/60 dark:hover:text-blue-300 transition-colors'>
                                 <svg xmlns='http://www.w3.org/2000/svg' class='w-4 h-4' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/><path d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'/></svg>
                             </a>
