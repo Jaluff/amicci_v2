@@ -146,6 +146,7 @@
                                         <th style="padding: 10px; color: #718096; font-weight: 600;">Remitente</th>
                                         <th style="padding: 10px; color: #718096; font-weight: 600;">Destinatario</th>
                                         <th style="padding: 10px; color: #718096; font-weight: 600;">Origen ➔ Destino</th>
+                                        <th style="padding: 10px; color: #718096; font-weight: 600; text-align: center;">Bultos</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -157,11 +158,13 @@
                                         <td style="padding: 10px; color: #2d3748; text-transform: uppercase;">{{ $shipment->sender->name ?? '-' }}</td>
                                         <td style="padding: 10px; color: #2d3748; text-transform: uppercase;">{{ $shipment->recipient->name ?? '-' }}</td>
                                         <td style="padding: 10px; color: #4a5568;">{{ $shipment->origin->nombre ?? '-' }} ➔ {{ $shipment->destination->nombre ?? '-' }}</td>
+                                        <td style="padding: 10px; color: #2d3748; text-align: center; font-weight: bold;">{{ $shipment->items->sum('cantidad') }}</td>
                                     </tr>
                                     @endforeach
                                 </tbody>
                             </table>
 
+                            {{--
                             <!-- Call to Action (Single and Unique at the end) -->
                             <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                 <tr>
@@ -172,6 +175,7 @@
                                     </td>
                                 </tr>
                             </table>
+                            --}}
 
                             <p style="margin-top: 20px; margin-bottom: 0; font-size: 13px; color: #718096; line-height: 1.5; text-align: center;">
                                 Si tienes alguna duda sobre tu envío, por favor contáctanos a través de nuestros <a href="https://www.transporteamicci.com.ar" target="_blank" style="color: #dc8a18; text-decoration: underline; font-weight: 600;">canales oficiales de atención</a>.

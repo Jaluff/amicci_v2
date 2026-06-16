@@ -7,6 +7,8 @@ namespace App\Http\Controllers;
 use App\Jobs\SendShipmentEmailJob;
 use App\Models\EmailLog;
 use App\Models\Setting;
+use App\Mail\ShipmentStatusNotificationMail;
+use App\Mail\GroupedShipmentsStatusNotificationMail;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -157,6 +159,22 @@ class EmailLogController extends Controller
         $logs = $query->orderByDesc('created_at')
             ->paginate(10);
 
+        $logs->getCollection()->transform(function ($log) {
+            if (in_array($log->stage, ['en_transito', 'dto_destino', 'en_reparto', 'En viaje', 'Arribado', 'En reparto'])) {
+                $count = EmailLog::where('recipient', $log->recipient)
+                    ->where('stage', $log->stage)
+                    ->whereBetween('created_at', [
+                        $log->created_at->copy()->subSeconds(2),
+                        $log->created_at->copy()->addSeconds(2)
+                    ])
+                    ->count();
+                $log->shipments_count = $count;
+            } else {
+                $log->shipments_count = 1;
+            }
+            return $log;
+        });
+
         return response()->json($logs);
     }
 
@@ -197,5 +215,42 @@ class EmailLogController extends Controller
             'message' => $msg,
             'enabled' => $enabled === '1',
         ]);
+    }
+
+    public function preview(EmailLog $emailLog)
+    {
+        $company_ids = auth()->user()->companies->pluck('id')->toArray();
+        if (!in_array($emailLog->company_id, $company_ids)) {
+            abort(403, 'No autorizado.');
+        }
+
+        $stage = $emailLog->stage;
+        
+        // Check if this log corresponds to a grouped status
+        if (in_array($stage, ['en_transito', 'dto_destino', 'en_reparto', 'En viaje', 'Arribado', 'En reparto'])) {
+            $groupedLogs = EmailLog::where('recipient', $emailLog->recipient)
+                ->where('stage', $stage)
+                ->whereBetween('created_at', [
+                    $emailLog->created_at->copy()->subSeconds(5),
+                    $emailLog->created_at->copy()->addSeconds(5)
+                ])
+                ->with('shipment')
+                ->get();
+            
+            $shipments = $groupedLogs->map(fn($log) => $log->shipment)->filter()->unique('id');
+            
+            if ($shipments->isNotEmpty()) {
+                $mailable = new GroupedShipmentsStatusNotificationMail($shipments, $stage, $emailLog->recipient);
+                return $mailable->render();
+            }
+        }
+
+        $shipment = $emailLog->shipment;
+        if (!$shipment) {
+            abort(404, 'Guía no encontrada para este correo.');
+        }
+
+        $mailable = new ShipmentStatusNotificationMail($shipment, $stage);
+        return $mailable->render();
     }
 }

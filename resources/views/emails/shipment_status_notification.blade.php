@@ -153,17 +153,26 @@
                                     <td style="padding: 10px 0; border-bottom: 1px solid #edf2f7; color: #2d3748;">{{ $shipment->destination->nombre ?? '-' }}</td>
                                 </tr>
                                 <tr>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #edf2f7; color: #718096;">Bultos:</td>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #edf2f7; color: #2d3748; font-weight: 600;">{{ $shipment->items->sum('cantidad') }}</td>
+                                </tr>
+                                @if($shipment->ubicacion_actual === 'Entregado')
+                                <tr>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #edf2f7; color: #718096;">Fecha y Hora de Entrega:</td>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #edf2f7; color: #2d3748; font-weight: 600;">
+                                        {{ $shipment->fecha_entrega ? $shipment->fecha_entrega->format('d/m/Y') : $shipment->updated_at->timezone('America/Argentina/Mendoza')->format('d/m/Y') }}
+                                        {{ $shipment->updated_at->timezone('America/Argentina/Mendoza')->format('H:i') }} hs
+                                    </td>
+                                </tr>
+                                @else
+                                <tr>
                                     <td style="padding: 10px 0; border-bottom: 1px solid #edf2f7; color: #718096;">Fecha de Actualización:</td>
                                     <td style="padding: 10px 0; border-bottom: 1px solid #edf2f7; color: #2d3748; font-weight: 600;">{{ $shipment->updated_at->timezone('America/Argentina/Mendoza')->format('d/m/Y H:i') }} hs</td>
-                                </tr>
-                                @if($shipment->fecha_entrega && $shipment->ubicacion_actual === 'Entregado')
-                                <tr>
-                                    <td style="padding: 10px 0; border-bottom: 1px solid #edf2f7; color: #718096;">Fecha de Entrega:</td>
-                                    <td style="padding: 10px 0; border-bottom: 1px solid #edf2f7; color: #2d3748; font-weight: 600;">{{ $shipment->fecha_entrega->format('d/m/Y') }}</td>
                                 </tr>
                                 @endif
                             </table>
 
+                            {{--
                             <!-- Call to Action -->
                             <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                 <tr>
@@ -174,6 +183,7 @@
                                     </td>
                                 </tr>
                             </table>
+                            --}}
 
                             <p style="margin-top: 20px; margin-bottom: 0; font-size: 13px; color: #718096; line-height: 1.5; text-align: center;">
                                 Si tienes alguna duda sobre tu envío, por favor contáctanos a través de nuestros <a href="https://www.transporteamicci.com.ar" target="_blank" style="color: #dc8a18; text-decoration: underline; font-weight: 600;">canales oficiales de atención</a>.
