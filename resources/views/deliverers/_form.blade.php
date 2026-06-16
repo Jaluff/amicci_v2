@@ -67,6 +67,21 @@
                 <span class="text-red-500 text-sm">{{ $message }}</span>
             @enderror
         </div>
+
+        <div>
+            <label for="user_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Usuario Asociado (para login de Repartidor)</label>
+            <select id="user_id" name="user_id" class="mt-1 block w-full border-gray-300 dark:border-gray-750 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                <option value="">-- Sin usuario asociado --</option>
+                @foreach($users as $user)
+                    <option value="{{ $user->id }}" {{ old('user_id', $deliverer->user_id ?? '') == $user->id ? 'selected' : '' }}>
+                        {{ $user->name }} ({{ $user->email }})
+                    </option>
+                @endforeach
+            </select>
+            @error('user_id')
+                <span class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
+        </div>
     </div>
 
     <!-- Acciones -->

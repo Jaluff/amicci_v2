@@ -71,7 +71,10 @@ class ShipmentObserver
                     'stage' => $status,
                     'status' => 'pending',
                 ]);
-                SendShipmentEmailJob::dispatch($emailLog);
+                $job = SendShipmentEmailJob::dispatch($emailLog);
+                if ($key === 'entregado') {
+                    $job->delay(now()->addMinutes(2));
+                }
                 $sentEmails[] = $senderEmail;
             }
         }
@@ -88,7 +91,10 @@ class ShipmentObserver
                     'stage' => $status,
                     'status' => 'pending',
                 ]);
-                SendShipmentEmailJob::dispatch($emailLog);
+                $job = SendShipmentEmailJob::dispatch($emailLog);
+                if ($key === 'entregado') {
+                    $job->delay(now()->addMinutes(2));
+                }
             }
         }
     }

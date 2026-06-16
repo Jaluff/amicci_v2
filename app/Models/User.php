@@ -57,4 +57,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Branch::class);
     }
+
+    public function deliverer()
+    {
+        return $this->hasOne(Deliverer::class);
+    }
 }

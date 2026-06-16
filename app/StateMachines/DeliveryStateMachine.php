@@ -41,6 +41,15 @@ class DeliveryStateMachine extends BaseStateMachine
             if ($hasActiveProblems) {
                 return false;
             }
+
+            // No permitir finalizar si hay guías que todavía no están entregadas
+            $hasPendingShipments = $this->model->shipments()
+                ->where('ubicacion_actual', '!=', 'Entregado')
+                ->exists();
+
+            if ($hasPendingShipments) {
+                return false;
+            }
         }
 
         return parent::canTransitionTo($from, $to);

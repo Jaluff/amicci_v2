@@ -45,7 +45,8 @@ Route::middleware('auth')->group(function () {
 
 // Rutas que requieren empresa activa (antes sesión, ahora stateless)
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard/stats', [DashboardController::class, 'stats'])->name('dashboard.stats');
+    Route::middleware('role:admin|supervisor|operador')->group(function () {
+        Route::get('/dashboard/stats', [DashboardController::class, 'stats'])->name('dashboard.stats');
 
     Route::get('/shipments', [ShipmentController::class, 'index'])->name('shipments.index');
     Route::get('/shipments/datatable', [ShipmentController::class, 'datatable'])->name('shipments.datatable');
@@ -153,6 +154,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/billing/{invoice}/edit', [InvoiceController::class, 'edit'])->name('billing.edit');
         Route::put('/billing/{invoice}', [InvoiceController::class, 'update'])->name('billing.update');
     });
+
+    });
+
+    // Deliverer Panel
+    Route::get('/deliverer/deliveries', [\App\Http\Controllers\DelivererPanelController::class, 'index'])->name('deliverer.index');
+    Route::get('/deliverer/deliveries/{delivery}', [\App\Http\Controllers\DelivererPanelController::class, 'show'])->name('deliverer.show');
+    Route::post('/deliverer/deliveries/{delivery}/confirm', [\App\Http\Controllers\DelivererPanelController::class, 'confirmDelivery'])->name('deliverer.confirm');
 });
 
 // Rutas exclusivas para administrador y supervisor

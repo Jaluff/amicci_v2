@@ -44,8 +44,8 @@ class ShipmentStateMachine extends BaseStateMachine
             self::STATUS_EN_TRANSITO => [self::STATUS_DTO_DESTINO],
             self::STATUS_DTO_DESTINO => [self::STATUS_EN_REPARTO],
             self::STATUS_EN_REPARTO => [self::STATUS_ENTREGADO],
-            // Estado terminal — sin transiciones salientes
-            self::STATUS_ENTREGADO => [],
+            // Estado terminal — se permite revertir a En reparto si hubo un error
+            self::STATUS_ENTREGADO => [self::STATUS_EN_REPARTO],
         ];
     }
 

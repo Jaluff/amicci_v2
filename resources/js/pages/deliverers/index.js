@@ -20,6 +20,7 @@ $(function () {
             { data: "phone", name: "phone" },
             { data: "email", name: "email" },
             { data: "address", name: "address" },
+            { data: "usuario", name: "usuario", orderable: false, searchable: false },
             {
                 data: "acciones",
                 name: "acciones",
