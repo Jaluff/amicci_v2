@@ -11,9 +11,6 @@ class ShipmentObserver
 {
     protected array $statusMap = [
         'Dto origen' => 'created',
-        'En transito' => 'en_transito',
-        'Dto destino' => 'dto_destino',
-        'En reparto' => 'en_reparto',
         'Entregado' => 'entregado',
     ];
 

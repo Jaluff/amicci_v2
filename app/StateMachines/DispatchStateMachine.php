@@ -69,5 +69,13 @@ class DispatchStateMachine extends BaseStateMachine
                 $sm->transitionTo($targetRouteStatus, 'Propagado desde cambio de estado en Despacho');
             }
         });
+
+        if ($to === self::STATUS_EN_VIAJE) {
+            $shipments = $this->model->shipments()->withoutGlobalScopes()->with(['sender', 'recipient', 'origin', 'destination'])->get();
+            app(\App\Services\GroupedNotificationService::class)->sendGroupedNotifications($shipments, 'en_transito', 'En transito');
+        } elseif ($to === self::STATUS_ARRIBADO) {
+            $shipments = $this->model->shipments()->withoutGlobalScopes()->with(['sender', 'recipient', 'origin', 'destination'])->get();
+            app(\App\Services\GroupedNotificationService::class)->sendGroupedNotifications($shipments, 'dto_destino', 'Dto destino');
+        }
     }
 }

@@ -62,6 +62,9 @@ class DeliveryStateMachine extends BaseStateMachine
             $this->model->shipments->each(function ($shipment) {
                 $shipment->update(['ubicacion_actual' => 'En reparto']);
             });
+
+            $shipments = $this->model->shipments()->with(['sender', 'recipient', 'origin', 'destination'])->get();
+            app(\App\Services\GroupedNotificationService::class)->sendGroupedNotifications($shipments, 'en_reparto', 'En reparto');
         } elseif ($from === self::ON_DELIVERY && $to === self::READY) {
             // Revert state if necessary
             $this->model->shipments()

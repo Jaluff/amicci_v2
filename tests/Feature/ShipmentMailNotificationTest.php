@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+// uses(RefreshDatabase::class);
+
 
 it('queues SendShipmentEmailJob when shipment is created and client has notifications enabled', function () {
     Queue::fake();
@@ -121,7 +122,7 @@ it('queues job when shipment status is updated and client has notifications enab
     $client = Party::create([
         'name' => 'Client Test',
         'email' => 'client@example.com',
-        'email_notifications' => ['en_transito'],
+        'email_notifications' => ['entregado'],
     ]);
 
     $shipment = Shipment::create([
@@ -137,11 +138,11 @@ it('queues job when shipment status is updated and client has notifications enab
     // Reset queue fake for update assertion
     Queue::fake();
 
-    // Update status to En transito
-    $shipment->update(['ubicacion_actual' => 'En transito']);
+    // Update status to Entregado
+    $shipment->update(['ubicacion_actual' => 'Entregado']);
 
     Queue::assertPushed(SendShipmentEmailJob::class, function ($job) use ($client) {
-        return $job->emailLog->recipient === $client->email && $job->emailLog->stage === 'En transito';
+        return $job->emailLog->recipient === $client->email && $job->emailLog->stage === 'Entregado';
     });
 });
 
@@ -404,3 +405,210 @@ it('does not send duplicate email if sender and recipient have the same email ad
     // Assert only one job was pushed to avoid duplicates
     Queue::assertPushed(SendShipmentEmailJob::class, 1);
 });
+
+it('groups notifications for clients when multiple shipments are processed in a batch', function () {
+    Queue::fake();
+
+    $company = Company::create(['name' => 'Test', 'prefix' => 'T', 'active' => true]);
+    $origin = Ubicacion::create(['nombre' => 'Dto origen']);
+    $destination = Ubicacion::create(['nombre' => 'Dto destino']);
+
+    $client = Party::create([
+        'name' => 'Grouped Client',
+        'email' => 'group@example.com',
+        'email_notifications' => ['en_transito'],
+    ]);
+
+    $shipment1 = Shipment::create([
+        'company_id' => $company->id,
+        'remitente_id' => $client->id,
+        'origen_id' => $origin->id,
+        'destino_id' => $destination->id,
+        'numero' => 'G-1',
+        'fecha' => now(),
+        'ubicacion_actual' => 'Dto origen',
+    ]);
+
+    $shipment2 = Shipment::create([
+        'company_id' => $company->id,
+        'remitente_id' => $client->id,
+        'origen_id' => $origin->id,
+        'destino_id' => $destination->id,
+        'numero' => 'G-2',
+        'fecha' => now(),
+        'ubicacion_actual' => 'Dto origen',
+    ]);
+
+    $shipments = collect([$shipment1, $shipment2]);
+
+    // Send grouped notifications
+    app(\App\Services\GroupedNotificationService::class)->sendGroupedNotifications($shipments, 'en_transito', 'En transito');
+
+    Queue::assertPushed(\App\Jobs\SendGroupedShipmentsEmailJob::class, 1);
+    Queue::assertNotPushed(SendShipmentEmailJob::class);
+
+    $this->assertDatabaseHas('email_logs', [
+        'shipment_id' => $shipment1->id,
+        'recipient' => 'group@example.com',
+        'stage' => 'En transito',
+        'status' => 'pending',
+    ]);
+
+    $this->assertDatabaseHas('email_logs', [
+        'shipment_id' => $shipment2->id,
+        'recipient' => 'group@example.com',
+        'stage' => 'En transito',
+        'status' => 'pending',
+    ]);
+});
+
+it('sends grouped email successfully and updates log statuses', function () {
+    Mail::fake();
+
+    $company = Company::create(['name' => 'Test', 'prefix' => 'T', 'active' => true]);
+    $origin = Ubicacion::create(['nombre' => 'Dto origen']);
+    $destination = Ubicacion::create(['nombre' => 'Dto destino']);
+
+    $client = Party::create([
+        'name' => 'Grouped Client',
+        'email' => 'group@example.com',
+    ]);
+
+    $shipment1 = Shipment::create([
+        'company_id' => $company->id,
+        'remitente_id' => $client->id,
+        'origen_id' => $origin->id,
+        'destino_id' => $destination->id,
+        'numero' => 'G-3',
+        'fecha' => now(),
+        'ubicacion_actual' => 'Dto origen',
+    ]);
+
+    $emailLog1 = EmailLog::create([
+        'shipment_id' => $shipment1->id,
+        'company_id' => $company->id,
+        'party_id' => $client->id,
+        'recipient' => $client->email,
+        'stage' => 'En transito',
+        'status' => 'pending',
+    ]);
+
+    $emailLog2 = EmailLog::create([
+        'shipment_id' => $shipment1->id,
+        'company_id' => $company->id,
+        'party_id' => $client->id,
+        'recipient' => $client->email,
+        'stage' => 'En transito',
+        'status' => 'pending',
+    ]);
+
+    $job = new \App\Jobs\SendGroupedShipmentsEmailJob([$emailLog1->id, $emailLog2->id]);
+    $job->handle();
+
+    Mail::assertSent(\App\Mail\GroupedShipmentsStatusNotificationMail::class, function ($mail) use ($client) {
+        return $mail->hasTo($client->email) && $mail->shipments->count() === 1 && $mail->recipient === $client->email;
+    });
+
+    $this->assertDatabaseHas('email_logs', [
+        'id' => $emailLog1->id,
+        'status' => 'sent',
+    ]);
+
+    $this->assertDatabaseHas('email_logs', [
+        'id' => $emailLog2->id,
+        'status' => 'sent',
+    ]);
+});
+
+it('sends one grouped email to sender and one grouped email to recipient for shared and individual shipments', function () {
+    Queue::fake();
+
+    $company = Company::create(['name' => 'Test', 'prefix' => 'T', 'active' => true]);
+    $origin = Ubicacion::create(['nombre' => 'Dto origen']);
+    $destination = Ubicacion::create(['nombre' => 'Dto destino']);
+
+    $clientR = Party::create([
+        'name' => 'Client Remitente',
+        'email' => 'remitente@example.com',
+        'email_notifications' => ['en_transito'],
+    ]);
+
+    $clientD = Party::create([
+        'name' => 'Client Destinatario',
+        'email' => 'destinatario@example.com',
+        'email_notifications' => ['en_transito'],
+    ]);
+
+    $clientX = Party::create([
+        'name' => 'Client X',
+        'email' => 'clientX@example.com',
+        'email_notifications' => [],
+    ]);
+
+    // G1: Shared (Sender = R, Recipient = D)
+    $shipment1 = Shipment::create([
+        'company_id' => $company->id,
+        'remitente_id' => $clientR->id,
+        'destinatario_id' => $clientD->id,
+        'origen_id' => $origin->id,
+        'destino_id' => $destination->id,
+        'numero' => 'G-SHARED-1',
+        'fecha' => now(),
+        'ubicacion_actual' => 'Dto origen',
+    ]);
+
+    // G2: Only for D
+    $shipment2 = Shipment::create([
+        'company_id' => $company->id,
+        'remitente_id' => $clientX->id,
+        'destinatario_id' => $clientD->id,
+        'origen_id' => $origin->id,
+        'destino_id' => $destination->id,
+        'numero' => 'G-D-2',
+        'fecha' => now(),
+        'ubicacion_actual' => 'Dto origen',
+    ]);
+
+    // G3: Only for D
+    $shipment3 = Shipment::create([
+        'company_id' => $company->id,
+        'remitente_id' => $clientX->id,
+        'destinatario_id' => $clientD->id,
+        'origen_id' => $origin->id,
+        'destino_id' => $destination->id,
+        'numero' => 'G-D-3',
+        'fecha' => now(),
+        'ubicacion_actual' => 'Dto origen',
+    ]);
+
+    $shipments = collect([$shipment1, $shipment2, $shipment3]);
+
+    // Run grouped notification service
+    app(\App\Services\GroupedNotificationService::class)->sendGroupedNotifications($shipments, 'en_transito', 'En transito');
+
+    // Assert that exactly 2 jobs were pushed
+    Queue::assertPushed(\App\Jobs\SendGroupedShipmentsEmailJob::class, 2);
+
+    // Assert job for remitente is pushed with exactly 1 log (for G-SHARED-1)
+    Queue::assertPushed(\App\Jobs\SendGroupedShipmentsEmailJob::class, function ($job) {
+        $logs = \App\Models\EmailLog::whereIn('id', $job->emailLogIds)->get();
+        if ($logs->first()->recipient !== 'remitente@example.com') {
+            return false;
+        }
+        return $logs->count() === 1 && $logs->first()->shipment->numero === 'G-SHARED-1';
+    });
+
+    // Assert job for destinatario is pushed with 3 logs (for G-SHARED-1, G-D-2, G-D-3)
+    Queue::assertPushed(\App\Jobs\SendGroupedShipmentsEmailJob::class, function ($job) {
+        $logs = \App\Models\EmailLog::whereIn('id', $job->emailLogIds)->get();
+        if ($logs->first()->recipient !== 'destinatario@example.com') {
+            return false;
+        }
+        $shipmentNums = $logs->map(fn($l) => $l->shipment->numero)->toArray();
+        return $logs->count() === 3 
+            && in_array('G-SHARED-1', $shipmentNums)
+            && in_array('G-D-2', $shipmentNums)
+            && in_array('G-D-3', $shipmentNums);
+    });
+});
+

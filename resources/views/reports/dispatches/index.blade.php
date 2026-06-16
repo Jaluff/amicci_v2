@@ -1,10 +1,48 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="py-12">
-    <div class="max-w-screen-2xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">Reporte de Guías</h2>
+<style>
+    /* Reduce datatable cell padding, font size, and letter spacing to fit more columns */
+    #reports-table th,
+    #reports-table td {
+        padding: 2px 4px !important;
+        font-size: 11px !important;
+        line-height: 1.1 !important;
+        letter-spacing: -0.02em !important;
+    }
+    
+    /* Make headers more compact, uppercase and narrow */
+    #reports-table thead th {
+        font-weight: 700 !important;
+        text-transform: uppercase;
+        font-size: 10px !important;
+        letter-spacing: -0.025em !important;
+        padding: 3px 4px !important;
+    }
+
+    /* Style for footer total row */
+    #reports-table tfoot th {
+        font-size: 11px !important;
+        padding: 3px 4px !important;
+        letter-spacing: -0.02em !important;
+    }
+
+    /* Auto-fit columns to content instead of stretching */
+    #reports-table,
+    .dataTables_scrollHeadInner,
+    .dataTables_scrollHeadInner table,
+    .dataTables_scrollBody table,
+    .dataTables_scrollFootInner,
+    .dataTables_scrollFootInner table {
+        width: auto !important;
+        min-width: 0 !important;
+        table-layout: auto !important;
+    }
+</style>
+<div class="py-6">
+    <div class="max-w-full mx-auto px-2">
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-3">
+            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4">Reporte de Guías</h2>
 
             {{-- Filtros --}}
             <div class="mb-6 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
@@ -114,7 +152,7 @@
             </div>
 
             <div class="overflow-x-auto shadow rounded-lg mb-6 max-w-full">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 display w-full text-left text-sm whitespace-nowrap" id="reports-table" data-url="{{ route('reports.dispatches.datatable') }}">
+                <table class="divide-y divide-gray-200 dark:divide-gray-700 display text-left text-sm whitespace-nowrap" id="reports-table" data-url="{{ route('reports.dispatches.datatable') }}">
                     <thead class="bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300">
                         <tr>
                             <th class="p-2 border-b w-10 text-center"><input type="checkbox" id="selectAll" class="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:ring-indigo-500 cursor-pointer w-4 h-4"></th>
