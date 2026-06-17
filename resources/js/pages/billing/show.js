@@ -9,7 +9,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const invoiceNum = tableEl.dataset.invoiceNumber || 'Export';
 
+    const emptyRow = tableEl.querySelector('tbody tr td[colspan]');
+    if (emptyRow) {
+        return;
+    }
+
     $(tableEl).DataTable({
+        responsive: false,
         paging: false,
         searching: false,
         info: false,

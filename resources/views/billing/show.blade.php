@@ -38,12 +38,6 @@
                                 Marcar como Cobrada
                             </button>
                         </form>
-                        @can('admin')
-                        <a href="{{ route('billing.edit', $invoice) }}"
-                           class="inline-flex items-center px-4 py-2 bg-amber-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-amber-600 transition">
-                            Editar
-                        </a>
-                        @endcan
                     @endif
                     <a href="{{ route('billing.print', $invoice) }}" target="_blank"
                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition">
@@ -111,6 +105,9 @@
                             <th class="p-2 border-b text-left whitespace-nowrap">Ret. Merc.</th>
                             <th class="p-2 border-b text-left whitespace-nowrap">Otros Conc.</th>
                             <th class="p-2 border-b text-left font-bold text-indigo-600 whitespace-nowrap">Total</th>
+                            @if(!$invoice->cobrada && auth()->user()?->hasRole('admin'))
+                            <th class="p-2 border-b text-center whitespace-nowrap">Acciones</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -127,16 +124,38 @@
                             <td class="p-2 text-left text-gray-700 dark:text-gray-300 whitespace-nowrap">$ {{ number_format($shipment->retencion_mercaderia, 2, ',', '.') }}</td>
                             <td class="p-2 text-left text-gray-700 dark:text-gray-300 whitespace-nowrap">$ {{ number_format($shipment->otros_cargos, 2, ',', '.') }}</td>
                             <td class="p-2 text-left font-bold text-indigo-700 dark:text-indigo-300 whitespace-nowrap">$ {{ number_format($shipment->total, 2, ',', '.') }}</td>
+                            @if(!$invoice->cobrada && auth()->user()?->hasRole('admin'))
+                            <td class="p-2 text-center whitespace-nowrap">
+                                <form method="POST" action="{{ route('billing.detach-shipment', [$invoice, $shipment->id]) }}"
+                                      class="inline-block"
+                                      onsubmit="return confirm('¿Quitar la guía {{ $shipment->numero }} de esta factura?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center justify-center p-1.5 rounded-md bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors" title="Quitar de la factura">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                                        </svg>
+                                    </button>
+                                </form>
+                            </td>
+                            @endif
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="11" class="p-4 text-center text-gray-500 dark:text-gray-400">Sin guías asociadas.</td>
+                            <td colspan="{{ !$invoice->cobrada && auth()->user()?->hasRole('admin') ? 12 : 11 }}" class="p-4 text-center text-gray-500 dark:text-gray-400">Sin guías asociadas.</td>
                         </tr>
                         @endforelse
                     </tbody>
                     <tfoot class="bg-indigo-50 dark:bg-indigo-900/30 border-t-2 border-indigo-200 dark:border-indigo-700 font-bold">
                         <tr>
-                            <td colspan="5" class="p-2 text-left text-gray-700 dark:text-gray-300">TOTAL FACTURA:</td>
+                            <td class="p-2 text-left text-gray-700 dark:text-gray-300">TOTAL FACTURA:</td>
+                            <td class="p-2"></td>
+                            <td class="p-2"></td>
+                            <td class="p-2"></td>
+                            <td class="p-2"></td>
                             <td class="p-2 text-left text-gray-800 dark:text-gray-200 whitespace-nowrap">$ {{ number_format($totalFlete, 2, ',', '.') }}</td>
                             <td class="p-2 text-left text-gray-800 dark:text-gray-200 whitespace-nowrap">$ {{ number_format($totalSeguro, 2, ',', '.') }}</td>
                             <td class="p-2 text-left text-gray-800 dark:text-gray-200 whitespace-nowrap">$ {{ number_format($totalComision, 2, ',', '.') }}</td>
@@ -145,6 +164,9 @@
                             <td class="p-2 text-left text-indigo-700 dark:text-indigo-300 text-lg whitespace-nowrap">
                                 $ {{ number_format($totalTotal, 2, ',', '.') }}
                             </td>
+                            @if(!$invoice->cobrada && auth()->user()?->hasRole('admin'))
+                            <td class="p-2"></td>
+                            @endif
                         </tr>
                     </tfoot>
                 </table>

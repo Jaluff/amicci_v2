@@ -141,7 +141,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/billing/datatable', [InvoiceController::class, 'datatable'])->name('billing.datatable');
     Route::get('/billing/invoices', [InvoiceController::class, 'invoicesIndex'])->name('billing.invoices');
     Route::get('/billing/invoices/datatable', [InvoiceController::class, 'invoicesDatatable'])->name('billing.invoices-datatable');
-    Route::get('/billing/create', [InvoiceController::class, 'create'])->name('billing.create');
     Route::get('/billing/available-shipments', [InvoiceController::class, 'availableShipments'])->name('billing.available-shipments');
     Route::post('/billing', [InvoiceController::class, 'store'])->name('billing.store');
     Route::get('/billing/{invoice}', [InvoiceController::class, 'show'])->name('billing.show');
@@ -149,10 +148,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/billing/{invoice}/excel', [InvoiceController::class, 'excel'])->name('billing.excel');
     Route::post('/billing/{invoice}/pay', [InvoiceController::class, 'markAsPaid'])->name('billing.pay');
 
-    // Edición de facturas — solo admin
+    // Gestión de facturas — solo admin
     Route::middleware('role:admin')->group(function () {
-        Route::get('/billing/{invoice}/edit', [InvoiceController::class, 'edit'])->name('billing.edit');
-        Route::put('/billing/{invoice}', [InvoiceController::class, 'update'])->name('billing.update');
+        Route::delete('/billing/{invoice}/shipment/{shipmentId}', [InvoiceController::class, 'detachShipment'])->name('billing.detach-shipment');
     });
 
     });

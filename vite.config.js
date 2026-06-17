@@ -20,7 +20,6 @@ export default defineConfig({
                 'resources/js/pages/branches/index.js',
                 'resources/js/pages/reports/dispatches.js',
                 'resources/js/pages/billing/index.js',
-                'resources/js/pages/billing/create.js',
                 'resources/js/pages/billing/invoices.js',
                 'resources/js/pages/billing/show.js',
                 'resources/js/pages/loads/index.js',

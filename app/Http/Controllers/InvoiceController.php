@@ -45,6 +45,7 @@ class InvoiceController extends Controller
     public function datatable(Request $request): mixed
     {
         $query = Shipment::withoutGlobalScopes()
+            ->whereNull('shipments.deleted_at')
             ->leftJoin('invoices', function ($join) {
                 $join->on('invoices.id', '=', 'shipments.invoice_id')
                     ->whereNull('invoices.deleted_at');
@@ -150,8 +151,7 @@ class InvoiceController extends Controller
             ->selectRaw('
                 invoices.*,
                 (SELECT COUNT(*) FROM shipments
-                    WHERE shipments.invoice_id = invoices.id
-                    AND shipments.deleted_at IS NULL) as shipments_count
+                    WHERE shipments.invoice_id = invoices.id) as shipments_count
             ');
 
         if ($request->filled('start_date')) {
@@ -177,33 +177,24 @@ class InvoiceController extends Controller
         return DataTables::of($query->orderByDesc('invoices.fecha_factura'))
             ->editColumn('fecha_factura', fn ($row) => $row->fecha_factura?->format('d/m/Y') ?? '-')
             ->addColumn('party_name', fn ($row) => $row->party?->name ?? '-')
-            ->addColumn('shipments_count', fn ($row) => $row->shipments_count ?? 0)
+            ->editColumn('shipments_count', fn ($row) => (int) ($row->shipments_count ?? 0))
 
             ->editColumn('fecha_cobro', fn ($row) => $row->fecha_cobro 
                 ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">' . $row->fecha_cobro->format('d/m/Y') . '</span>' 
                 : '<span class="text-gray-400 dark:text-gray-500">-</span>'
             )
-            ->editColumn('total', fn ($row) => '$ '.number_format($row->total, 2, ',', '.'))
+            ->editColumn('total', fn ($row) => '$ '.number_format((float) \DB::table('invoices')->where('id', $row->id)->value('total'), 2, ',', '.'))
             ->addColumn('actions', function (Invoice $row): string {
                 $showUrl = route('billing.show', $row->id);
                 $printUrl = route('billing.print', $row->id);
                 $excelUrl = route('billing.excel', $row->id);
-                $editUrl = route('billing.edit', $row->id);
                 
-                $isAdmin = auth()->user()?->hasRole('admin');
-
                 $html = '<div class="flex items-center justify-center gap-2">';
                 
-                // Ver/Editar
-                if ($isAdmin && !$row->cobrada) {
-                    $html .= '<a href="'.$editUrl.'" title="Editar" class="inline-flex items-center justify-center p-1.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors">';
-                    $html .= '<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
-                    $html .= '</a>';
-                } else {
-                    $html .= '<a href="'.$showUrl.'" title="Ver" class="inline-flex items-center justify-center p-1.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-colors">';
-                    $html .= '<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
-                    $html .= '</a>';
-                }
+                // Ver
+                $html .= '<a href="'.$showUrl.'" title="Ver" class="inline-flex items-center justify-center p-1.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-colors">';
+                $html .= '<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+                $html .= '</a>';
 
                 // PDF
                 $html .= '<a href="'.$printUrl.'" target="_blank" title="Imprimir PDF" class="inline-flex items-center justify-center p-1.5 rounded-md bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 transition-colors">';
@@ -226,13 +217,6 @@ class InvoiceController extends Controller
     // -------------------------------------------------------------------------
     // Creacion de facturas
     // -------------------------------------------------------------------------
-
-    public function create(): View
-    {
-        $companies = Company::active()->orderBy('name')->get();
-
-        return view('billing.create', compact('companies'));
-    }
 
     /**
      * DataTable AJAX de guias disponibles para facturar.
@@ -263,6 +247,22 @@ class InvoiceController extends Controller
         }
         if ($request->filled('numero')) {
             $query->where('shipments.numero', 'like', '%'.$request->numero.'%');
+        }
+
+        // Filtro de IDs específicos (usado en modo edición para mostrar solo
+        // las guías ya asignadas a esta factura por defecto)
+        if ($request->filled('only_ids')) {
+            $onlyIds = array_filter(array_map('intval', (array) $request->only_ids));
+            if (! empty($onlyIds)) {
+                $query->where(function ($q) use ($onlyIds) {
+                    $q->whereIn('shipments.id', $onlyIds)
+                        ->orWhereNull('shipments.deleted_at');
+                });
+            } else {
+                $query->whereNull('shipments.deleted_at');
+            }
+        } else {
+            $query->whereNull('shipments.deleted_at');
         }
 
         $isAdmin = auth()->user()?->hasRole('admin');
@@ -325,46 +325,35 @@ class InvoiceController extends Controller
 
     public function show(Invoice $invoice): View
     {
-        $invoice->load(['party', 'company', 'shipments.sender', 'shipments.recipient']);
+        $invoice->load([
+            'party',
+            'company',
+            'shipments' => fn ($q) => $q->withTrashed(),
+            'shipments.sender',
+            'shipments.recipient'
+        ]);
 
         return view('billing.show', compact('invoice'));
     }
 
     // -------------------------------------------------------------------------
-    // Edicion (solo admin)
+    // Quitar guía de factura
     // -------------------------------------------------------------------------
 
-    public function edit(Invoice $invoice): View
+    public function detachShipment(Invoice $invoice, int $shipmentId): RedirectResponse
     {
-        abort_if($invoice->cobrada, 403, 'No se puede editar una factura ya cobrada.');
+        abort_if($invoice->cobrada, 403, 'No se puede modificar una factura ya cobrada.');
 
-        $invoice->load(['party', 'shipments']);
-        $companies = Company::active()->orderBy('name')->get();
+        $shipment = Shipment::withoutGlobalScopes()->findOrFail($shipmentId);
 
-        return view('billing.edit', compact('invoice', 'companies'));
-    }
+        if ($shipment->invoice_id === $invoice->id) {
+            $shipment->update(['invoice_id' => null]);
 
-    public function update(UpdateInvoiceRequest $request, Invoice $invoice): RedirectResponse
-    {
-        abort_if($invoice->cobrada, 403, 'No se puede editar una factura ya cobrada.');
-
-        try {
-            $invoice->update($request->safe()->except(['shipment_ids']));
-
-            if ($request->has('shipment_ids')) {
-                $this->assignShipments->execute(
-                    $invoice,
-                    $request->validated('shipment_ids'),
-                    isAdmin: true,
-                );
-            }
-        } catch (\DomainException $e) {
-            return back()->withInput()->withErrors(['shipment_ids' => $e->getMessage()]);
+            // Recalcular el total desnormalizado de la factura
+            $this->invoiceService->recalculateTotal($invoice);
         }
 
-        return redirect()
-            ->route('billing.show', $invoice)
-            ->with('success', "Factura #{$invoice->numero} actualizada.");
+        return back()->with('success', "Guía {$shipment->numero} quitada de la factura.");
     }
 
     // -------------------------------------------------------------------------

@@ -243,49 +243,50 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-            
-            <div class="p-4 space-y-3.5 text-[11px]" x-if="selectedLog">
-                <div class="grid grid-cols-2 gap-2.5">
-                    <div>
-                        <span class="text-gray-400 dark:text-gray-500 uppercase tracking-wider block text-[9px] font-semibold">Fecha y Hora</span>
-                        <span class="text-gray-700 dark:text-gray-200 font-medium" x-text="formatDate(selectedLog.created_at)"></span>
+            <template x-if="selectedLog">
+                <div class="p-4 space-y-3.5 text-[11px]">
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <div>
+                            <span class="text-gray-400 dark:text-gray-500 uppercase tracking-wider block text-[9px] font-semibold">Fecha y Hora</span>
+                            <span class="text-gray-700 dark:text-gray-200 font-medium" x-text="formatDate(selectedLog.created_at)"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 dark:text-gray-500 uppercase tracking-wider block text-[9px] font-semibold">Guía</span>
+                            <span class="font-mono font-bold text-indigo-600 dark:text-indigo-400" x-text="selectedLog.shipments_count && selectedLog.shipments_count > 1 ? selectedLog.shipments_count + ' guías' : (selectedLog.shipment ? selectedLog.shipment.numero : '-')"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 dark:text-gray-500 uppercase tracking-wider block text-[9px] font-semibold">Empresa</span>
+                            <span class="text-gray-700 dark:text-gray-200 font-medium" x-text="selectedLog.company ? selectedLog.company.prefix : '-'"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 dark:text-gray-500 uppercase tracking-wider block text-[9px] font-semibold">Estado de Envío</span>
+                            <span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-semibold border uppercase mt-0.5" 
+                                  :class="getStatusBadgeClass(selectedLog.status)" 
+                                  x-text="getStatusLabel(selectedLog.status)"></span>
+                        </div>
                     </div>
+
                     <div>
-                        <span class="text-gray-400 dark:text-gray-500 uppercase tracking-wider block text-[9px] font-semibold">Guía</span>
-                        <span class="font-mono font-bold text-indigo-600 dark:text-indigo-400" x-text="selectedLog.shipments_count && selectedLog.shipments_count > 1 ? selectedLog.shipments_count + ' guías' : (selectedLog.shipment ? selectedLog.shipment.numero : '-')"></span>
+                        <span class="text-gray-400 dark:text-gray-500 uppercase tracking-wider block text-[9px] font-semibold">Cliente</span>
+                        <span class="text-gray-700 dark:text-gray-200 font-medium" x-text="selectedLog.party ? selectedLog.party.name : '-'"></span>
                     </div>
+
                     <div>
-                        <span class="text-gray-400 dark:text-gray-500 uppercase tracking-wider block text-[9px] font-semibold">Empresa</span>
-                        <span class="text-gray-700 dark:text-gray-200 font-medium" x-text="selectedLog.company ? selectedLog.company.prefix : '-'"></span>
+                        <span class="text-gray-400 dark:text-gray-500 uppercase tracking-wider block text-[9px] font-semibold">Correo de Destino</span>
+                        <span class="text-gray-700 dark:text-gray-200 font-mono" x-text="selectedLog.recipient"></span>
                     </div>
+
                     <div>
-                        <span class="text-gray-400 dark:text-gray-500 uppercase tracking-wider block text-[9px] font-semibold">Estado de Envío</span>
-                        <span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-semibold border uppercase mt-0.5" 
-                              :class="getStatusBadgeClass(selectedLog.status)" 
-                              x-text="getStatusLabel(selectedLog.status)"></span>
+                        <span class="text-gray-400 dark:text-gray-500 uppercase tracking-wider block text-[9px] font-semibold">Etapa de la Guía</span>
+                        <span class="text-gray-700 dark:text-gray-200 font-medium" x-text="getStageLabel(selectedLog.stage)"></span>
+                    </div>
+
+                    <div x-show="selectedLog.status === 'failed'" class="p-2.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-lg">
+                        <span class="text-red-500 dark:text-red-400 uppercase tracking-wider block text-[9px] font-bold mb-1">Detalle del Error</span>
+                        <p class="text-red-700 dark:text-red-300 font-mono break-words leading-relaxed text-[10px]" x-text="selectedLog.error_message || 'Error desconocido'"></p>
                     </div>
                 </div>
-
-                <div>
-                    <span class="text-gray-400 dark:text-gray-500 uppercase tracking-wider block text-[9px] font-semibold">Cliente</span>
-                    <span class="text-gray-700 dark:text-gray-200 font-medium" x-text="selectedLog.party ? selectedLog.party.name : '-'"></span>
-                </div>
-
-                <div>
-                    <span class="text-gray-400 dark:text-gray-500 uppercase tracking-wider block text-[9px] font-semibold">Correo de Destino</span>
-                    <span class="text-gray-700 dark:text-gray-200 font-mono" x-text="selectedLog.recipient"></span>
-                </div>
-
-                <div>
-                    <span class="text-gray-400 dark:text-gray-500 uppercase tracking-wider block text-[9px] font-semibold">Etapa de la Guía</span>
-                    <span class="text-gray-700 dark:text-gray-200 font-medium" x-text="getStageLabel(selectedLog.stage)"></span>
-                </div>
-
-                <div x-show="selectedLog.status === 'failed'" class="p-2.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-lg">
-                    <span class="text-red-500 dark:text-red-400 uppercase tracking-wider block text-[9px] font-bold mb-1">Detalle del Error</span>
-                    <p class="text-red-700 dark:text-red-300 font-mono break-words leading-relaxed text-[10px]" x-text="selectedLog.error_message || 'Error desconocido'"></p>
-                </div>
-            </div>
+            </template>
 
             <div class="px-4 py-3 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-2 bg-gray-50 dark:bg-gray-750">
                 <button @click="modalOpen = false" class="px-3 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 text-[10px] font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition">Cerrar</button>

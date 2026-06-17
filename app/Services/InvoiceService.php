@@ -29,18 +29,45 @@ class InvoiceService
         bool $isAdmin = false,
     ): Invoice {
         return DB::transaction(function () use ($shipmentIds, $data, $partyId, $companyId, $isAdmin): Invoice {
-            $invoice = Invoice::create([
-                'company_id' => $companyId,
-                'party_id' => $partyId,
-                'numero' => $data['numero'],
-                'fecha_factura' => $data['fecha_factura'],
-                'numero_recibo' => $data['numero_recibo'] ?? null,
-                'notas' => $data['notas'] ?? null,
-                'total' => 0, // Se recalcula en el action
-                'cobrada' => false,
-            ]);
+            $invoice = Invoice::where('numero', $data['numero'])
+                ->where('company_id', $companyId)
+                ->first();
 
-            $this->assignShipments->execute($invoice, $shipmentIds, $isAdmin);
+            if ($invoice) {
+                if ($invoice->cobrada) {
+                    throw new \DomainException("La factura #{$invoice->numero} ya existe y se encuentra cobrada. No se pueden agregar más guías.");
+                }
+
+                $invoice->update([
+                    'party_id' => $partyId,
+                    'fecha_factura' => $data['fecha_factura'],
+                    'numero_recibo' => $data['numero_recibo'] ?? $invoice->numero_recibo,
+                    'notas' => $data['notas'] ?? $invoice->notas,
+                ]);
+
+                // Obtener guías actuales de la factura
+                $currentShipmentIds = Shipment::withoutGlobalScopes()
+                    ->where('invoice_id', $invoice->id)
+                    ->pluck('id')
+                    ->toArray();
+
+                $mergedShipmentIds = array_unique(array_merge($currentShipmentIds, $shipmentIds));
+
+                $this->assignShipments->execute($invoice, $mergedShipmentIds, $isAdmin);
+            } else {
+                $invoice = Invoice::create([
+                    'company_id' => $companyId,
+                    'party_id' => $partyId,
+                    'numero' => $data['numero'],
+                    'fecha_factura' => $data['fecha_factura'],
+                    'numero_recibo' => $data['numero_recibo'] ?? null,
+                    'notas' => $data['notas'] ?? null,
+                    'total' => 0, // Se recalcula en el action
+                    'cobrada' => false,
+                ]);
+
+                $this->assignShipments->execute($invoice, $shipmentIds, $isAdmin);
+            }
 
             return $invoice->fresh();
         });
