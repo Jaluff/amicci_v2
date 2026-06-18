@@ -10,6 +10,22 @@ window.$ = window.jQuery = $;
 select2(); // Initialize select2 on local jQuery instance
 
 document.addEventListener("DOMContentLoaded", function () {
+    // Reset all filter inputs on page load so they do not stay sticky
+    $("#filter_company_id").val("");
+    $("#filter_party_id").val([]).trigger("change");
+    $("#filter_origin_id").val([]).trigger("change");
+    $("#filter_destination_id").val([]).trigger("change");
+    $("#filter_ubicacion_actual").val([]).trigger("change");
+    $("#filter_dispatch_number").val("");
+    $("#filter_route_number").val("");
+    $("#filter_delivery_number").val("");
+    $("#filter_start_date").val("");
+    $("#filter_end_date").val("");
+
+    $("#local_filter_remitente").val([]).trigger("change");
+    $("#local_filter_destinatario").val([]).trigger("change");
+    $("#local_filter_cobrada").val([]).trigger("change");
+
     // Initialize select2 for multiple selections (AJAX)
     if ($("#filter_party_id").length) {
         $("#filter_party_id").select2(Object.assign({
@@ -45,19 +61,39 @@ document.addEventListener("DOMContentLoaded", function () {
         processing: true,
         serverSide: false,
         scrollX: true,
-        autoWidth: false,
+        scrollY: "380px",
+        scrollCollapse: true,
+        responsive: false,
+        autoWidth: true,
         stateSave: true,
-        columnDefs: [
-            { width: '1%', targets: '_all' }
-        ],
+        stateSaveParams: function (settings, data) {
+            // Do not save search filters and pagination index in the saved state
+            data.search.search = "";
+            data.start = 0; // always start on the first page
+            if (data.columns) {
+                for (let i = 0; i < data.columns.length; i++) {
+                    data.columns[i].search.search = "";
+                }
+            }
+        },
         paging: true,
         pageLength: 30,
         lengthMenu: [[15, 30, -1], [15, 30, "Todas"]],
         order: [],
+        orderFixed: {
+            pre: [[0, 'desc']]
+        },
         deferLoading: 0,
         ajax: {
             url: dataUrl,
-            dataSrc: 'data',
+            dataSrc: function (json) {
+                if (json.data) {
+                    json.data.forEach(row => {
+                        row.checked = true;
+                    });
+                }
+                return json.data;
+            },
             data: function (d) {
                 d.start_date = $("#filter_start_date").val();
                 d.end_date = $("#filter_end_date").val();
@@ -66,7 +102,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 d.origin_id = $("#filter_origin_id").val();
                 d.destination_id = $("#filter_destination_id").val();
                 d.ubicacion_actual = $("#filter_ubicacion_actual").val();
-                d.cobrada = $("#filter_cobrada").val();
                 d.dispatch_number = $("#filter_dispatch_number").val();
                 d.route_number = $("#filter_route_number").val();
                 d.delivery_number = $("#filter_delivery_number").val();
@@ -103,78 +138,98 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         ],
         columns: [
-            { data: "selection", name: "selection", orderable: false, searchable: false },
+            { 
+                data: "checked", 
+                name: "selection", 
+                className: "text-center",
+                orderable: true, 
+                searchable: false,
+                render: function(data, type, row) {
+                    const checkedAttr = data ? 'checked' : '';
+                    return `<input type="checkbox" class="row-select w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer" value="${row.id}" ${checkedAttr}>`;
+                }
+            },
             { data: "fecha", name: "fecha" },
             { data: "numero", name: "numero" },
-            { data: "sender_name", name: "sender.name" },
-            { data: "recipient_name", name: "recipient.name" },
+            { 
+                data: "sender_name", 
+                name: "sender.name",
+                render: function(data, type, row) {
+                    if (!data) return '-';
+                    return `<div class="!whitespace-normal line-clamp-2 max-w-[150px] break-words" title="${data}">${data}</div>`;
+                }
+            },
+            { 
+                data: "recipient_name", 
+                name: "recipient.name",
+                render: function(data, type, row) {
+                    if (!data) return '-';
+                    return `<div class="!whitespace-normal line-clamp-2 max-w-[150px] break-words" title="${data}">${data}</div>`;
+                }
+            },
             { data: "origin_name", name: "origin.name" },
             { data: "destination_name", name: "destination.name" },
             { data: "ruta_numero", name: "transportRoute.route_number", searchable: false },
             { data: "despacho_numero", name: "transportRoute.dispatch.dispatch_number", searchable: false },
             { data: "reparto_numero", name: "delivery.delivery_number", searchable: false },
-            { data: "flete_a_pagar_en", name: "flete_a_pagar_en" },
-            { data: "cobrada", name: "cobrada" },
-            { data: "remitos", name: "remitos", orderable: false, searchable: false },
+            { data: "flete_a_pagar_en", name: "flete_a_pagar_en", className: "text-center" },
+            { data: "cobrada", name: "cobrada", className: "text-center" },
+            { 
+                data: "remitos", 
+                name: "remitos", 
+                orderable: false, 
+                searchable: false,
+                render: function(data, type, row) {
+                    if (!data) return '-';
+                    let parts = data.split(',').map(p => p.trim()).filter(Boolean);
+                    if (parts.length === 0) return '-';
+                    let chunks = [];
+                    for (let i = 0; i < parts.length; i += 3) {
+                        chunks.push(parts.slice(i, i + 3).join(', '));
+                    }
+                    return chunks.join('<br>');
+                }
+            },
             { data: "ubicacion_actual", name: "ubicacion_actual", className: "text-center" },
-            { data: "items_sum_cantidad", name: "items_sum_cantidad", searchable: false },
-            { data: "items_sum_peso", name: "items_sum_peso", searchable: false },
-            { data: "items_sum_volumen", name: "items_sum_volumen", searchable: false },
-            { data: "flete", name: "flete" },
-            { data: "seguro", name: "seguro" },
-            { data: "monto_contra_reembolso", name: "monto_contra_reembolso" },
-            { data: "retencion_mercaderia", name: "retencion_mercaderia" },
-            { data: "items_sum_monto_valor_declarado", name: "items_sum_monto_valor_declarado", searchable: false },
-            { data: "total", name: "total" }
+            { data: "items_sum_cantidad", name: "items_sum_cantidad", searchable: false, className: "text-center" },
+            { data: "items_sum_peso", name: "items_sum_peso", searchable: false, className: "text-right" },
+            { data: "items_sum_volumen", name: "items_sum_volumen", searchable: false, className: "text-right" },
+            { data: "flete", name: "flete", className: "text-right" },
+            { data: "seguro", name: "seguro", className: "text-right" },
+            { data: "monto_contra_reembolso", name: "monto_contra_reembolso", className: "text-right" },
+            { data: "retencion_mercaderia", name: "retencion_mercaderia", className: "text-right" },
+            { data: "items_sum_monto_valor_declarado", name: "items_sum_monto_valor_declarado", searchable: false, className: "text-right" },
+            { data: "total", name: "total", className: "text-right" }
         ],
         drawCallback: function () {
-            // Restore "Select All" to unchecked upon physical reload
-            $('#selectAll').prop('checked', false);
-            updateFooters(this.api());
+            // Restore "Select All" based on actual row states
+            const allChecked = $('.row-select:checked').length === $('.row-select').length && $('.row-select').length > 0;
+            $('#selectAll').prop('checked', allChecked);
+            updateRowStyles();
             populateLocalFilters(this.api());
+            updateSummaryTables(this.api());
         },
         language: {
             url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json",
         },
+        initComplete: function (settings, json) {
+            // Hide page loader with transition when initialization and first AJAX load is done
+            const loader = document.getElementById("page-loader");
+            if (loader) {
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.classList.add("hidden");
+                }, 300);
+            }
+            // Automatically Select All Rows on initial load so footer displays Grand Total initially
+            if ($('.row-select').length > 0) {
+                $('#selectAll').prop('checked', true);
+                updateRowStyles();
+                updateSummaryTables(this.api());
+            }
+        }
     });
 
-    function updateFooters(api) {
-        let intVal = function (i) {
-            if(i === null || i === undefined || i === '') return 0;
-            if (typeof i === 'number') return i;
-            // Clean specific chars ($ and white spaces)
-            let val = i.toString().replace(/[\$\s]/g, '');
-            // Convert dot (thousands format in arg) into nothing
-            val = val.replace(/\./g, '');
-            // Convert comma (decimals in arg) into real dot
-            val = val.replace(/,/g, '.');
-            return parseFloat(val) || 0;
-        };
-
-        // Indices for the numeric columns (14 to 22)
-        const columnsToSum = [14, 15, 16, 17, 18, 19, 20, 21, 22];
-        
-        columnsToSum.forEach(function(index) {
-            let total = 0;
-            api.rows({ search: 'applied' }).every(function (rowIdx, tableLoop, rowLoop) {
-                let node = this.node();
-                if ($(node).find('.row-select').is(':checked')) {
-                    total += intVal(this.data()[api.column(index).dataSrc()]);
-                }
-            });
-            
-            // Format back to Argentina string (1.234,50)
-            let isMoney = [17, 18, 19, 20, 21, 22].includes(index);
-            let formattedTotal = total.toFixed(2).replace('.', ',');
-            if (isMoney) {
-                formattedTotal = '$ ' + formattedTotal.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-            } else {
-                formattedTotal = formattedTotal.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-            }
-                
-            $(api.column(index).footer()).html(formattedTotal);
-        });
-    }
 
     function populateLocalFilters(api) {
         isPopulating = true;
@@ -252,37 +307,43 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Interactions for Checkboxes
     $('#selectAll').on('change', function() {
-        $('.row-select').prop('checked', $(this).prop('checked'));
-        updateRowStyles();
-        updateFooters(table);
+        const isChecked = $(this).prop('checked');
+        table.rows().every(function () {
+            const rowData = this.data();
+            rowData.checked = isChecked;
+            this.invalidate();
+        });
+        table.draw(false);
     });
 
     $(document).on('change', '.row-select', function() {
-        if ($(this).prop('checked')) {
-            let tr = $(this).closest('tr');
-            tr.prependTo(tr.parent());
-        }
-
-        if (!$(this).prop('checked')) {
-            $('#selectAll').prop('checked', false);
-        } else {
-            // Check if all are checked
-            if ($('.row-select:checked').length === $('.row-select').length) {
-                $('#selectAll').prop('checked', true);
-            }
-        }
-        updateRowStyles();
-        updateFooters(table);
+        const tr = $(this).closest('tr');
+        const row = table.row(tr);
+        const rowData = row.data();
+        rowData.checked = $(this).prop('checked');
+        row.invalidate().draw(false);
     });
 
     // Also on initial data load (ajax.reload success natively handled by drawCallback)
     table.on('draw.dt', function() {
-        // Automatically Select All Rows on load so footer displays Grand Total initially
-        if ($('.row-select').length > 0) {
-            $('#selectAll').prop('checked', true);
-            $('.row-select').prop('checked', true);
-            updateRowStyles();
-            updateFooters(table);
+        // Adjust columns to align headers with the body when drawn
+        table.columns.adjust();
+    });
+
+    // Toggle advanced filters panel
+    $("#btn-toggle-advanced-filters").on("click", function() {
+        const container = $("#advanced-filters-container");
+        const icon = $("#advanced-filters-icon");
+        const text = $("#advanced-filters-text");
+
+        if (container.hasClass("hidden")) {
+            container.removeClass("hidden");
+            icon.addClass("rotate-180");
+            text.text("Menos Filtros");
+        } else {
+            container.addClass("hidden");
+            icon.removeClass("rotate-180");
+            text.text("Más Filtros");
         }
     });
 
@@ -331,4 +392,74 @@ document.addEventListener("DOMContentLoaded", function () {
             table.column(11).search('^(' + escaped.join('|') + ')$', true, false).draw();
         }
     });
+
+    function updateSummaryTables(api) {
+        let intVal = function (i) {
+            if(i === null || i === undefined || i === '') return 0;
+            if (typeof i === 'number') return i;
+            let val = i.toString().replace(/[\$\s]/g, '');
+            val = val.replace(/\./g, '');
+            val = val.replace(/,/g, '.');
+            return parseFloat(val) || 0;
+        };
+
+        const amountFields = {
+            flete: 0,
+            seguro: 0,
+            contraReembolso: 0,
+            retencionMercaderia: 0,
+            valorDeclarado: 0,
+            total: 0
+        };
+
+        let pageTotals = { ...amountFields };
+        let generalTotals = { ...amountFields };
+
+        // 1. Calculate Page Totals (only selected/checked rows on current page)
+        api.rows({ page: 'current' }).every(function () {
+            let node = this.node();
+            if ($(node).find('.row-select').is(':checked')) {
+                let rowData = this.data();
+                pageTotals.flete += intVal(rowData.flete);
+                pageTotals.seguro += intVal(rowData.seguro);
+                pageTotals.contraReembolso += intVal(rowData.monto_contra_reembolso);
+                pageTotals.retencionMercaderia += intVal(rowData.retencion_mercaderia);
+                pageTotals.valorDeclarado += intVal(rowData.items_sum_monto_valor_declarado);
+                pageTotals.total += intVal(rowData.total);
+            }
+        });
+
+        // 2. Calculate General Totals (all filtered rows)
+        api.rows({ search: 'applied' }).every(function () {
+            let rowData = this.data();
+            generalTotals.flete += intVal(rowData.flete);
+            generalTotals.seguro += intVal(rowData.seguro);
+            generalTotals.contraReembolso += intVal(rowData.monto_contra_reembolso);
+            generalTotals.retencionMercaderia += intVal(rowData.retencion_mercaderia);
+            generalTotals.valorDeclarado += intVal(rowData.items_sum_monto_valor_declarado);
+            generalTotals.total += intVal(rowData.total);
+        });
+
+        // Helper to format as currency
+        let formatCurrency = function(val) {
+            let formatted = val.toFixed(2).replace('.', ',');
+            return '$ ' + formatted.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        };
+
+        // Update Page Totals in UI
+        $("#page-total-flete").text(formatCurrency(pageTotals.flete));
+        $("#page-total-seguro").text(formatCurrency(pageTotals.seguro));
+        $("#page-total-contra-reembolso").text(formatCurrency(pageTotals.contraReembolso));
+        $("#page-total-retencion-mercaderia").text(formatCurrency(pageTotals.retencionMercaderia));
+        $("#page-total-valor-declarado").text(formatCurrency(pageTotals.valorDeclarado));
+        $("#page-total-sum").text(formatCurrency(pageTotals.total));
+
+        // Update General Totals in UI
+        $("#general-total-flete").text(formatCurrency(generalTotals.flete));
+        $("#general-total-seguro").text(formatCurrency(generalTotals.seguro));
+        $("#general-total-contra-reembolso").text(formatCurrency(generalTotals.contraReembolso));
+        $("#general-total-retencion-mercaderia").text(formatCurrency(generalTotals.retencionMercaderia));
+        $("#general-total-valor-declarado").text(formatCurrency(generalTotals.valorDeclarado));
+        $("#general-total-sum").text(formatCurrency(generalTotals.total));
+    }
 });
