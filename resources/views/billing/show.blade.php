@@ -39,6 +39,17 @@
                             </button>
                         </form>
                     @endif
+                    @if(!$invoice->cobrada && $invoice->shipments->count() === 0 && auth()->user()?->hasAnyRole(['admin', 'supervisor']))
+                        <form method="POST" action="{{ route('billing.destroy', $invoice) }}"
+                              onsubmit="return confirm('¿Eliminar esta factura? Esta acción no se puede deshacer.')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit"
+                                class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 transition">
+                                🗑️ Eliminar Factura
+                            </button>
+                        </form>
+                    @endif
                     <a href="{{ route('billing.print', $invoice) }}" target="_blank"
                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition">
                         🖨️ Imprimir PDF
@@ -95,6 +106,7 @@
                     <thead class="bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300">
                         <tr>
                             <th class="p-2 border-b text-left whitespace-nowrap">Fecha</th>
+                            <th class="p-2 border-b text-left whitespace-nowrap">F. Entrega</th>
                             <th class="p-2 border-b text-left whitespace-nowrap"># Guía</th>
                             <th class="p-2 border-b text-left whitespace-nowrap">Remitente</th>
                             <th class="p-2 border-b text-left whitespace-nowrap">Destinatario</th>
@@ -105,7 +117,7 @@
                             <th class="p-2 border-b text-left whitespace-nowrap">Ret. Merc.</th>
                             <th class="p-2 border-b text-left whitespace-nowrap">Otros Conc.</th>
                             <th class="p-2 border-b text-left font-bold text-indigo-600 whitespace-nowrap">Total</th>
-                            @if(!$invoice->cobrada && auth()->user()?->hasRole('admin'))
+                            @if(!$invoice->cobrada && auth()->user()?->hasAnyRole(['admin', 'supervisor']))
                             <th class="p-2 border-b text-center whitespace-nowrap">Acciones</th>
                             @endif
                         </tr>
@@ -114,6 +126,7 @@
                         @forelse($invoice->shipments as $shipment)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
                             <td class="p-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $shipment->fecha?->format('d/m/Y') ?? '-' }}</td>
+                            <td class="p-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $shipment->fecha_entrega?->format('d/m/Y') ?? '—' }}</td>
                             <td class="p-2 font-mono font-semibold text-gray-800 dark:text-gray-200 whitespace-nowrap">{{ $shipment->numero }}</td>
                             <td class="p-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $shipment->sender?->name ?? '-' }}</td>
                             <td class="p-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $shipment->recipient?->name ?? '-' }}</td>
@@ -124,7 +137,7 @@
                             <td class="p-2 text-left text-gray-700 dark:text-gray-300 whitespace-nowrap">$ {{ number_format($shipment->retencion_mercaderia, 2, ',', '.') }}</td>
                             <td class="p-2 text-left text-gray-700 dark:text-gray-300 whitespace-nowrap">$ {{ number_format($shipment->otros_cargos, 2, ',', '.') }}</td>
                             <td class="p-2 text-left font-bold text-indigo-700 dark:text-indigo-300 whitespace-nowrap">$ {{ number_format($shipment->total, 2, ',', '.') }}</td>
-                            @if(!$invoice->cobrada && auth()->user()?->hasRole('admin'))
+                            @if(!$invoice->cobrada && auth()->user()?->hasAnyRole(['admin', 'supervisor']))
                             <td class="p-2 text-center whitespace-nowrap">
                                 <form method="POST" action="{{ route('billing.detach-shipment', [$invoice, $shipment->id]) }}"
                                       class="inline-block"
@@ -145,13 +158,14 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="{{ !$invoice->cobrada && auth()->user()?->hasRole('admin') ? 12 : 11 }}" class="p-4 text-center text-gray-500 dark:text-gray-400">Sin guías asociadas.</td>
+                            <td colspan="{{ !$invoice->cobrada && auth()->user()?->hasAnyRole(['admin', 'supervisor']) ? 13 : 12 }}" class="p-4 text-center text-gray-500 dark:text-gray-400">Sin guías asociadas.</td>
                         </tr>
                         @endforelse
                     </tbody>
                     <tfoot class="bg-indigo-50 dark:bg-indigo-900/30 border-t-2 border-indigo-200 dark:border-indigo-700 font-bold">
                         <tr>
                             <td class="p-2 text-left text-gray-700 dark:text-gray-300">TOTAL FACTURA:</td>
+                            <td class="p-2"></td>
                             <td class="p-2"></td>
                             <td class="p-2"></td>
                             <td class="p-2"></td>
@@ -164,7 +178,7 @@
                             <td class="p-2 text-left text-indigo-700 dark:text-indigo-300 text-lg whitespace-nowrap">
                                 $ {{ number_format($totalTotal, 2, ',', '.') }}
                             </td>
-                            @if(!$invoice->cobrada && auth()->user()?->hasRole('admin'))
+                            @if(!$invoice->cobrada && auth()->user()?->hasAnyRole(['admin', 'supervisor']))
                             <td class="p-2"></td>
                             @endif
                         </tr>

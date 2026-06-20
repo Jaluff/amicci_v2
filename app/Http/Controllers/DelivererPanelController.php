@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 
 class DelivererPanelController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
         
@@ -32,7 +32,8 @@ class DelivererPanelController extends Controller
             if (!$deliverer) {
                 return view('deliverer_panel.index', [
                     'deliveries' => collect(),
-                    'error' => 'Tu usuario no está asociado a ningún perfil de Repartidor.'
+                    'error' => 'Tu usuario no está asociado a ningún perfil de Repartidor.',
+                    'layout' => 'layouts.simple'
                 ]);
             }
             
@@ -43,10 +44,13 @@ class DelivererPanelController extends Controller
                 ->get();
         }
 
-        return view('deliverer_panel.index', compact('deliveries'));
+        return view('deliverer_panel.index', [
+            'deliveries' => $deliveries,
+            'layout' => 'layouts.simple'
+        ]);
     }
 
-    public function show(Delivery $delivery)
+    public function show(Request $request, Delivery $delivery)
     {
         $user = auth()->user();
         $isAdminOrSupervisor = $user->hasAnyRole(['admin', 'supervisor']);
@@ -70,7 +74,10 @@ class DelivererPanelController extends Controller
                 }]);
         }]);
 
-        return view('deliverer_panel.show', compact('delivery'));
+        return view('deliverer_panel.show', [
+            'delivery' => $delivery,
+            'layout' => 'layouts.simple'
+        ]);
     }
 
     public function confirmDelivery(Request $request, Delivery $delivery)

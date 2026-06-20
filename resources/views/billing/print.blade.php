@@ -104,6 +104,7 @@
                 <thead>
                     <tr class="bg-gray-950 text-white uppercase font-bold text-left">
                         <th class="p-1.5 whitespace-nowrap">Fecha</th>
+                        <th class="p-1.5 whitespace-nowrap">F. Entrega</th>
                         <th class="p-1.5 whitespace-nowrap"># Guía</th>
                         <th class="p-1.5 whitespace-nowrap">Remitente</th>
                         <th class="p-1.5 whitespace-nowrap">Destinatario</th>
@@ -119,6 +120,7 @@
                     @foreach($invoice->shipments as $shipment)
                     <tr class="hover:bg-gray-50">
                         <td class="p-1.5 whitespace-nowrap text-gray-700">{{ $shipment->fecha?->format('d/m/Y') ?? '-' }}</td>
+                        <td class="p-1.5 whitespace-nowrap text-gray-700">{{ $shipment->fecha_entrega?->format('d/m/Y') ?? '—' }}</td>
                         <td class="p-1.5 font-bold text-blue-600 whitespace-nowrap">{{ $shipment->numero }}</td>
                         <td class="p-1.5 uppercase text-gray-700 truncate max-w-[120px]">{{ $shipment->sender?->name ?? '-' }}</td>
                         <td class="p-1.5 uppercase text-gray-700 truncate max-w-[120px]">{{ $shipment->recipient?->name ?? '-' }}</td>
@@ -133,7 +135,7 @@
                 </tbody>
                 <tfoot>
                     <tr class="font-bold bg-gray-100 text-gray-900">
-                        <td colspan="4" class="p-2 text-right uppercase">Totales:</td>
+                        <td colspan="5" class="p-2 text-right uppercase">Totales:</td>
                         <td class="p-2 text-left whitespace-nowrap">$ {{ number_format($totalFlete, 2, ',', '.') }}</td>
                         <td class="p-2 text-left whitespace-nowrap">$ {{ number_format($totalSeguro, 2, ',', '.') }}</td>
                         <td class="p-2 text-left whitespace-nowrap">$ {{ number_format($totalComision, 2, ',', '.') }}</td>

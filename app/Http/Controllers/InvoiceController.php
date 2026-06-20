@@ -146,7 +146,7 @@ class InvoiceController extends Controller
 
     public function invoicesDatatable(Request $request): mixed
     {
-        $query = Invoice::withoutGlobalScopes()
+        $query = Invoice::query()
             ->with(['party'])
             ->selectRaw('
                 invoices.*,
@@ -205,6 +205,25 @@ class InvoiceController extends Controller
                 $html .= '<a href="'.$excelUrl.'" title="Exportar Excel" class="inline-flex items-center justify-center p-1.5 rounded-md bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-colors">';
                 $html .= '<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>';
                 $html .= '</a>';
+
+                // Eliminar (solo si no está cobrada y tiene 0 guías)
+                $user = auth()->user();
+                $isAllowed = $user && $user->hasAnyRole(['admin', 'supervisor']);
+                $canDelete = $isAllowed && !$row->cobrada && ((int) ($row->shipments_count ?? 0) === 0);
+
+                if ($canDelete) {
+                    $deleteUrl = route('billing.destroy', $row->id);
+                    $csrf = csrf_token();
+                    $confirm = "return confirm('¿Eliminar esta factura?')";
+                     $html .= "
+                    <form action='{$deleteUrl}' method='POST' onsubmit=\"{$confirm}\" class='inline m-0'>
+                        <input type='hidden' name='_token' value='{$csrf}'>
+                        <input type='hidden' name='_method' value='DELETE'>
+                        <button type='submit' title='Eliminar' class='inline-flex items-center justify-center p-1.5 rounded-md bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors'>
+                            <svg xmlns='http://www.w3.org/2000/svg' class='w-3.5 h-3.5' fill='none' viewBox='0 0 24 24' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='3 6 5 6 21 6'></polyline><path d='M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'></path></svg>
+                        </button>
+                    </form>";
+                }
 
                 $html .= '</div>';
 
@@ -409,6 +428,7 @@ class InvoiceController extends Controller
 
             fputcsv($file, [
                 'Fecha',
+                'F. Entrega',
                 '# Guía',
                 'Remitente',
                 'Destinatario',
@@ -437,6 +457,7 @@ class InvoiceController extends Controller
 
                 fputcsv($file, [
                     $shipment->fecha?->format('d/m/Y') ?? '-',
+                    $shipment->fecha_entrega?->format('d/m/Y') ?? '—',
                     $shipment->numero,
                     $shipment->sender?->name ?? '-',
                     $shipment->recipient?->name ?? '-',
@@ -456,6 +477,7 @@ class InvoiceController extends Controller
                 '',
                 '',
                 '',
+                '',
                 number_format($totalFlete, 2, ',', ''),
                 number_format($totalSeguro, 2, ',', ''),
                 number_format($totalComision, 2, ',', ''),
@@ -468,5 +490,27 @@ class InvoiceController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    public function destroy(Invoice $invoice): RedirectResponse
+    {
+        abort_if(! auth()->user()->hasAnyRole(['admin', 'supervisor']), 403, 'No tienes permisos para realizar esta acción.');
+
+        if ($invoice->cobrada) {
+            return back()->with('error', 'No se puede eliminar una factura que ya está cobrada.');
+        }
+
+        $shipmentsCount = \DB::table('shipments')
+            ->where('invoice_id', $invoice->id)
+            ->whereNull('deleted_at')
+            ->count();
+
+        if ($shipmentsCount > 0) {
+            return back()->with('error', 'No se puede eliminar una factura que tiene guías asociadas.');
+        }
+
+        $invoice->forceDelete();
+
+        return redirect()->route('billing.invoices')->with('success', 'Factura eliminada con éxito.');
     }
 }

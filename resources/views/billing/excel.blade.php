@@ -40,6 +40,7 @@
         </tr>
         <tr style="background-color: #000000; color: #ffffff; font-weight: bold;">
             <th style="border: 1px solid #000;">Fecha</th>
+            <th style="border: 1px solid #000;">F. Entrega</th>
             <th style="border: 1px solid #000;"># Guía</th>
             <th style="border: 1px solid #000;">Remitente</th>
             <th style="border: 1px solid #000;">Destinatario</th>
@@ -61,6 +62,7 @@
         @foreach($invoice->shipments as $shipment)
         <tr>
             <td style="border: 1px solid #000;">{{ $shipment->fecha?->format('d/m/Y') ?? '-' }}</td>
+            <td style="border: 1px solid #000;">{{ $shipment->fecha_entrega?->format('d/m/Y') ?? '—' }}</td>
             <td style="border: 1px solid #000; font-weight: bold;">{{ $shipment->numero }}</td>
             <td style="border: 1px solid #000;">{{ $shipment->sender?->name ?? '-' }}</td>
             <td style="border: 1px solid #000;">{{ $shipment->recipient?->name ?? '-' }}</td>
@@ -73,7 +75,7 @@
         </tr>
         @endforeach
         <tr style="background-color: #f3f4f6; font-weight: bold;">
-            <td colspan="4" style="border: 1px solid #000; text-align: right;">TOTALES:</td>
+            <td colspan="5" style="border: 1px solid #000; text-align: right;">TOTALES:</td>
             <td style="border: 1px solid #000; text-align: left;">$ {{ number_format($totalFlete, 2, ',', '.') }}</td>
             <td style="border: 1px solid #000; text-align: left;">$ {{ number_format($totalSeguro, 2, ',', '.') }}</td>
             <td style="border: 1px solid #000; text-align: left;">$ {{ number_format($totalComision, 2, ',', '.') }}</td>

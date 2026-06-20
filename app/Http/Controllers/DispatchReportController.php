@@ -103,6 +103,9 @@ class DispatchReportController extends Controller
             ->editColumn('fecha', function ($row) {
                 return $row->fecha ? $row->fecha->format('d/m/Y') : '-';
             })
+            ->editColumn('fecha_entrega', function ($row) {
+                return $row->fecha_entrega ? $row->fecha_entrega->format('d/m/Y') : '-';
+            })
             ->editColumn('flete_a_pagar_en', function ($row) {
                 return $row->flete_a_pagar_en ?? '-';
             })

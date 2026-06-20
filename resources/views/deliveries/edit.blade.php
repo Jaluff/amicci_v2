@@ -89,7 +89,7 @@ $canCancel = $currentStatus === \App\StateMachines\DeliveryStateMachine::READY;
                     @endif
 
                     {{-- Anular solo si está en estado base "Listo" y tiene permisos --}}
-                    @if($canCancel && auth()->user()->hasAnyRole(['admin', 'Supervisor']))
+                    @if($canCancel && auth()->user()->hasAnyRole(['admin', 'supervisor', 'Supervisor']))
                     <form action="{{ route('deliveries.destroy', $delivery) }}" method="POST"
                         onsubmit="return confirm('¿Anular este reparto? Esta acción no se puede deshacer.')">
                         @csrf

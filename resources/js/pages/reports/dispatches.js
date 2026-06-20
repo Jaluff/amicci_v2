@@ -56,6 +56,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const dataUrl = tableEl.dataset.url;
 
     let isPopulating = false;
+    let hasFiltered = false;
 
     const table = $(tableEl).DataTable({
         processing: true,
@@ -84,28 +85,34 @@ document.addEventListener("DOMContentLoaded", function () {
             pre: [[0, 'desc']]
         },
         deferLoading: 0,
-        ajax: {
-            url: dataUrl,
-            dataSrc: function (json) {
-                if (json.data) {
-                    json.data.forEach(row => {
-                        row.checked = true;
-                    });
+        ajax: function (data, callback, settings) {
+            if (!hasFiltered) {
+                callback({ data: [] });
+                return;
+            }
+            $.ajax({
+                url: dataUrl,
+                data: {
+                    start_date: $("#filter_start_date").val(),
+                    end_date: $("#filter_end_date").val(),
+                    company_id: $("#filter_company_id").val(),
+                    party_id: $("#filter_party_id").val(),
+                    origin_id: $("#filter_origin_id").val(),
+                    destination_id: $("#filter_destination_id").val(),
+                    ubicacion_actual: $("#filter_ubicacion_actual").val(),
+                    dispatch_number: $("#filter_dispatch_number").val(),
+                    route_number: $("#filter_route_number").val(),
+                    delivery_number: $("#filter_delivery_number").val()
+                },
+                success: function (json) {
+                    if (json.data) {
+                        json.data.forEach(row => {
+                            row.checked = true;
+                        });
+                    }
+                    callback(json);
                 }
-                return json.data;
-            },
-            data: function (d) {
-                d.start_date = $("#filter_start_date").val();
-                d.end_date = $("#filter_end_date").val();
-                d.company_id = $("#filter_company_id").val();
-                d.party_id = $("#filter_party_id").val(); // will be an array
-                d.origin_id = $("#filter_origin_id").val();
-                d.destination_id = $("#filter_destination_id").val();
-                d.ubicacion_actual = $("#filter_ubicacion_actual").val();
-                d.dispatch_number = $("#filter_dispatch_number").val();
-                d.route_number = $("#filter_route_number").val();
-                d.delivery_number = $("#filter_delivery_number").val();
-            },
+            });
         },
         dom: "<'dt-controls'lBf>rtip",
         buttons: [
@@ -134,6 +141,68 @@ document.addEventListener("DOMContentLoaded", function () {
                     rows: function (idx, data, node) {
                         return $('.row-select:checked').length === 0 || $(node).find('.row-select').prop('checked');
                     }
+                },
+                customize: function (doc) {
+                    const pageFlete = $("#page-total-flete").text();
+                    const pageSeguro = $("#page-total-seguro").text();
+                    const pageContra = $("#page-total-contra-reembolso").text();
+                    const pageRet = $("#page-total-retencion-mercaderia").text();
+                    const pageValDec = $("#page-total-valor-declarado").text();
+                    const pageTotal = $("#page-total-sum").text();
+
+                    const genFlete = $("#general-total-flete").text();
+                    const genSeguro = $("#general-total-seguro").text();
+                    const genContra = $("#general-total-contra-reembolso").text();
+                    const genRet = $("#general-total-retencion-mercaderia").text();
+                    const genValDec = $("#general-total-valor-declarado").text();
+                    const genTotal = $("#general-total-sum").text();
+
+                    const totalsTable = {
+                        table: {
+                            widths: ['*', 250, 50, 250, '*'],
+                            body: [
+                                [
+                                    {},
+                                    {
+                                        table: {
+                                            widths: ['*', 'auto'],
+                                            body: [
+                                                [{text: 'TOTALES DE LA PÁGINA ACTUAL', colSpan: 2, bold: true, fillColor: '#f3f4f6', alignment: 'center'}, {}],
+                                                ['Flete', pageFlete],
+                                                ['Seguro', pageSeguro],
+                                                ['Contra Reembolso', pageContra],
+                                                ['Retiro Mercadería', pageRet],
+                                                ['Valor Declarado', pageValDec],
+                                                [{text: 'Total', bold: true, color: '#4f46e5'}, {text: pageTotal, bold: true, color: '#4f46e5'}]
+                                            ]
+                                        },
+                                        layout: 'lightHorizontalLines'
+                                    },
+                                    {},
+                                    {
+                                        table: {
+                                            widths: ['*', 'auto'],
+                                            body: [
+                                                [{text: 'TOTALES DEL FILTRO GENERAL', colSpan: 2, bold: true, fillColor: '#f3f4f6', alignment: 'center'}, {}],
+                                                ['Flete', genFlete],
+                                                ['Seguro', genSeguro],
+                                                ['Contra Reembolso', genContra],
+                                                ['Retiro Mercadería', genRet],
+                                                ['Valor Declarado', genValDec],
+                                                [{text: 'Total', bold: true, color: '#16a34a'}, {text: genTotal, bold: true, color: '#16a34a'}]
+                                            ]
+                                        },
+                                        layout: 'lightHorizontalLines'
+                                    },
+                                    {}
+                                ]
+                            ]
+                        },
+                        layout: 'noBorders',
+                        margin: [0, 20, 0, 0]
+                    };
+
+                    doc.content.push(totalsTable);
                 }
             }
         ],
@@ -150,6 +219,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             },
             { data: "fecha", name: "fecha" },
+            { data: "fecha_entrega", name: "fecha_entrega" },
             { data: "numero", name: "numero" },
             { 
                 data: "sender_name", 
@@ -349,29 +419,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Trigger refresh when filter button is clicked
     $("#btn-filter").on("click", function () {
+        hasFiltered = true;
         table.ajax.reload();
     });
 
     // Also trigger refresh when pressing enter on text inputs
     $("input[id^='filter_']").on("keypress", function(e) {
         if(e.which === 13) {
+            hasFiltered = true;
             table.ajax.reload();
         }
     });
 
     // Local filters for already shown records
     $('#local_filter_remitente').on('change', function () {
-        if (isPopulating) return;
-        const selected = $(this).val() || [];
-        if (selected.length === 0) {
-            table.column(3).search('').draw();
-        } else {
-            const escaped = selected.map(val => $.fn.dataTable.util.escapeRegex(val));
-            table.column(3).search('^(' + escaped.join('|') + ')$', true, false).draw();
-        }
-    });
-
-    $('#local_filter_destinatario').on('change', function () {
         if (isPopulating) return;
         const selected = $(this).val() || [];
         if (selected.length === 0) {
@@ -382,14 +443,25 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    $('#local_filter_destinatario').on('change', function () {
+        if (isPopulating) return;
+        const selected = $(this).val() || [];
+        if (selected.length === 0) {
+            table.column(5).search('').draw();
+        } else {
+            const escaped = selected.map(val => $.fn.dataTable.util.escapeRegex(val));
+            table.column(5).search('^(' + escaped.join('|') + ')$', true, false).draw();
+        }
+    });
+
     $('#local_filter_cobrada').on('change', function () {
         if (isPopulating) return;
         const selected = $(this).val() || [];
         if (selected.length === 0) {
-            table.column(11).search('').draw();
+            table.column(12).search('').draw();
         } else {
             const escaped = selected.map(val => $.fn.dataTable.util.escapeRegex(val));
-            table.column(11).search('^(' + escaped.join('|') + ')$', true, false).draw();
+            table.column(12).search('^(' + escaped.join('|') + ')$', true, false).draw();
         }
     });
 

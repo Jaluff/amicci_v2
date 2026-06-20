@@ -41,7 +41,7 @@ $canCancel = $shipment->ubicacion_actual === \App\StateMachines\ShipmentStateMac
 
                 <div class="flex items-center gap-3">
                     {{-- Anular solo si está en estado base "Dto origen" y tiene permisos --}}
-                    @if($canCancel && auth()->user()->hasAnyRole(['admin', 'Supervisor']))
+                    @if($canCancel && auth()->user()->hasAnyRole(['admin', 'supervisor', 'Supervisor']))
                     <form action="{{ route('shipments.destroy', $shipment) }}" method="POST"
                         onsubmit="return confirm('¿Anular esta guía? Esta acción no se puede deshacer.')">
                         @csrf

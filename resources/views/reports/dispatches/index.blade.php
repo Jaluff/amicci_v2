@@ -55,6 +55,49 @@
         padding: 4px 6px !important;
         text-align: center !important;
     }
+
+    /* Print styles */
+    @media print {
+        header, nav, aside, footer, #page-loader, #filters-container, #local-filters-container, #btn-filter, #btn-toggle-advanced-filters, .dt-controls {
+            display: none !important;
+        }
+
+        body, .bg-white, .dark\:bg-gray-800 {
+            background-color: white !important;
+            color: black !important;
+        }
+
+        div.dt-scroll-body {
+            height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+        }
+
+        #totals-container {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: center !important;
+            align-items: flex-start !important;
+            gap: 40px !important;
+            margin-top: 30px !important;
+            width: 100% !important;
+        }
+
+        #totals-container > div.hidden {
+            display: none !important;
+        }
+
+        #totals-container > .totals-card {
+            width: 35% !important;
+            max-width: 350px !important;
+            background-color: #f9fafb !important;
+            border: 1px solid #e5e7eb !important;
+            padding: 16px !important;
+            border-radius: 8px !important;
+            display: block !important;
+            box-sizing: border-box !important;
+        }
+    }
 </style>
 
 <!-- Full-screen Page Loader Overlay -->
@@ -75,7 +118,7 @@
             <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4">Reporte de Guías</h2>
 
             {{-- Filtros --}}
-            <div class="mb-6 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+            <div id="filters-container" class="mb-6 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
                 <!-- Filtros Principales (Constantes) -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end mb-4">
                     <div>
@@ -165,7 +208,7 @@
             </div>
 
             {{-- Filtros locales sobre registros mostrados --}}
-            <div class="mb-4 bg-indigo-50/50 dark:bg-indigo-950/20 p-4 rounded-lg border border-indigo-100 dark:border-indigo-900/50">
+            <div id="local-filters-container" class="mb-4 bg-indigo-50/50 dark:bg-indigo-950/20 p-4 rounded-lg border border-indigo-100 dark:border-indigo-900/50">
                 <h3 class="text-sm font-semibold text-indigo-900 dark:text-indigo-300 mb-3 flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 8.293A1 1 0 013 7.586V4z" />
@@ -197,6 +240,7 @@
                         <tr>
                             <th class="p-2 border-b text-center"><input type="checkbox" id="selectAll" class="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:ring-indigo-500 cursor-pointer w-4 h-4"></th>
                             <th class="p-2 border-b">Fecha</th>
+                            <th class="p-2 border-b">F. Entrega</th>
                             <th class="p-2 border-b"># Guía</th>
                             <th class="p-2 border-b">Remitente</th>
                             <th class="p-2 border-b">Destinatario</th>
@@ -215,7 +259,7 @@
                             <th class="p-2 border-b text-right">Flete</th>
                             <th class="p-2 border-b text-right">Seguro</th>
                             <th class="p-2 border-b text-right">ContraReem.</th>
-                            <th class="p-2 border-b text-right">Reten. Mer.</th>
+                            <th class="p-2 border-b text-right">Retiro Mer.</th>
                             <th class="p-2 border-b text-right">V. Declarado</th>
                             <th class="p-2 border-b text-indigo-600 font-bold text-right">Total</th>
                         </tr>
@@ -226,12 +270,12 @@
             </div>
 
             <!-- Sección de Totales de Importes Centrada (Columnas 2 y 3 en grid de 4) -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
+            <div id="totals-container" class="grid grid-cols-1 md:grid-cols-4 gap-16 mt-6">
                 <!-- Columna 1 vacía para centrar -->
                 <div class="hidden md:block"></div>
 
                 <!-- Tabla Totales de la Página (Seleccionados) -->
-                <div class="md:col-span-1 bg-gray-50 dark:bg-gray-900/40 p-4 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm">
+                <div class="totals-card md:col-span-1 bg-gray-50 dark:bg-gray-900/40 p-4 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm">
                     <h3 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider flex items-center gap-2">
                         <span class="w-2.5 h-2.5 bg-indigo-500 rounded-full"></span>
                         Totales de la Página Actual
@@ -257,7 +301,7 @@
                                 <td id="page-total-contra-reembolso" class="py-2 text-right font-bold text-gray-900 dark:text-white">$ 0,00</td>
                             </tr>
                             <tr>
-                                <td class="py-2 font-medium">Retención Mercadería</td>
+                                <td class="py-2 font-medium">Retiro Mercadería</td>
                                 <td id="page-total-retencion-mercaderia" class="py-2 text-right font-bold text-gray-900 dark:text-white">$ 0,00</td>
                             </tr>
                             <tr>
@@ -265,7 +309,7 @@
                                 <td id="page-total-valor-declarado" class="py-2 text-right font-bold text-gray-900 dark:text-white">$ 0,00</td>
                             </tr>
                             <tr class="border-t border-gray-200 dark:border-gray-700 font-bold bg-indigo-50/30 dark:bg-indigo-950/10">
-                                <td class="py-2.5 text-indigo-700 dark:text-indigo-400">Total Facturado</td>
+                                <td class="py-2.5 text-indigo-700 dark:text-indigo-400">Total</td>
                                 <td id="page-total-sum" class="py-2.5 text-right text-indigo-700 dark:text-indigo-400">$ 0,00</td>
                             </tr>
                         </tbody>
@@ -273,7 +317,7 @@
                 </div>
 
                 <!-- Tabla Totales del Filtro General -->
-                <div class="md:col-span-1 bg-gray-50 dark:bg-gray-900/40 p-4 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm">
+                <div class="totals-card md:col-span-1 bg-gray-50 dark:bg-gray-900/40 p-4 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm">
                     <h3 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider flex items-center gap-2">
                         <span class="w-2.5 h-2.5 bg-green-500 rounded-full"></span>
                         Totales del Filtro General
@@ -299,7 +343,7 @@
                                 <td id="general-total-contra-reembolso" class="py-2 text-right font-bold text-gray-900 dark:text-white">$ 0,00</td>
                             </tr>
                             <tr>
-                                <td class="py-2 font-medium">Retención Mercadería</td>
+                                <td class="py-2 font-medium">Retiro Mercadería</td>
                                 <td id="general-total-retencion-mercaderia" class="py-2 text-right font-bold text-gray-900 dark:text-white">$ 0,00</td>
                             </tr>
                             <tr>
@@ -307,7 +351,7 @@
                                 <td id="general-total-valor-declarado" class="py-2 text-right font-bold text-gray-900 dark:text-white">$ 0,00</td>
                             </tr>
                             <tr class="border-t border-gray-200 dark:border-gray-700 font-bold bg-green-50/30 dark:bg-green-950/10">
-                                <td class="py-2.5 text-green-700 dark:text-green-400">Total Facturado</td>
+                                <td class="py-2.5 text-green-700 dark:text-green-400">Total</td>
                                 <td id="general-total-sum" class="py-2.5 text-right text-green-700 dark:text-green-400">$ 0,00</td>
                             </tr>
                         </tbody>

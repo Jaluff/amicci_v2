@@ -138,6 +138,31 @@
     </div>
 </div>
 
+{{-- MODAL DE VISTA MÓVIL DEL REPARTIDOR --}}
+<div id="deliverer-mobile-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 overflow-y-auto h-full w-full z-[80] flex items-center justify-center p-4">
+    <div class="relative w-full max-w-6xl h-[90vh] bg-white dark:bg-gray-800 shadow-2xl rounded-2xl border dark:border-gray-700 flex flex-col overflow-hidden">
+        {{-- Header del Modal --}}
+        <div class="px-5 py-4 border-b dark:border-gray-700 flex items-center justify-between bg-gray-50 dark:bg-gray-900/50">
+            <div>
+                <span class="text-[9px] text-indigo-600 dark:text-indigo-400 block uppercase font-semibold tracking-wider">Planilla Móvil</span>
+                <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                    🚛 Gestión de Reparto #<span id="dmm-number"></span>
+                </h3>
+            </div>
+            <button type="button" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 btn-close-deliverer-modal p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        
+        {{-- Contenedor del Iframe --}}
+        <div class="flex-1 w-full h-full bg-gray-100 dark:bg-gray-950">
+            <iframe id="deliverer-mobile-iframe" src="" class="w-full h-full border-none" style="display: block;"></iframe>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')
