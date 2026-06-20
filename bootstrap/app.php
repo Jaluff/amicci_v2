@@ -19,6 +19,17 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
         ]);
+
+        $middleware->redirectTo(
+            guests: '/login',
+            users: function () {
+                $user = auth()->user();
+                if ($user && $user->hasRole('repartidor') && !$user->hasAnyRole(['admin', 'supervisor'])) {
+                    return route('deliverer.index');
+                }
+                return '/dashboard';
+            }
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

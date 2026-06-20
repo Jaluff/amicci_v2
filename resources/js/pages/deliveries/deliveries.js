@@ -108,6 +108,30 @@ $(document).ready(function () {
     });
 
     // === Modal and Form Logic ===
+    $(document).on('click', '.btn-deliverer-modal-show', function (e) {
+        e.preventDefault();
+        let url = $(this).attr('href');
+        url = url + (url.indexOf('?') > -1 ? '&' : '?') + 'iframe=1';
+        const num = $(this).data('delivery-number');
+        $('#dmm-number').text(num);
+        $('#deliverer-mobile-iframe').attr('src', url);
+        $('#deliverer-mobile-modal').removeClass('hidden');
+    });
+
+    $(document).on('click', '.btn-close-deliverer-modal', function () {
+        $('#deliverer-mobile-modal').addClass('hidden');
+        $('#deliverer-mobile-iframe').attr('src', '');
+        // Recargar datatable para reflejar cambios que pudieron ocurrir en el modal
+        if ($('#deliveries-table').length) {
+            $('#deliveries-table').DataTable().ajax.reload(null, false);
+        }
+    });
+
+    $(document).on('click', '#deliverer-mobile-modal', function (e) {
+        if ($(e.target).is(this)) {
+            $('.btn-close-deliverer-modal').click();
+        }
+    });
     const modal = $('#shipments-modal');
     const tableBody = $('#selected-shipments-table tbody');
     let dtAvailable;

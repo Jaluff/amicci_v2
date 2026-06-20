@@ -39,7 +39,7 @@ $canCancel = $route->status === \App\StateMachines\RouteStateMachine::STATUS_CAR
 
                 <div class="flex items-center gap-3">
                     {{-- Anular solo si está en estado base "Cargada" y tiene permisos --}}
-                    @if($canCancel && auth()->user()->hasAnyRole(['admin', 'Supervisor']))
+                    @if($canCancel && auth()->user()->hasAnyRole(['admin', 'supervisor', 'Supervisor']))
                     <form action="{{ route('routes.destroy', $route) }}" method="POST"
                         onsubmit="return confirm('¿Anular esta ruta? Esta acción no se puede deshacer.')">
                         @csrf

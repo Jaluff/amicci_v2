@@ -73,7 +73,7 @@ class DeliveryController extends Controller
             }
         }
 
-        $isAdminOrSupervisor = auth()->user()->hasAnyRole(['admin', 'Supervisor']);
+        $isAdminOrSupervisor = auth()->user()->hasAnyRole(['admin', 'supervisor', 'Supervisor']);
 
         return DataTables::of($query->orderByDesc('deliveries.created_at'))
             ->addColumn('acciones', function ($row) use ($isAdminOrSupervisor) {
@@ -115,7 +115,7 @@ class DeliveryController extends Controller
                 $delivererShowUrl = route('deliverer.show', $row->id);
 
                 $delivererShowBtn = "
-                    <a href='{$delivererShowUrl}' target='_blank' title='Ver Vista Móvil (Repartidor)' class='inline-flex items-center justify-center p-2 rounded-md bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 dark:bg-purple-900/40 dark:text-purple-400 dark:border-purple-800 dark:hover:bg-purple-800/60 transition-colors'>
+                    <a href='{$delivererShowUrl}' data-delivery-number='{$row->delivery_number}' class='btn-deliverer-modal-show inline-flex items-center justify-center p-2 rounded-md bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 dark:bg-purple-900/40 dark:text-purple-400 dark:border-purple-800 dark:hover:bg-purple-800/60 transition-colors' title='Ver Vista Móvil (Repartidor)'>
                         <svg xmlns='http://www.w3.org/2000/svg' class='w-4 h-4' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'>
                             <rect x='5' y='2' width='14' height='20' rx='2' ry='2'></rect>
                             <line x1='12' y1='18' x2='12.01' y2='18'></line>
@@ -126,7 +126,7 @@ class DeliveryController extends Controller
                 $deleteForm = '';
                 if ($row->shipments_count == 0 && $currentStatus === DeliveryStateMachine::READY && $isAdminOrSupervisor) {
                     $deleteForm = "
-                    <form action='{$deleteUrl}' method='POST' onsubmit='{$confirm}' class='inline m-0'>
+                    <form action='{$deleteUrl}' method='POST' onsubmit=\"{$confirm}\" class='inline m-0'>
                         <input type='hidden' name='_token' value='{$csrf}'>
                         <input type='hidden' name='_method' value='DELETE'>
                         <button type='submit' title='Eliminar' class='inline-flex items-center justify-center p-2 rounded-md bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 dark:bg-red-900/40 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-800/60 dark:hover:text-red-300 transition-colors'>
@@ -267,7 +267,7 @@ class DeliveryController extends Controller
 
     public function destroy(Delivery $delivery)
     {
-        abort_if(! auth()->user()->hasAnyRole(['admin', 'Supervisor']), 403, 'No tienes permisos para anular documentos.');
+        abort_if(! auth()->user()->hasAnyRole(['admin', 'supervisor', 'Supervisor']), 403, 'No tienes permisos para anular documentos.');
 
         if ($delivery->status !== DeliveryStateMachine::READY) {
             return redirect()->route('deliveries.index')->with('error', 'No se puede anular un reparto cuyo estado no es "Listo".');

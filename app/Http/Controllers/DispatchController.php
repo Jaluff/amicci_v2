@@ -140,7 +140,7 @@ class DispatchController extends Controller
 
                 if ($canDelete) {
                     $deleteForm = "
-                    <form action='{$deleteUrl}' method='POST' onsubmit='{$confirm}' class='inline m-0'>
+                    <form action='{$deleteUrl}' method='POST' onsubmit=\"{$confirm}\" class='inline m-0'>
                         <input type='hidden' name='_token' value='{$csrf}'>
                         <input type='hidden' name='_method' value='DELETE'>
                         <button type='submit' title='Eliminar' class='inline-flex items-center justify-center p-2 rounded-md bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 dark:bg-red-900/40 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-800/60 dark:hover:text-red-300 transition-colors'>

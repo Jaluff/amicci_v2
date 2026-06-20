@@ -148,9 +148,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/billing/{invoice}/excel', [InvoiceController::class, 'excel'])->name('billing.excel');
     Route::post('/billing/{invoice}/pay', [InvoiceController::class, 'markAsPaid'])->name('billing.pay');
 
-    // Gestión de facturas — solo admin
-    Route::middleware('role:admin')->group(function () {
+    // Gestión de facturas (admin y supervisor)
+    Route::middleware('role:admin|supervisor')->group(function () {
         Route::delete('/billing/{invoice}/shipment/{shipmentId}', [InvoiceController::class, 'detachShipment'])->name('billing.detach-shipment');
+        Route::delete('/billing/{invoice}', [InvoiceController::class, 'destroy'])->name('billing.destroy');
     });
 
     });
