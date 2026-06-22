@@ -8,6 +8,17 @@ import { openCompanySelector } from '../../shared/company-selector.js';
 $(function () {
     $('.select2').select2({ width: '100%' });
 
+    if ($('#filter_fecha_range').length) {
+        flatpickr('#filter_fecha_range', {
+            mode: 'range',
+            dateFormat: 'Y-m-d',
+            locale: 'es',
+            altInput: true,
+            altFormat: 'd/m/Y',
+            allowInput: true
+        });
+    }
+
     if (!$('#shipmentsTable').length) return;
 
     $('#shipmentsTable').DataTable({
@@ -20,12 +31,23 @@ $(function () {
             data: function (d) {
                 d.origen_id = $('#filter_origen_id').val();
                 d.destino_id = $('#filter_destino_id').val();
-                d.fecha_inicio = $('#filter_fecha_inicio').val();
-                d.fecha_fin = $('#filter_fecha_fin').val();
                 d.numero_documento = $('#filter_numero_documento').val();
                 d.cliente = $('#filter_cliente').val();
                 d.ubicacion = $('#filter_ubicacion').val();
                 d.company_id = $('#filter_company_id').val();
+
+                const rangeVal = $('#filter_fecha_range').val();
+                if (rangeVal && rangeVal.includes(' to ')) {
+                    const parts = rangeVal.split(' to ');
+                    d.fecha_inicio = parts[0];
+                    d.fecha_fin = parts[1];
+                } else if (rangeVal) {
+                    d.fecha_inicio = rangeVal;
+                    d.fecha_fin = rangeVal;
+                } else {
+                    d.fecha_inicio = '';
+                    d.fecha_fin = '';
+                }
             }
         },
         columns: [

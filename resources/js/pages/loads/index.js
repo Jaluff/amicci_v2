@@ -6,6 +6,17 @@ import { openCompanySelector } from '../../shared/company-selector.js';
 $(function () {
     const tableElement = $('#loads-table');
     
+    if ($('#filter_fecha_range').length) {
+        flatpickr('#filter_fecha_range', {
+            mode: 'range',
+            dateFormat: 'Y-m-d',
+            locale: 'es',
+            altInput: true,
+            altFormat: 'd/m/Y',
+            allowInput: true
+        });
+    }
+    
     const dt = tableElement.DataTable({
         processing: true,
         serverSide: true,
@@ -18,6 +29,21 @@ $(function () {
                 d.estado = $('#filter_estado').val();
                 d.facturada = $('#filter_facturada').val();
                 d.cobrada = $('#filter_cobrada').val();
+                
+                const rangeVal = $('#filter_fecha_range').val();
+                if (rangeVal) {
+                    const parts = rangeVal.includes(' a ') ? rangeVal.split(' a ') : rangeVal.split(' to ');
+                    if (parts.length === 2) {
+                        d.fecha_inicio = parts[0];
+                        d.fecha_fin = parts[1];
+                    } else {
+                        d.fecha_inicio = rangeVal;
+                        d.fecha_fin = rangeVal;
+                    }
+                } else {
+                    d.fecha_inicio = '';
+                    d.fecha_fin = '';
+                }
             }
         },
         columns: [

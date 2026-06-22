@@ -19,11 +19,22 @@ const RouteModule = (function ($) {
                 data: function (d) {
                     d.origen_id = $('#filter_origen_id').val();
                     d.destino_id = $('#filter_destino_id').val();
-                    d.fecha_inicio = $('#filter_fecha_inicio').val();
-                    d.fecha_fin = $('#filter_fecha_fin').val();
                     d.numero_documento = $('#filter_numero_documento').val();
                     d.estado = $('#filter_estado').val();
                     d.company_id = $('#filter_company_id').val();
+
+                    const rangeVal = $('#filter_fecha_range').val();
+                    if (rangeVal && rangeVal.includes(' to ')) {
+                        const parts = rangeVal.split(' to ');
+                        d.fecha_inicio = parts[0];
+                        d.fecha_fin = parts[1];
+                    } else if (rangeVal) {
+                        d.fecha_inicio = rangeVal;
+                        d.fecha_fin = rangeVal;
+                    } else {
+                        d.fecha_inicio = '';
+                        d.fecha_fin = '';
+                    }
                 }
             },
             columns: [
@@ -102,6 +113,17 @@ const RouteModule = (function ($) {
 
 
 $(document).ready(function () {
+    if ($('#filter_fecha_range').length) {
+        flatpickr('#filter_fecha_range', {
+            mode: 'range',
+            dateFormat: 'Y-m-d',
+            locale: 'es',
+            altInput: true,
+            altFormat: 'd/m/Y',
+            allowInput: true
+        });
+    }
+
     RouteModule.init();
 
     $('#btn-filter').on('click', function () {

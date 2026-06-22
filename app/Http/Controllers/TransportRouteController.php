@@ -171,10 +171,10 @@ class TransportRouteController extends Controller
             $query->where('destination_id', $request->destino_id);
         }
         if ($request->filled('fecha_inicio')) {
-            $query->whereDate('created_at', '>=', $request->fecha_inicio);
+            $query->whereDate('transport_routes.created_at', '>=', $request->fecha_inicio);
         }
         if ($request->filled('fecha_fin')) {
-            $query->whereDate('created_at', '<=', $request->fecha_fin);
+            $query->whereDate('transport_routes.created_at', '<=', $request->fecha_fin);
         }
         if ($request->filled('numero_documento')) {
             $query->where('route_number', 'like', '%'.$request->numero_documento.'%');

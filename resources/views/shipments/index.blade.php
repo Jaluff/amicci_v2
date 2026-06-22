@@ -52,16 +52,11 @@
                         </select>
                     </div>
                     <div>
-                        <label for="filter_fecha_inicio"
-                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha Inicio</label>
-                        <input type="date" id="filter_fecha_inicio"
-                            class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                    </div>
-                    <div>
-                        <label for="filter_fecha_fin"
-                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha Fin</label>
-                        <input type="date" id="filter_fecha_fin"
-                            class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        <label for="filter_fecha_range"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rango de Fechas</label>
+                        <input type="text" id="filter_fecha_range"
+                            class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm bg-white dark:bg-gray-800"
+                            placeholder="Seleccionar..." readonly>
                     </div>
                     <div>
                         <label for="filter_numero_documento"

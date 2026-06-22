@@ -59,7 +59,7 @@
             $totalFleteGeneral += $s->flete;
         }
         
-        $chunks = $allShipments->chunk(15);
+        $chunks = $allShipments->chunk(20);
         $totalChunks = $chunks->count();
     @endphp
 

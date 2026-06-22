@@ -39,6 +39,12 @@ class LoadController extends Controller
         if ($request->filled('numero')) {
             $query->where('numero', 'like', '%'.$request->numero.'%');
         }
+        if ($request->filled('fecha_inicio')) {
+            $query->whereDate('fecha_carga', '>=', $request->fecha_inicio);
+        }
+        if ($request->filled('fecha_fin')) {
+            $query->whereDate('fecha_carga', '<=', $request->fecha_fin);
+        }
         if ($request->filled('estado') && $request->estado !== 'Todos') {
             $query->where('estado', $request->estado);
         }
