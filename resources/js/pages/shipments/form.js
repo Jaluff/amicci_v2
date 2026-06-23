@@ -159,6 +159,7 @@ import { partyAjaxConfig } from '../../shared/select2Ajax';
         var totalBultos = 0;
         var totalPallets = 0;
         var totalValor = 0;
+        var hasInvalidItems = false;
 
         $('#items-container .item-row').each(function () {
             var tipo = $(this).find('[name*="[tipo_paquete]"]').val() || '';
@@ -173,7 +174,25 @@ import { partyAjaxConfig } from '../../shared/select2Ajax';
 
             if (tipo === 'bultos') totalBultos += cant;
             if (tipo === 'palets') totalPallets += cant;
+
+            if (mode === 'bultos' && tipo !== 'bultos') {
+                hasInvalidItems = true;
+            }
+            if (mode === 'pallets' && tipo !== 'palets') {
+                hasInvalidItems = true;
+            }
+            if (mode === 'bultos_pallets' && tipo !== 'bultos' && tipo !== 'palets') {
+                hasInvalidItems = true;
+            }
         });
+
+        if (hasInvalidItems) {
+            $('#flete').val('0.00').trigger('change');
+            if ($('#tariff-mode-label').length) {
+                $('#tariff-mode-label').text(tariffSetting.billing_mode_label + ' — Los ítems no corresponden con la tarifa. Flete manual.');
+            }
+            return;
+        }
 
         // Modo kg: delegar al servidor (consulta la escala de tramos)
         if (mode === 'kg') {

@@ -67,6 +67,24 @@ class GuiaImporteService
         // ── 3. Calcular totales de los ítems de la guía ──────────────────
         $shipment->loadMissing('items');
 
+        // Validar restricciones de tipo de paquete por modo de facturación
+        if ($setting->billing_mode === 'bultos') {
+            $hasInvalidItems = $shipment->items->contains(fn ($item) => $item->tipo_paquete !== 'bultos');
+            if ($hasInvalidItems) {
+                return null;
+            }
+        } elseif ($setting->billing_mode === 'pallets') {
+            $hasInvalidItems = $shipment->items->contains(fn ($item) => $item->tipo_paquete !== 'palets');
+            if ($hasInvalidItems) {
+                return null;
+            }
+        } elseif ($setting->billing_mode === 'bultos_pallets') {
+            $hasInvalidItems = $shipment->items->contains(fn ($item) => !in_array($item->tipo_paquete, ['bultos', 'palets'], true));
+            if ($hasInvalidItems) {
+                return null;
+            }
+        }
+
         $totalPesoKg = $shipment->items->sum('peso');         // Kg totales
         $totalVolumenM3 = $shipment->items->sum('volumen');       // M3 totales
         $totalBultos = $shipment->items
