@@ -50,7 +50,7 @@
                             </button>
                         </form>
                     @endif
-                    <a href="{{ route('billing.print', $invoice) }}" target="_blank"
+                    <a href="{{ route('billing.print', $invoice) }}" onclick="window.open(this.href, '_blank'); return false;"
                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition">
                         🖨️ Imprimir PDF
                     </a>
@@ -108,14 +108,16 @@
                             <th class="p-2 border-b text-left whitespace-nowrap">Fecha</th>
                             <th class="p-2 border-b text-left whitespace-nowrap">F. Entrega</th>
                             <th class="p-2 border-b text-left whitespace-nowrap"># Guía</th>
+                            <th class="p-2 border-b text-center whitespace-nowrap">Bultos</th>
+                            <th class="p-2 border-b text-left whitespace-nowrap">Remito</th>
                             <th class="p-2 border-b text-left whitespace-nowrap">Remitente</th>
                             <th class="p-2 border-b text-left whitespace-nowrap">Destinatario</th>
                             <th class="p-2 border-b text-left whitespace-nowrap">Ubicación</th>
                             <th class="p-2 border-b text-left whitespace-nowrap">Flete</th>
                             <th class="p-2 border-b text-left whitespace-nowrap">Seguro</th>
                             <th class="p-2 border-b text-left whitespace-nowrap">Com. Contr.</th>
-                            <th class="p-2 border-b text-left whitespace-nowrap">Ret. Merc.</th>
-                            <th class="p-2 border-b text-left whitespace-nowrap">Otros Conc.</th>
+                            <th class="p-2 border-b text-left whitespace-nowrap">Retiro</th>
+                            <th class="p-2 border-b text-left whitespace-nowrap">Otros</th>
                             <th class="p-2 border-b text-left font-bold text-indigo-600 whitespace-nowrap">Total</th>
                             @if(!$invoice->cobrada && auth()->user()?->hasAnyRole(['admin', 'supervisor']))
                             <th class="p-2 border-b text-center whitespace-nowrap">Acciones</th>
@@ -128,8 +130,10 @@
                             <td class="p-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $shipment->fecha?->format('d/m/Y') ?? '-' }}</td>
                             <td class="p-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $shipment->fecha_entrega?->format('d/m/Y') ?? '—' }}</td>
                             <td class="p-2 font-mono font-semibold text-gray-800 dark:text-gray-200 whitespace-nowrap">{{ $shipment->numero }}</td>
-                            <td class="p-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $shipment->sender?->name ?? '-' }}</td>
-                            <td class="p-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $shipment->recipient?->name ?? '-' }}</td>
+                            <td class="p-2 text-center text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $shipment->items->sum('cantidad') }}</td>
+                            <td class="p-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $shipment->items->pluck('numero_remito')->filter()->join(', ') ?: '-' }}</td>
+                            <td class="p-2 text-gray-700 dark:text-gray-300 max-w-[150px] break-words">{{ $shipment->sender?->name ?? '-' }}</td>
+                            <td class="p-2 text-gray-700 dark:text-gray-300 max-w-[150px] break-words">{{ $shipment->recipient?->name ?? '-' }}</td>
                             <td class="p-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $shipment->ubicacion_actual ?? '-' }}</td>
                             <td class="p-2 text-left text-gray-700 dark:text-gray-300 whitespace-nowrap">$ {{ number_format($shipment->flete, 2, ',', '.') }}</td>
                             <td class="p-2 text-left text-gray-700 dark:text-gray-300 whitespace-nowrap">$ {{ number_format($shipment->seguro, 2, ',', '.') }}</td>
@@ -158,13 +162,15 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="{{ !$invoice->cobrada && auth()->user()?->hasAnyRole(['admin', 'supervisor']) ? 13 : 12 }}" class="p-4 text-center text-gray-500 dark:text-gray-400">Sin guías asociadas.</td>
+                            <td colspan="{{ !$invoice->cobrada && auth()->user()?->hasAnyRole(['admin', 'supervisor']) ? 15 : 14 }}" class="p-4 text-center text-gray-500 dark:text-gray-400">Sin guías asociadas.</td>
                         </tr>
                         @endforelse
                     </tbody>
                     <tfoot class="bg-indigo-50 dark:bg-indigo-900/30 border-t-2 border-indigo-200 dark:border-indigo-700 font-bold">
                         <tr>
                             <td class="p-2 text-left text-gray-700 dark:text-gray-300">TOTAL FACTURA:</td>
+                            <td class="p-2"></td>
+                            <td class="p-2"></td>
                             <td class="p-2"></td>
                             <td class="p-2"></td>
                             <td class="p-2"></td>

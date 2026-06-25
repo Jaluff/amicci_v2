@@ -5,8 +5,8 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
+                    <a href="{{ route('dashboard') }}" class="flex items-center">
+                        <img src="{{ asset('images/logo_amicci_light.png') }}?v={{ time() }}" alt="Transporte Amicci" class="block h-5 w-auto transition-all duration-300 dark:brightness-0 dark:invert" />
                     </a>
                 </div>
 

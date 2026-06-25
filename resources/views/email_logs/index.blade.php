@@ -610,6 +610,18 @@ document.getElementById('filter-status').addEventListener('change', function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
+    if ($.fn.select2) {
+        $('#filter-company, #filter-status').select2({
+            minimumResultsForSearch: 10,
+            width: '100px'
+        });
+        $('#filter-company, #filter-status').on('change', function() {
+            document.getElementById('filter-label').classList.remove('hidden');
+            loadStats();
+            loadLogsTable(1);
+        });
+    }
+
     loadStats();
     loadLogsTable(1);
 });

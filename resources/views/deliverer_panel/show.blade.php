@@ -176,8 +176,8 @@
         $(document).on('click', '.btn-save-inline-problem', function (e) {
             e.preventDefault();
             const $btn = $(this);
+            const $container = $btn.closest('[x-data]');
             const shipmentId = $btn.data('shipment-id');
-            const $container = $btn.closest('div.mt-3');
             const comment = $container.find('.inline-problem-comment').val().trim();
 
             if (!comment) {

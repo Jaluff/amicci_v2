@@ -8,7 +8,7 @@
     <style>
         @media print {
             body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0; }
-            @page { margin: 0.8cm; size: A4 landscape; }
+            @page { margin: 0.3cm; size: A4 landscape; }
             .no-print { display: none !important; }
             .invoice-container {
                 width: 100%;
@@ -29,7 +29,8 @@
             border: 1px solid #e5e7eb;
         }
         table { width: 100%; border-spacing: 0; }
-        th, td { border: 0.5px solid #e5e7eb; }
+        th, td { border: 0.5px solid #e5e7eb; padding: 4px 6px !important; }
+        table.dataTable { margin: 0 !important; width: 100% !important; border-collapse: collapse !important; }
     </style>
     <!-- DataTables CDN dependencies for exports -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
@@ -100,19 +101,21 @@
         <!-- Table of Shipments -->
         <div class="mb-6">
             <h3 class="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider border-b pb-1">Guías Incluidas</h3>
-            <table id="invoice-print-table" class="w-full text-[10px] border-collapse">
+            <table id="invoice-print-table" class="w-full text-[8.5px] border-collapse">
                 <thead>
                     <tr class="bg-gray-950 text-white uppercase font-bold text-left">
                         <th class="p-1.5 whitespace-nowrap">Fecha</th>
-                        <th class="p-1.5 whitespace-nowrap">F. Entrega</th>
+                        <th class="p-1.5 whitespace-nowrap">F.Entrega</th>
                         <th class="p-1.5 whitespace-nowrap"># Guía</th>
+                        <th class="p-1.5 text-center whitespace-nowrap">Bultos</th>
+                        <th class="p-1.5 whitespace-nowrap">Remito</th>
                         <th class="p-1.5 whitespace-nowrap">Remitente</th>
                         <th class="p-1.5 whitespace-nowrap">Destinatario</th>
                         <th class="p-1.5 whitespace-nowrap">Flete</th>
                         <th class="p-1.5 whitespace-nowrap">Seguro</th>
                         <th class="p-1.5 whitespace-nowrap">Com. Contr.</th>
-                        <th class="p-1.5 whitespace-nowrap">Ret. Merc.</th>
-                        <th class="p-1.5 whitespace-nowrap">Otros Conc.</th>
+                        <th class="p-1.5 whitespace-nowrap">Retiro</th>
+                        <th class="p-1.5 whitespace-nowrap">Otros</th>
                         <th class="p-1.5 font-bold text-right whitespace-nowrap">Total</th>
                     </tr>
                 </thead>
@@ -122,8 +125,10 @@
                         <td class="p-1.5 whitespace-nowrap text-gray-700">{{ $shipment->fecha?->format('d/m/Y') ?? '-' }}</td>
                         <td class="p-1.5 whitespace-nowrap text-gray-700">{{ $shipment->fecha_entrega?->format('d/m/Y') ?? '—' }}</td>
                         <td class="p-1.5 font-bold text-blue-600 whitespace-nowrap">{{ $shipment->numero }}</td>
-                        <td class="p-1.5 uppercase text-gray-700 truncate max-w-[120px]">{{ $shipment->sender?->name ?? '-' }}</td>
-                        <td class="p-1.5 uppercase text-gray-700 truncate max-w-[120px]">{{ $shipment->recipient?->name ?? '-' }}</td>
+                        <td class="p-1.5 text-center text-gray-700 whitespace-nowrap">{{ $shipment->items->sum('cantidad') }}</td>
+                        <td class="p-1.5 text-gray-700 whitespace-nowrap">{{ $shipment->items->pluck('numero_remito')->filter()->join(', ') ?: '-' }}</td>
+                        <td class="p-1.5 uppercase text-gray-700 max-w-[120px] break-words" style="white-space: normal !important;">{{ $shipment->sender?->name ?? '-' }}</td>
+                        <td class="p-1.5 uppercase text-gray-700 max-w-[120px] break-words" style="white-space: normal !important;">{{ $shipment->recipient?->name ?? '-' }}</td>
                         <td class="p-1.5 text-left text-gray-700 whitespace-nowrap">$ {{ number_format($shipment->flete, 2, ',', '.') }}</td>
                         <td class="p-1.5 text-left text-gray-700 whitespace-nowrap">$ {{ number_format($shipment->seguro, 2, ',', '.') }}</td>
                         <td class="p-1.5 text-left text-gray-700 whitespace-nowrap">$ {{ number_format($shipment->monto_contra_reembolso, 2, ',', '.') }}</td>
@@ -135,7 +140,7 @@
                 </tbody>
                 <tfoot>
                     <tr class="font-bold bg-gray-100 text-gray-900">
-                        <td colspan="5" class="p-2 text-right uppercase">Totales:</td>
+                        <td colspan="7" class="p-2 text-right uppercase">Totales:</td>
                         <td class="p-2 text-left whitespace-nowrap">$ {{ number_format($totalFlete, 2, ',', '.') }}</td>
                         <td class="p-2 text-left whitespace-nowrap">$ {{ number_format($totalSeguro, 2, ',', '.') }}</td>
                         <td class="p-2 text-left whitespace-nowrap">$ {{ number_format($totalComision, 2, ',', '.') }}</td>
@@ -205,13 +210,9 @@
             // Imprimir automáticamente al cargar
             window.print();
 
-            // Cerrar automáticamente después de imprimir
+            // Cerrar automáticamente después de imprimir o cancelar
             window.addEventListener('afterprint', function () {
-                if (window.opener && !window.opener.closed) {
-                    window.close();
-                } else {
-                    window.location.href = "{{ route('billing.invoices') }}";
-                }
+                window.close();
             });
         });
     </script>

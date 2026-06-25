@@ -182,4 +182,9 @@ Route::middleware(['auth', 'role:admin|supervisor'])->group(function () {
     Route::get('/admin/email-logs/{emailLog}/preview', [EmailLogController::class, 'preview'])->name('email-logs.preview');
 });
 
+// PWA para Repartidores (SPA — auth via Sanctum token, no session)
+Route::get('/pwa/{any?}', function () {
+    return view('pwa');
+})->where('any', '.*')->name('pwa');
+
 require __DIR__.'/auth.php';

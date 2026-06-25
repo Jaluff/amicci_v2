@@ -65,6 +65,13 @@ $(function () {
         order: [[0, 'desc']]
     });
 
+    if ($.fn.select2) {
+        $('#filter_company, #filter_estado, #filter_facturada, #filter_cobrada').select2({
+            width: '100%',
+            minimumResultsForSearch: 10
+        });
+    }
+
     $('#btn-filter').on('click', function () {
         dt.draw();
     });

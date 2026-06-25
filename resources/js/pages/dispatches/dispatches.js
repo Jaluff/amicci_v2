@@ -111,6 +111,13 @@ $(document).ready(function () {
 
     DispatchModule.init();
 
+    if ($.fn.select2) {
+        $('#filter_origen_id, #filter_destino_id, #filter_estado').select2({
+            width: '100%',
+            minimumResultsForSearch: 10
+        });
+    }
+
     $('#btn-filter').on('click', function () {
         $('#dispatches-table').DataTable().ajax.reload();
     });
