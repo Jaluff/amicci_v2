@@ -126,6 +126,13 @@ $(document).ready(function () {
 
     RouteModule.init();
 
+    if ($.fn.select2) {
+        $('#filter_company_id, #filter_origen_id, #filter_destino_id, #filter_estado').select2({
+            width: '100%',
+            minimumResultsForSearch: 10
+        });
+    }
+
     $('#btn-filter').on('click', function () {
         $('#routes-table').DataTable().ajax.reload();
     });

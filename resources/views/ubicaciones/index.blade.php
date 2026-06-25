@@ -134,6 +134,13 @@
         
         const originalAction = $form.attr('action');
 
+        if ($.fn.select2) {
+            $('#branch_id').select2({
+                width: '100%',
+                minimumResultsForSearch: 10
+            });
+        }
+
         $('.edit-btn').on('click', function() {
             const id = $(this).data('id');
             const nombre = $(this).data('nombre');
@@ -141,7 +148,7 @@
             const url = $(this).data('url');
 
             $nombreInput.val(nombre);
-            $('#branch_id').val(branchId);
+            $('#branch_id').val(branchId).trigger('change');
             $form.attr('action', url);
             $methodField.html('<input type="hidden" name="_method" value="PUT">');
             $formTitle.text('Editar Ubicación');
@@ -156,7 +163,7 @@
 
         $cancelBtn.on('click', function() {
             $nombreInput.val('');
-            $('#branch_id').val('');
+            $('#branch_id').val('').trigger('change');
             $form.attr('action', originalAction);
             $methodField.empty();
             $formTitle.text('Nueva Ubicación');

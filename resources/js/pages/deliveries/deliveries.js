@@ -14,6 +14,12 @@ const DeliveryModule = (function ($) {
         dataTable = $('#deliveries-table').DataTable({
             processing: true,
             serverSide: true,
+            responsive: {
+                details: {
+                    type: 'column',
+                    target: 'tr'
+                }
+            },
             ajax: {
                 url: $('#deliveries-table').data('url'),
                 data: function (d) {
@@ -40,6 +46,7 @@ const DeliveryModule = (function ($) {
                 { 
                     data: 'empresa', 
                     name: 'companies.prefix',
+                    className: 'min-tablet',
                     render: function(data, type, row) {
                         const color = row.empresa_color || '#6366f1';
                         return `<span class="px-2 py-1 rounded-full text-[10px] font-bold text-white shadow-sm" style="background-color: ${color}">${data}</span>`;
@@ -48,6 +55,7 @@ const DeliveryModule = (function ($) {
                 {
                     data: 'load_date',
                     name: 'load_date',
+                    className: 'all',
                     render: function (data) {
                         if (!data) return '-';
                         const datePart = data.split(' ')[0].split('T')[0];
@@ -58,10 +66,11 @@ const DeliveryModule = (function ($) {
                         return data;
                     }
                 },
-                { data: 'delivery_number', name: 'delivery_number' },
+                { data: 'delivery_number', name: 'delivery_number', className: 'all' },
                 {
                     data: 'deliverer.name',
                     name: 'deliverer.name',
+                    className: 'min-tablet',
                     orderable: false,
                     searchable: false,
                     defaultContent: '-'
@@ -69,6 +78,7 @@ const DeliveryModule = (function ($) {
                 {
                     data: 'location.name',
                     name: 'location.name',
+                    className: 'min-tablet',
                     orderable: false,
                     searchable: false,
                     defaultContent: '-'
@@ -76,6 +86,7 @@ const DeliveryModule = (function ($) {
                 {
                     data: 'status',
                     name: 'status',
+                    className: 'all',
                     render: function (data) {
                         if (!data) return '<span class="dt-badge dt-badge-gray">—</span>';
                         const colores = {
@@ -88,9 +99,9 @@ const DeliveryModule = (function ($) {
                         return '<span class="dt-badge ' + color + '">' + data + '</span>';
                     }
                 },
-                { data: 'guide_count', name: 'guide_count', defaultContent: '0' },
-                { data: 'package_count', name: 'package_count', defaultContent: '0' },
-                { data: 'acciones', name: 'acciones', orderable: false, searchable: false }
+                { data: 'guide_count', name: 'guide_count', className: 'min-tablet', defaultContent: '0' },
+                { data: 'package_count', name: 'package_count', className: 'min-tablet', defaultContent: '0' },
+                { data: 'acciones', name: 'acciones', className: 'min-tablet', orderable: false, searchable: false }
             ],
             order: [[0, 'desc']],
         });
@@ -117,6 +128,13 @@ $(document).ready(function () {
     }
 
     DeliveryModule.init();
+
+    if ($.fn.select2) {
+        $('#filter_company_id, #filter_location_id, #filter_estado').select2({
+            width: '100%',
+            minimumResultsForSearch: 10
+        });
+    }
 
     $('#btn-filter').on('click', function () {
         $('#deliveries-table').DataTable().ajax.reload();

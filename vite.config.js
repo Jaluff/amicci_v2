@@ -7,6 +7,8 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/js/app.js',
+                'resources/pwa/css/pwa.css',
+                'resources/pwa/js/pwa.js',
                 'resources/js/pages/shipments/form.js',
                 'resources/js/pages/shipments/index.js',
                 'resources/js/pages/transportRoutes/transportRoutes.js',

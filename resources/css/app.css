@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* PREVIENE DESBORDES GLOBALES (Evita bordes blancos y estabiliza selects absolutos) */
+html, body {
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
 /* Tamaño de fuente global: text-xs en todo el sitio */
 @layer base {
     html {
@@ -104,6 +114,27 @@ table.dataTable tbody tr:hover {
 /* Borde exterior */
 table.dataTable.no-footer {
     border-bottom: 1px solid #e5e7eb;
+}
+
+/* Previene que la grilla de DataTables desborde el contenedor de la página y estire el ancho del body */
+.dt-container,
+.dt-layout-row {
+    max-width: 100% !important;
+    min-width: 0 !important;
+}
+
+/* Contenedor responsivo para evitar desbordes en móviles (solo en la celda de la tabla para no romper controles y filtros) */
+.dt-layout-cell:has(table.dataTable) {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    display: block !important;
+    max-width: 100% !important;
+}
+
+table.dataTable {
+    width: 100% !important;
+    min-width: max-content !important;
 }
 
 /* Barra de controles: length + botones + buscar en una sola fila */
@@ -244,7 +275,6 @@ html.dark .dt-button-collection .dt-button.active {
         color: #f9fafb !important;
         background: #374151 !important;
         border-color: #4b5563 !important;
-        padding: 0.5rem !important;
     }
 
     html.dark body .dt-container .dt-paging .dt-paging-button.current,
