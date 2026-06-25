@@ -210,13 +210,9 @@
             // Imprimir automáticamente al cargar
             window.print();
 
-            // Cerrar automáticamente después de imprimir
+            // Cerrar automáticamente después de imprimir o cancelar
             window.addEventListener('afterprint', function () {
-                if (window.opener && !window.opener.closed) {
-                    window.close();
-                } else {
-                    window.location.href = "{{ route('billing.invoices') }}";
-                }
+                window.close();
             });
         });
     </script>

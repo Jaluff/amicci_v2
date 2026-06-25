@@ -50,7 +50,7 @@
                             </button>
                         </form>
                     @endif
-                    <a href="{{ route('billing.print', $invoice) }}" target="_blank"
+                    <a href="{{ route('billing.print', $invoice) }}" onclick="window.open(this.href, '_blank'); return false;"
                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition">
                         🖨️ Imprimir PDF
                     </a>
