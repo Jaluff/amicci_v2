@@ -8,6 +8,11 @@
     @vite('resources/css/app.css')
     <style>
         @media print {
+            html, body {
+                overflow: hidden !important;
+                height: 100%;
+            }
+
             body {
                 background: white;
                 -webkit-print-color-adjust: exact;
@@ -161,7 +166,7 @@
                                         @endif
                                         <br>{{ $primary->city ? $primary->city : '' }}{{ $primary->zip_code ? ' - CP.' . $primary->zip_code : '' }}
                                     </p>
-                                    <p class="mb-0">Tel. {{ $primary->phone ?? '' }} </br> {{ $primary->email ?? '' }}</p>
+                                    <p class="mb-0">Tel. {{ $primary->phone ?? '' }} <br> {{ $primary->email ?? '' }}</p>
                                 </div>
                             @else
                                 <div class="mb-1.5 text-white">
@@ -186,7 +191,7 @@
                                         @endif
                                         <br>{{ $sec->city ? $sec->city : '' }}{{ $sec->zip_code ? ' - CP.' . $sec->zip_code : '' }}
                                     </p>
-                                    <p class="mb-0">Tel. {{ $sec->phone ?? '' }} </br> {{ $sec->email ?? '' }}</p>
+                                    <p class="mb-0">Tel. {{ $sec->phone ?? '' }} <br> {{ $sec->email ?? '' }}</p>
                                 </div>
                             @endforeach
                         </div>
