@@ -24,6 +24,7 @@ $(function () {
     $('#shipmentsTable').DataTable({
         processing: true,
         serverSide: true,
+        stateSave: false,
         pageLength: 20,
         lengthMenu: [[10, 20, 50, 100, -1], [10, 20, 50, 100, "Todas"]],
         ajax: {
@@ -51,7 +52,6 @@ $(function () {
             }
         },
         columns: [
-            { data: 'updated_at', name: 'shipments.updated_at', visible: false, searchable: false },
             { 
                 data: 'empresa', 
                 name: 'companies.prefix', 
@@ -65,25 +65,25 @@ $(function () {
             { data: 'numero', name: 'shipments.numero', responsivePriority: 1 },
             { data: 'remitente_upper', name: 'remitente.name', responsivePriority: 3, className: '!whitespace-normal min-w-[150px]' },
             { data: 'destinatario_upper', name: 'destinatario.name', responsivePriority: 3, className: '!whitespace-normal min-w-[150px]' },
-            { data: 'ruta_corta', name: 'origen.nombre', orderable: false, responsivePriority: 6 },
-            { data: 'despacho', name: 'dispatches.dispatch_number', responsivePriority: 4 },
-            { data: 'reparto', name: 'deliveries.delivery_number', responsivePriority: 4 },
-            { data: 'flete', name: 'shipments.flete', responsivePriority: 5 },
-            { data: 'bultos', name: 'bultos', orderable: false, searchable: false, responsivePriority: 4 },
+            { data: 'ruta_corta', name: 'origen.nombre', orderable: false, responsivePriority: 2 },
+            { data: 'despacho', name: 'dispatches.dispatch_number', responsivePriority: 5 },
+            { data: 'reparto', name: 'deliveries.delivery_number', responsivePriority: 5 },
+            { data: 'flete', name: 'shipments.flete', responsivePriority: 6 },
+            { data: 'bultos', name: 'bultos', orderable: false, searchable: false, responsivePriority: 7 },
             { data: 'valor_declarado', name: 'valor_declarado', orderable: false, searchable: false, visible: true, responsivePriority: 8 },
-            { data: 'total', name: 'shipments.total', responsivePriority: 3 },
+            { data: 'total', name: 'shipments.total', responsivePriority: 4 },
             {
                 data: 'ubicacion_actual',
                 name: 'shipments.ubicacion_actual',
                 defaultContent: '-',
-                responsivePriority: 5,
+                responsivePriority: 3,
                 orderable: true,
                 searchable: true,
                 className: 'text-center',
             },
             { data: 'acciones', name: 'acciones', orderable: false, searchable: false, responsivePriority: 1, className: 'text-center' },
         ],
-        order: [[0, 'desc']],
+        order: [[1, 'desc']],
     });
 
     $('#btn-filter').on('click', function () {

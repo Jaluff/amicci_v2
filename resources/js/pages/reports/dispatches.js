@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
     $("#filter_dispatch_number").val("");
     $("#filter_route_number").val("");
     $("#filter_delivery_number").val("");
+    $("#filter_invoice_number").val("");
     $("#filter_start_date").val("");
     $("#filter_end_date").val("");
 
@@ -102,7 +103,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     ubicacion_actual: $("#filter_ubicacion_actual").val(),
                     dispatch_number: $("#filter_dispatch_number").val(),
                     route_number: $("#filter_route_number").val(),
-                    delivery_number: $("#filter_delivery_number").val()
+                    delivery_number: $("#filter_delivery_number").val(),
+                    invoice_number: $("#filter_invoice_number").val()
                 },
                 success: function (json) {
                     if (json.data) {

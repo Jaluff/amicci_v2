@@ -64,6 +64,11 @@ class DispatchReportController extends Controller
                 $q->where('delivery_number', 'like', '%'.$request->delivery_number.'%');
             });
         }
+        if ($request->filled('invoice_number')) {
+            $query->whereHas('invoice', function ($q) use ($request) {
+                $q->where('numero', 'like', '%'.$request->invoice_number.'%');
+            });
+        }
         if ($request->filled('origin_id')) {
             $originIds = is_array($request->origin_id) ? $request->origin_id : [$request->origin_id];
             $query->whereIn('origen_id', $originIds);

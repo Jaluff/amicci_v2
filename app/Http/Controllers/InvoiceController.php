@@ -404,6 +404,9 @@ class InvoiceController extends Controller
             'company',
             'shipments.sender',
             'shipments.recipient',
+            'shipments.origin',
+            'shipments.destination',
+            'shipments.items',
         ]);
 
         $headers = [
@@ -432,27 +435,47 @@ class InvoiceController extends Controller
                 '# Guía',
                 'Remitente',
                 'Destinatario',
+                'Origen',
+                'Destino',
+                'Remitos',
+                'Bultos',
+                'Peso (kg)',
+                'Volumen (m³)',
                 'Flete',
                 'Seguro',
                 'Com. Contr.',
                 'Ret. Merc.',
                 'Otros Conc.',
+                'V. Declarado',
                 'Total'
             ], ';');
 
+            $totalBultos = 0;
+            $totalPeso = 0;
+            $totalVolumen = 0;
             $totalFlete = 0;
             $totalSeguro = 0;
             $totalComision = 0;
             $totalRetencion = 0;
             $totalOtros = 0;
+            $totalValDec = 0;
             $totalTotal = 0;
 
             foreach ($invoice->shipments as $shipment) {
+                $bultos = (int) $shipment->items->sum('cantidad');
+                $peso = (float) $shipment->items->sum('peso');
+                $volumen = (float) $shipment->items->sum('volumen');
+                $valDec = (float) $shipment->items->sum('monto_valor_declarado');
+
+                $totalBultos += $bultos;
+                $totalPeso += $peso;
+                $totalVolumen += $volumen;
                 $totalFlete += $shipment->flete;
                 $totalSeguro += $shipment->seguro;
                 $totalComision += $shipment->monto_contra_reembolso;
                 $totalRetencion += $shipment->retencion_mercaderia;
                 $totalOtros += $shipment->otros_cargos;
+                $totalValDec += $valDec;
                 $totalTotal += $shipment->total;
 
                 fputcsv($file, [
@@ -461,11 +484,18 @@ class InvoiceController extends Controller
                     $shipment->numero,
                     $shipment->sender?->name ?? '-',
                     $shipment->recipient?->name ?? '-',
+                    $shipment->origin?->nombre ?? '-',
+                    $shipment->destination?->nombre ?? '-',
+                    $shipment->items->pluck('numero_remito')->filter()->implode(', '),
+                    $bultos,
+                    number_format($peso, 2, ',', ''),
+                    number_format($volumen, 2, ',', ''),
                     number_format($shipment->flete, 2, ',', ''),
                     number_format($shipment->seguro, 2, ',', ''),
                     number_format($shipment->monto_contra_reembolso, 2, ',', ''),
                     number_format($shipment->retencion_mercaderia, 2, ',', ''),
                     number_format($shipment->otros_cargos, 2, ',', ''),
+                    number_format($valDec, 2, ',', ''),
                     number_format($shipment->total, 2, ',', '')
                 ], ';');
             }
@@ -478,11 +508,18 @@ class InvoiceController extends Controller
                 '',
                 '',
                 '',
+                '',
+                '',
+                '',
+                $totalBultos,
+                number_format($totalPeso, 2, ',', ''),
+                number_format($totalVolumen, 2, ',', ''),
                 number_format($totalFlete, 2, ',', ''),
                 number_format($totalSeguro, 2, ',', ''),
                 number_format($totalComision, 2, ',', ''),
                 number_format($totalRetencion, 2, ',', ''),
                 number_format($totalOtros, 2, ',', ''),
+                number_format($totalValDec, 2, ',', ''),
                 number_format($totalTotal, 2, ',', '')
             ], ';');
 
