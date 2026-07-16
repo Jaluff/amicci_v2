@@ -91,11 +91,14 @@ export async function renderDeliveriesPage() {
 }
 
 function deliveryCard(d) {
+    const isCompleted = d.status === 'Completado';
+    const statusClass = isCompleted ? 'completado' : 'en-reparto';
+
     return `
         <a class="delivery-card" data-delivery-id="${d.id}" href="#/deliveries/${d.id}">
             <div class="delivery-card-header">
                 <span class="delivery-number">Reparto #${escapeHtml(d.delivery_number || String(d.id))}</span>
-                <span class="delivery-badge en-reparto">${escapeHtml(d.status)}</span>
+                <span class="delivery-badge ${statusClass}">${escapeHtml(d.status)}</span>
             </div>
             <div class="delivery-meta">
                 <div class="delivery-meta-item">

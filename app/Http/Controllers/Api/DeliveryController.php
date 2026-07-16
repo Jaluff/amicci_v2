@@ -24,24 +24,30 @@ class DeliveryController extends Controller
         $deliveries = $this->service->getActiveDeliveries($request->user());
 
         return response()->json([
-            'data' => $deliveries->map(fn (Delivery $d) => [
-                'id' => $d->id,
-                'delivery_number' => $d->delivery_number,
-                'status' => $d->status,
-                'vehicle_plate' => $d->vehicle_plate,
-                'guide_count' => $d->guide_count,
-                'package_count' => $d->package_count,
-                'load_date' => $d->load_date?->format('Y-m-d'),
-                'dispatch_date' => $d->dispatch_date?->format('Y-m-d'),
-                'location' => $d->location ? [
-                    'id' => $d->location->id,
-                    'name' => $d->location->name,
-                ] : null,
-                'deliverer' => $d->deliverer ? [
-                    'id' => $d->deliverer->id,
-                    'name' => $d->deliverer->name,
-                ] : null,
-            ]),
+            'data' => $deliveries->map(function (Delivery $d) {
+                $totalCount = $d->shipments()->count();
+                $deliveredCount = $d->shipments()->where('ubicacion_actual', 'Entregado')->count();
+                $isCompleted = $totalCount > 0 && $deliveredCount === $totalCount;
+
+                return [
+                    'id' => $d->id,
+                    'delivery_number' => $d->delivery_number,
+                    'status' => $isCompleted ? 'Completado' : $d->status,
+                    'vehicle_plate' => $d->vehicle_plate,
+                    'guide_count' => $d->guide_count,
+                    'package_count' => $d->package_count,
+                    'load_date' => $d->load_date?->format('Y-m-d'),
+                    'dispatch_date' => $d->dispatch_date?->format('Y-m-d'),
+                    'location' => $d->location ? [
+                        'id' => $d->location->id,
+                        'name' => $d->location->name,
+                    ] : null,
+                    'deliverer' => $d->deliverer ? [
+                        'id' => $d->deliverer->id,
+                        'name' => $d->deliverer->name,
+                    ] : null,
+                ];
+            }),
         ]);
     }
 
@@ -58,11 +64,15 @@ class DeliveryController extends Controller
 
         $this->service->loadDeliveryWithShipments($delivery);
 
+        $totalCount = $delivery->shipments->count();
+        $deliveredCount = $delivery->shipments->where('ubicacion_actual', 'Entregado')->count();
+        $isCompleted = $totalCount > 0 && $deliveredCount === $totalCount;
+
         return response()->json([
             'data' => [
                 'id' => $delivery->id,
                 'delivery_number' => $delivery->delivery_number,
-                'status' => $delivery->status,
+                'status' => $isCompleted ? 'Completado' : $delivery->status,
                 'vehicle_plate' => $delivery->vehicle_plate,
                 'guide_count' => $delivery->guide_count,
                 'package_count' => $delivery->package_count,

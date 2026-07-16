@@ -126,6 +126,12 @@ function renderDetail(delivery) {
                 </div>
             </div>
 
+            ${pendingCount === 0 ? `
+                <div id="completion-message" style="background-color: rgba(34, 197, 94, 0.1); border: 1px solid var(--color-success); color: var(--color-success); font-weight: bold; font-size: 13px; padding: 12px; border-radius: 8px; text-align: center; margin: 16px 0; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    🎉 ¡Listo! Has entregado todas las guías de este reparto.
+                </div>
+            ` : ''}
+
             <div class="shipments-section">
                 <div class="shipments-section-title">Guías del reparto</div>
                 <div class="shipment-list" id="shipment-list">
@@ -172,7 +178,6 @@ function shipmentCard(s) {
                 <div style="display: flex; align-items: center; gap: 6px; margin-left: auto;">
                     ${s.has_active_problem ? `<span class="shipment-status-badge en-transito" style="background-color: var(--color-danger); color: white;" title="Tiene un problema activo">⚠️ Problema</span>` : ''}
                     <span class="shipment-status-badge ${statusClass}">${statusText}</span>
-                    <button type="button" class="btn-problem-toggle" data-id="${s.id}" style="background: none; border: none; padding: 4px; font-size: 16px; cursor: pointer;" title="Reportar problema">⚠️</button>
                 </div>
             </div>
             <div class="shipment-details">
@@ -210,13 +215,30 @@ function shipmentCard(s) {
                     </div>
                 ` : ''}
                 
+                <!-- Botón visible de Reportar Problema (solo si no está entregado) -->
+                ${!isDelivered ? `
+                    <div style="margin-top: 12px;" class="problem-toggle-container">
+                        <button type="button" class="btn btn-danger btn-block btn-problem-toggle" data-id="${s.id}" style="display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; font-weight: bold; font-size: 12px; border-radius: 6px; cursor: pointer;">
+                            ⚠️ Reportar Problema
+                        </button>
+                    </div>
+                ` : ''}
+                
                 <!-- Formulario de problema inline -->
                 <div class="problem-form-container hidden" id="problem-form-${s.id}" style="margin-top: 12px; padding: 8px; border: 1px solid var(--color-danger); border-radius: 6px; background: rgba(239, 68, 68, 0.05);">
                     <div style="font-weight: bold; font-size: 11px; color: var(--color-danger); margin-bottom: 4px;">REPORTAR PROBLEMA</div>
                     <textarea class="problem-comment-input w-full" placeholder="Detalle el problema..." rows="2" style="width: 100%; box-sizing: border-box; font-size: 12px; padding: 6px; border-radius: 4px; border: 1px solid #ccc; resize: none; margin-bottom: 6px; color: black;"></textarea>
-                    <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 12px;">
                         <button type="button" class="btn-problem-cancel" data-id="${s.id}" style="font-size: 11px; padding: 4px 8px; border-radius: 4px; background: #eee; border: 1px solid #ccc; cursor: pointer; color: black;">Cancelar</button>
                         <button type="button" class="btn-problem-save" data-id="${s.id}" style="font-size: 11px; padding: 4px 8px; border-radius: 4px; background: var(--color-danger); color: white; border: none; font-weight: bold; cursor: pointer;">Guardar</button>
+                    </div>
+
+                    <!-- Historial de problemas -->
+                    <div class="problem-history-section" id="problem-history-${s.id}">
+                        <div style="font-weight: bold; font-size: 10px; color: var(--text-secondary); margin-bottom: 4px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 8px;">HISTORIAL DE PROBLEMAS</div>
+                        <div class="history-list" style="max-height: 150px; overflow-y: auto; font-size: 11px; display: flex; flex-direction: column; gap: 6px; color: #555;">
+                            Cargando historial...
+                        </div>
                     </div>
                 </div>
             </div>
@@ -262,6 +284,61 @@ async function saveProblem(shipmentId, comment) {
     }
 }
 
+async function loadProblemHistory(shipmentId) {
+    const container = document.querySelector(`#problem-history-${shipmentId} .history-list`);
+    if (!container) return;
+
+    try {
+        if (navigator.onLine) {
+            const { ok, data } = await apiGet(`/documents/problem?model_type=shipment&model_id=${shipmentId}`);
+            if (ok && data?.history) {
+                renderHistoryList(container, data.history);
+                await saveData(`problem_history_${shipmentId}`, data.history);
+            } else {
+                container.innerHTML = '<span style="color: var(--color-danger);">Error al cargar historial.</span>';
+            }
+        } else {
+            const history = await getData(`problem_history_${shipmentId}`);
+            if (history) {
+                renderHistoryList(container, history);
+            } else {
+                container.innerHTML = '<i>Sin conexión (no hay historial guardado)</i>';
+            }
+        }
+    } catch {
+        const history = await getData(`problem_history_${shipmentId}`);
+        if (history) {
+            renderHistoryList(container, history);
+        } else {
+            container.innerHTML = '<i>Error al cargar historial.</i>';
+        }
+    }
+}
+
+function renderHistoryList(container, history) {
+    if (!history || history.length === 0) {
+        container.innerHTML = '<i style="color: #888;">Sin problemas anteriores registrados.</i>';
+        return;
+    }
+
+    container.innerHTML = history.map(item => {
+        const date = new Date(item.created_at).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' });
+        const user = item.user ? escapeHtml(item.user.name) : 'Sistema';
+        const activeBadge = item.is_active 
+            ? '<span style="color: var(--color-danger); font-weight: bold;">(Abierto)</span>' 
+            : '<span style="color: var(--color-success);">(Resuelto)</span>';
+
+        return `
+            <div style="padding: 6px; border-radius: 4px; background: rgba(0,0,0,0.02); border-left: 3px solid ${item.is_active ? 'var(--color-danger)' : 'var(--color-success)'}; margin-bottom: 4px;">
+                <div style="font-weight: 500; word-break: break-word;">${escapeHtml(item.comment)}</div>
+                <div style="font-size: 9px; color: #888; margin-top: 2px;">
+                    ${user} · ${date} · ${activeBadge}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
 function bindDetailEvents(delivery) {
     // Back button
     document.getElementById('back-btn')?.addEventListener('click', () => {
@@ -298,7 +375,11 @@ function bindDetailEvents(delivery) {
             const shipmentId = parseInt(btn.dataset.id);
             const form = document.getElementById(`problem-form-${shipmentId}`);
             if (form) {
+                const isOpening = form.classList.contains('hidden');
                 form.classList.toggle('hidden');
+                if (isOpening) {
+                    loadProblemHistory(shipmentId);
+                }
             }
             return;
         }
