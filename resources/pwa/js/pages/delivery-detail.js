@@ -169,7 +169,11 @@ function shipmentCard(s) {
                     ${isDelivered ? 'checked' : ''}
                 >
                 <span class="shipment-numero">Guía #${escapeHtml(s.numero || String(s.id))}</span>
-                <span class="shipment-status-badge ${statusClass}">${statusText}</span>
+                <div style="display: flex; align-items: center; gap: 6px; margin-left: auto;">
+                    ${s.has_active_problem ? `<span class="shipment-status-badge en-transito" style="background-color: var(--color-danger); color: white;" title="Tiene un problema activo">⚠️ Problema</span>` : ''}
+                    <span class="shipment-status-badge ${statusClass}">${statusText}</span>
+                    <button type="button" class="btn-problem-toggle" data-id="${s.id}" style="background: none; border: none; padding: 4px; font-size: 16px; cursor: pointer;" title="Reportar problema">⚠️</button>
+                </div>
             </div>
             <div class="shipment-details">
                 ${s.recipient ? `
@@ -205,9 +209,57 @@ function shipmentCard(s) {
                         <span class="text" style="color: var(--color-warning);">${escapeHtml(s.notas)}</span>
                     </div>
                 ` : ''}
+                
+                <!-- Formulario de problema inline -->
+                <div class="problem-form-container hidden" id="problem-form-${s.id}" style="margin-top: 12px; padding: 8px; border: 1px solid var(--color-danger); border-radius: 6px; background: rgba(239, 68, 68, 0.05);">
+                    <div style="font-weight: bold; font-size: 11px; color: var(--color-danger); margin-bottom: 4px;">REPORTAR PROBLEMA</div>
+                    <textarea class="problem-comment-input w-full" placeholder="Detalle el problema..." rows="2" style="width: 100%; box-sizing: border-box; font-size: 12px; padding: 6px; border-radius: 4px; border: 1px solid #ccc; resize: none; margin-bottom: 6px; color: black;"></textarea>
+                    <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                        <button type="button" class="btn-problem-cancel" data-id="${s.id}" style="font-size: 11px; padding: 4px 8px; border-radius: 4px; background: #eee; border: 1px solid #ccc; cursor: pointer; color: black;">Cancelar</button>
+                        <button type="button" class="btn-problem-save" data-id="${s.id}" style="font-size: 11px; padding: 4px 8px; border-radius: 4px; background: var(--color-danger); color: white; border: none; font-weight: bold; cursor: pointer;">Guardar</button>
+                    </div>
+                </div>
             </div>
         </div>
     `;
+}
+
+async function saveProblem(shipmentId, comment) {
+    try {
+        if (navigator.onLine) {
+            const { ok, data } = await apiPost('/documents/problem', {
+                model_type: 'shipment',
+                model_id: shipmentId,
+                is_active: '1',
+                comment: comment,
+            });
+
+            if (ok) {
+                showToast('✅ Problema registrado.', 'success');
+                return true;
+            } else {
+                showToast('❌ ' + (data?.message || 'Error al registrar el problema.'), 'error');
+                return false;
+            }
+        } else {
+            // Queue for sync
+            await addToSyncQueue({
+                endpoint: '/documents/problem',
+                body: {
+                    model_type: 'shipment',
+                    model_id: shipmentId,
+                    is_active: '1',
+                    comment: comment,
+                },
+            });
+
+            showToast('📦 Problema guardado offline para sincronizar.', 'info');
+            return true;
+        }
+    } catch {
+        showToast('❌ Error de conexión.', 'error');
+        return false;
+    }
 }
 
 function bindDetailEvents(delivery) {
@@ -237,6 +289,58 @@ function bindDetailEvents(delivery) {
         }
 
         updateSaveBar(delivery);
+    });
+
+    // Problem toggle, cancel, and save events
+    document.getElementById('shipment-list')?.addEventListener('click', async (e) => {
+        if (e.target.closest('.btn-problem-toggle')) {
+            const btn = e.target.closest('.btn-problem-toggle');
+            const shipmentId = parseInt(btn.dataset.id);
+            const form = document.getElementById(`problem-form-${shipmentId}`);
+            if (form) {
+                form.classList.toggle('hidden');
+            }
+            return;
+        }
+
+        if (e.target.classList.contains('btn-problem-cancel')) {
+            const shipmentId = parseInt(e.target.dataset.id);
+            const form = document.getElementById(`problem-form-${shipmentId}`);
+            if (form) {
+                form.classList.add('hidden');
+            }
+            return;
+        }
+
+        if (e.target.classList.contains('btn-problem-save')) {
+            const btn = e.target;
+            const shipmentId = parseInt(btn.dataset.id);
+            const form = document.getElementById(`problem-form-${shipmentId}`);
+            const commentInput = form.querySelector('.problem-comment-input');
+            const comment = commentInput.value.trim();
+
+            if (!comment) {
+                showToast('❌ Debe escribir un comentario.', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Guardando...';
+
+            const success = await saveProblem(shipmentId, comment);
+            if (success) {
+                // Update local model
+                const shipment = delivery.shipments.find(s => s.id === shipmentId);
+                if (shipment) {
+                    shipment.has_active_problem = true;
+                }
+                await saveData(`delivery_${delivery.id}`, delivery);
+                renderDetail(delivery);
+            } else {
+                btn.disabled = false;
+                btn.textContent = 'Guardar';
+            }
+        }
     });
 
     // Save button

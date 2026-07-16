@@ -26,4 +26,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/deliveries', [DeliveryController::class, 'index']);
     Route::get('/deliveries/{delivery}', [DeliveryController::class, 'show']);
     Route::post('/deliveries/{delivery}/confirm', [DeliveryController::class, 'confirm']);
+    Route::post('/documents/problem', [\App\Http\Controllers\DocumentProblemController::class, 'store']);
 });

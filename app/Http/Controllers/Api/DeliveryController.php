@@ -87,6 +87,7 @@ class DeliveryController extends Controller
                     'monto_contra_reembolso' => $s->monto_contra_reembolso,
                     'total' => $s->total,
                     'notas' => $s->notas,
+                    'has_active_problem' => $s->hasActiveProblem(),
                     'sender' => $s->sender ? [
                         'id' => $s->sender->id,
                         'name' => $s->sender->name,
