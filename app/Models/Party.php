@@ -22,6 +22,7 @@ class Party extends Model
         'phone',
         'phone_secondary',
         'email',
+        'password',
         'email_notifications',
         'document',
         'document_type',
@@ -31,8 +32,13 @@ class Party extends Model
         'insurance_percent',
     ];
 
+    protected $hidden = [
+        'password',
+    ];
+
     protected $casts = [
         'email_notifications' => 'array',
+        'password' => 'hashed',
     ];
 
     /**
