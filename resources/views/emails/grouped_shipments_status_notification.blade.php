@@ -164,18 +164,16 @@
                                 </tbody>
                             </table>
 
-                            {{--
                             <!-- Call to Action (Single and Unique at the end) -->
                             <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                 <tr>
                                     <td align="center" style="padding: 10px 0 20px 0;">
-                                        <a href="https://amicci.com.ar/seguimiento?email={{ urlencode($recipient) }}" target="_blank" style="background-color: #dc8a18; color: #ffffff; text-decoration: none; padding: 14px 28px; font-size: 15px; font-weight: 700; border-radius: 6px; display: inline-block; box-shadow: 0 4px 6px rgba(220, 138, 24, 0.2); transition: background-color 0.2s;">
-                                            Seguir el Estado de mis Envíos
+                                        <a href="{{ env('CLIENT_APP_URL', 'https://transporteamicci.com.ar/amicci-web') }}/clients" target="_blank" style="background-color: #dc8a18; color: #ffffff; text-decoration: none; padding: 14px 28px; font-size: 15px; font-weight: 700; border-radius: 6px; display: inline-block; box-shadow: 0 4px 6px rgba(220, 138, 24, 0.2); transition: background-color 0.2s;">
+                                            Ver todas mis Guías
                                         </a>
                                     </td>
                                 </tr>
                             </table>
-                            --}}
 
                             <p style="margin-top: 20px; margin-bottom: 0; font-size: 13px; color: #718096; line-height: 1.5; text-align: center;">
                                 Si tienes alguna duda sobre tu envío, por favor contáctanos a través de nuestros <a href="https://www.transporteamicci.com.ar" target="_blank" style="color: #dc8a18; text-decoration: underline; font-weight: 600;">canales oficiales de atención</a>.
