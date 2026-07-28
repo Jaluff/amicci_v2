@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Laravel\Sanctum\HasApiTokens;
 
 class Party extends Model
 {
-    use HasAddresses, HasFactory;
+    use HasAddresses, HasApiTokens, HasFactory;
 
     protected $fillable = [
         'name',
@@ -32,6 +33,11 @@ class Party extends Model
         'insurance_percent',
     ];
 
+    protected $appends = [
+        'entidad_nombre',
+        'correo',
+    ];
+
     protected $hidden = [
         'password',
     ];
@@ -40,6 +46,16 @@ class Party extends Model
         'email_notifications' => 'array',
         'password' => 'hashed',
     ];
+
+    public function getEntidadNombreAttribute(): ?string
+    {
+        return $this->attributes['name'] ?? null;
+    }
+
+    public function getCorreoAttribute(): ?string
+    {
+        return $this->attributes['email'] ?? null;
+    }
 
     /**
      * Determina si el cliente desea recibir notificaciones por correo para una etapa específica.

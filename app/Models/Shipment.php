@@ -38,6 +38,14 @@ class Shipment extends Model
         'subtotal', 'iva_monto', 'iva_percent', 'total', 'notas',
     ];
 
+    protected $appends = [
+        'guia_numero',
+        'guia_updated_on',
+        'guia_ubicacion',
+        'guia_bultos',
+        'detalle',
+    ];
+
     // Sin global scopes: el filtrado por empresa se hace de forma explícita
     // donde sea necesario (ej: facturación, reportes por empresa)
 
@@ -95,5 +103,53 @@ class Shipment extends Model
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
+    }
+
+    public function remitente(): BelongsTo
+    {
+        return $this->belongsTo(Party::class, 'remitente_id');
+    }
+
+    public function destinatario(): BelongsTo
+    {
+        return $this->belongsTo(Party::class, 'destinatario_id');
+    }
+
+    public function getGuiaNumeroAttribute(): ?string
+    {
+        return $this->attributes['numero'] ?? null;
+    }
+
+    public function getGuiaUbicacionAttribute(): ?string
+    {
+        return $this->attributes['ubicacion_actual'] ?? null;
+    }
+
+    public function getGuiaBultosAttribute(): int
+    {
+        return $this->relationLoaded('items') ? (int) $this->items->sum('cantidad') : 0;
+    }
+
+    public function getGuiaUpdatedOnAttribute(): ?string
+    {
+        if (isset($this->attributes['updated_at'])) {
+            return date('Y-m-d H:i:s', strtotime($this->attributes['updated_at']));
+        }
+        return isset($this->attributes['fecha']) ? (string) $this->attributes['fecha'] : null;
+    }
+
+    public function getDetalleAttribute(): array
+    {
+        $remitos = $this->relationLoaded('items')
+            ? $this->items->pluck('numero_remito')->filter()->unique()->implode(', ')
+            : null;
+
+        if (empty($remitos)) {
+            $remitos = $this->attributes['numero_factura'] ?? '---';
+        }
+
+        return [
+            'remito' => $remitos
+        ];
     }
 }
