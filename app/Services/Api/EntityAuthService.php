@@ -35,7 +35,7 @@ class EntityAuthService
     /**
      * Enviar enlace de restablecimiento de contraseña por correo.
      */
-    public function sendResetLinkEmail(string $email): bool
+    public function sendResetLinkEmail(string $email, ?string $redirectUrl = null): bool
     {
         $token = Str::random(60);
 
@@ -47,7 +47,10 @@ class EntityAuthService
             ]
         );
 
-        $resetUrl = config('app.frontend_url', 'https://transporteamicci.com.ar/amicci-web') . "/password/reset/{$token}?email=" . urlencode($email);
+        $baseUrl = $redirectUrl ?: env('CLIENT_APP_URL', env('FRONTEND_URL', 'https://transporteamicci.com.ar/amicci-web'));
+        $baseUrl = rtrim($baseUrl, '/');
+
+        $resetUrl = "{$baseUrl}/password/reset/{$token}?email=" . urlencode($email);
 
         Mail::send('emails.password_reset', ['url' => $resetUrl], function ($message) use ($email) {
             $message->to($email)

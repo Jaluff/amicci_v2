@@ -15,6 +15,7 @@ class EntitySendResetLinkEmailRequest extends FormRequest
     {
         return [
             'email' => 'required|email|exists:parties,email',
+            'redirect_url' => 'nullable|url',
         ];
     }
 

@@ -33,7 +33,8 @@ class EntityAuthController extends Controller
     public function sendResetLinkEmail(EntitySendResetLinkEmailRequest $request): JsonResponse
     {
         $email = $request->validated()['email'];
-        $this->authService->sendResetLinkEmail($email);
+        $redirectUrl = $request->validated()['redirect_url'] ?? null;
+        $this->authService->sendResetLinkEmail($email, $redirectUrl);
 
         return response()->json([
             'message' => 'Enlace de restablecimiento enviado al correo.'
