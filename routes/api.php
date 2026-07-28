@@ -21,6 +21,8 @@ Route::post('/login', [AuthController::class, 'login']);
 
 // Públicas — Entidades / Clientes
 Route::post('/entidades/login', [EntityAuthController::class, 'login']);
+Route::post('/password/email', [EntityAuthController::class, 'sendResetLinkEmail']);
+Route::post('/password/reset', [EntityAuthController::class, 'reset']);
 
 // Protegidas con token Sanctum
 Route::middleware('auth:sanctum')->group(function () {

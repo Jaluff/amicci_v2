@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\EntityLoginRequest;
+use App\Http\Requests\Api\EntityResetPasswordRequest;
+use App\Http\Requests\Api\EntitySendResetLinkEmailRequest;
 use App\Services\Api\EntityAuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,6 +28,36 @@ class EntityAuthController extends Controller
         }
 
         return response()->json($authData);
+    }
+
+    public function sendResetLinkEmail(EntitySendResetLinkEmailRequest $request): JsonResponse
+    {
+        $email = $request->validated()['email'];
+        $this->authService->sendResetLinkEmail($email);
+
+        return response()->json([
+            'message' => 'Enlace de restablecimiento enviado al correo.'
+        ], 200);
+    }
+
+    public function reset(EntityResetPasswordRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+        $success = $this->authService->resetPassword(
+            $data['email'],
+            $data['token'],
+            $data['password']
+        );
+
+        if (!$success) {
+            return response()->json([
+                'error' => 'Token inválido, expirado o correo no encontrado.'
+            ], 400);
+        }
+
+        return response()->json([
+            'message' => 'Contraseña actualizada exitosamente.'
+        ], 200);
     }
 
     public function me(Request $request): JsonResponse
