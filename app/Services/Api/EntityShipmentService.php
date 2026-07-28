@@ -14,10 +14,10 @@ class EntityShipmentService
     public function getShipmentsForParty(Party $party, array $filters): LengthAwarePaginator
     {
         $partyId = $party->id;
-        $ubicacion = $filters['ubicacion'] ?? null;
-        $entidadBusqueda = $filters['entidad'] ?? null;
-        $fechaInicio = $filters['fecha_inicio'] ?? date('Y-m-d', strtotime('-1 month'));
-        $fechaFin = $filters['fecha_fin'] ?? date('Y-m-d');
+        $ubicacion = !empty($filters['ubicacion']) ? $filters['ubicacion'] : null;
+        $entidadBusqueda = !empty($filters['entidad']) ? $filters['entidad'] : null;
+        $fechaInicio = !empty($filters['fecha_inicio']) ? $filters['fecha_inicio'] : null;
+        $fechaFin = !empty($filters['fecha_fin']) ? $filters['fecha_fin'] : null;
         $perPage = (int) ($filters['per_page'] ?? 15);
 
         return Shipment::with(['remitente', 'destinatario', 'items'])
@@ -25,10 +25,12 @@ class EntityShipmentService
                 $query->where('remitente_id', $partyId)
                     ->orWhere('destinatario_id', $partyId);
             })
-            ->where(function ($query) use ($fechaInicio, $fechaFin) {
-                $query->whereBetween('fecha', [$fechaInicio, $fechaFin])
-                    ->orWhereDate('updated_at', '>=', $fechaInicio)
-                    ->whereDate('updated_at', '<=', $fechaFin);
+            ->when($fechaInicio && $fechaFin, function ($query) use ($fechaInicio, $fechaFin) {
+                return $query->where(function ($q) use ($fechaInicio, $fechaFin) {
+                    $q->whereBetween('fecha', [$fechaInicio, $fechaFin])
+                        ->orWhereDate('updated_at', '>=', $fechaInicio)
+                        ->whereDate('updated_at', '<=', $fechaFin);
+                });
             })
             ->when($ubicacion, function ($query) use ($ubicacion) {
                 return $query->where('ubicacion_actual', $ubicacion);
