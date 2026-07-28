@@ -28,7 +28,13 @@ class EntityAuthService
         return [
             'token' => $token,
             'entidad_id' => $party->id,
-            'entidad' => $party,
+            'entidad' => [
+                'id' => $party->id,
+                'name' => $party->name,
+                'email' => $party->email,
+                'entidad_nombre' => $party->name,
+                'correo' => $party->email,
+            ],
         ];
     }
 
