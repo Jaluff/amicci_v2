@@ -54,7 +54,22 @@
                             </button>
                         </form>
                     @endif
-                    <a href="{{ route('billing.print', $invoice) }}" onclick="window.open(this.href, '_blank'); return false;"
+                    <a href="{{ route('billing.print', $invoice) }}" 
+                       onclick="
+                           const table = $('#invoice-shipments-table').DataTable();
+                           let hidden = [];
+                           if (table) {
+                               table.columns().every(function(idx) {
+                                   if (!this.visible()) hidden.push(idx);
+                               });
+                           }
+                           let url = this.href;
+                           if (hidden.length > 0) {
+                               url += (url.includes('?') ? '&' : '?') + 'hidden_cols=' + hidden.join(',');
+                           }
+                           window.open(url, '_blank');
+                           return false;
+                       "
                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition">
                         🖨️ Imprimir PDF
                     </a>

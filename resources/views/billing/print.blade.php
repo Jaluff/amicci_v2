@@ -205,6 +205,14 @@
 
     <script>
         $(document).ready(function() {
+            // Obtener columnas ocultas pasadas por la URL desde ver factura
+            const urlParams = new URLSearchParams(window.location.search);
+            const hiddenColsParam = urlParams.get('hidden_cols');
+            let hiddenIndices = [];
+            if (hiddenColsParam) {
+                hiddenIndices = hiddenColsParam.split(',').map(Number);
+            }
+
             var table = $('#invoice-print-table').DataTable({
                 paging: false,
                 searching: false,
@@ -236,6 +244,15 @@
                     url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
                 }
             });
+
+            // Ocultar inicialmente las columnas recibidas desde Ver Factura
+            if (hiddenIndices.length > 0) {
+                hiddenIndices.forEach(function(colIdx) {
+                    if (table.column(colIdx)) {
+                        table.column(colIdx).visible(false);
+                    }
+                });
+            }
 
             // Mover el botón colvis a la barra superior y ocultar los demás botones nativos
             $('.buttons-excel, .buttons-pdf').hide();
