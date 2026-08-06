@@ -76,21 +76,44 @@ class InvoiceService
     /**
      * Marca la factura como cobrada y propaga el estado a todas sus guías.
      */
-    public function markAsPaid(Invoice $invoice): void
+    public function markAsPaid(Invoice $invoice, ?string $numeroRecibo = null, ?string $fechaCobro = null): void
     {
         if ($invoice->cobrada) {
             return; // Idempotente
         }
 
-        DB::transaction(function () use ($invoice): void {
+        DB::transaction(function () use ($invoice, $numeroRecibo, $fechaCobro): void {
             $invoice->update([
                 'cobrada' => true,
-                'fecha_cobro' => now()->toDateString(),
+                'numero_recibo' => $numeroRecibo,
+                'fecha_cobro' => $fechaCobro ?: now()->toDateString(),
             ]);
 
             Shipment::withoutGlobalScopes()
                 ->where('invoice_id', $invoice->id)
                 ->update(['cobrada' => true]);
+        });
+    }
+
+    /**
+     * Revierte el cobro de la factura y propaga el estado a todas sus guías.
+     */
+    public function unpay(Invoice $invoice): void
+    {
+        if (! $invoice->cobrada) {
+            return; // Idempotente
+        }
+
+        DB::transaction(function () use ($invoice): void {
+            $invoice->update([
+                'cobrada' => false,
+                'numero_recibo' => null,
+                'fecha_cobro' => null,
+            ]);
+
+            Shipment::withoutGlobalScopes()
+                ->where('invoice_id', $invoice->id)
+                ->update(['cobrada' => false]);
         });
     }
 

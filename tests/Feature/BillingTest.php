@@ -161,3 +161,56 @@ it('can detach a shipment from an invoice', function () {
     expect($data['shipment1']->fresh()->invoice_id)->toBeNull();
     expect($data['shipment2']->fresh()->invoice_id)->toEqual($invoice->id);
 });
+
+it('can mark an invoice as paid with receipt details', function () {
+    $data = setupBillingTestData();
+
+    $invoice = Invoice::create([
+        'company_id' => $data['company']->id,
+        'party_id' => $data['party']->id,
+        'numero' => 'INV-PAY',
+        'fecha_factura' => '2026-06-16',
+        'total' => 100.00,
+        'cobrada' => false,
+    ]);
+    $data['shipment1']->update(['invoice_id' => $invoice->id]);
+
+    $response = $this->actingAs($data['adminUser'])->post(route('billing.pay', $invoice), [
+        'numero_recibo' => 'REC-001',
+        'fecha_cobro' => '2026-08-01',
+    ]);
+
+    $response->assertRedirect();
+    
+    $invoice->refresh();
+    expect($invoice->cobrada)->toBeTrue();
+    expect($invoice->numero_recibo)->toEqual('REC-001');
+    expect($invoice->fecha_cobro->format('Y-m-d'))->toEqual('2026-08-01');
+    expect($data['shipment1']->fresh()->cobrada)->toBeTrue();
+});
+
+it('can unpay an invoice and clear receipt details', function () {
+    $data = setupBillingTestData();
+
+    $invoice = Invoice::create([
+        'company_id' => $data['company']->id,
+        'party_id' => $data['party']->id,
+        'numero' => 'INV-UNPAY',
+        'fecha_factura' => '2026-06-16',
+        'total' => 100.00,
+        'cobrada' => true,
+        'numero_recibo' => 'REC-001',
+        'fecha_cobro' => '2026-08-01',
+    ]);
+    $data['shipment1']->update(['invoice_id' => $invoice->id, 'cobrada' => true]);
+
+    $response = $this->actingAs($data['adminUser'])->post(route('billing.unpay', $invoice));
+
+    $response->assertRedirect();
+    
+    $invoice->refresh();
+    expect($invoice->cobrada)->toBeFalse();
+    expect($invoice->numero_recibo)->toBeNull();
+    expect($invoice->fecha_cobro)->toBeNull();
+    expect($data['shipment1']->fresh()->cobrada)->toBeFalse();
+});

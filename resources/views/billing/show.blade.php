@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="py-12">
+<div class="py-12" x-data="{ showPayModal: false }">
     <div class="max-w-screen-2xl mx-auto sm:px-6 lg:px-8">
 
         @if(session('success'))
@@ -26,18 +26,22 @@
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                             ✓ Cobrada
                         </span>
+                        <form method="POST" action="{{ route('billing.unpay', $invoice) }}"
+                              onsubmit="return confirm('¿Confirmar la reversión del cobro de la factura #{{ $invoice->numero }}? Esto limpiará los datos de recibo y marcará las guías como pendientes.')">
+                            @csrf
+                            <button type="submit"
+                                class="inline-flex items-center px-4 py-2 bg-orange-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-orange-700 transition">
+                                ↺ Revertir Cobro
+                            </button>
+                        </form>
                     @else
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
                             Pendiente
                         </span>
-                        <form method="POST" action="{{ route('billing.pay', $invoice) }}"
-                              onsubmit="return confirm('¿Confirmar cobro de la factura #{{ $invoice->numero }}? Todas las guías asociadas se marcarán como cobradas.')">
-                            @csrf
-                            <button type="submit"
-                                class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 transition">
-                                Marcar como Cobrada
-                            </button>
-                        </form>
+                        <button type="button" @click="showPayModal = true"
+                            class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 transition">
+                            Marcar como Cobrada
+                        </button>
                     @endif
                     @if(!$invoice->cobrada && $invoice->shipments->count() === 0 && auth()->user()?->hasAnyRole(['admin', 'supervisor']))
                         <form method="POST" action="{{ route('billing.destroy', $invoice) }}"
@@ -193,6 +197,71 @@
             </div>
         </div>
 
+    </div>
+
+    {{-- Modal de Cobro --}}
+    <div x-show="showPayModal" style="display: none;" class="fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div x-show="showPayModal" x-transition.opacity class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" @click="showPayModal = false"></div>
+            
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            
+            <!-- Modal panel -->
+            <div x-show="showPayModal" 
+                 x-transition:enter="ease-out duration-300" 
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave="ease-in duration-200" 
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
+                <form method="POST" action="{{ route('billing.pay', $invoice) }}">
+                    @csrf
+                    <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 dark:bg-green-900 sm:mx-0 sm:h-10 sm:w-10">
+                                <svg class="h-6 w-6 text-green-600 dark:text-green-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100" id="modal-title">
+                                    Cobrar Factura #{{ $invoice->numero }}
+                                </h3>
+                                <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                                    <p>Ingrese los datos del cobro. Todas las guías asociadas se marcarán como cobradas.</p>
+                                </div>
+                                
+                                <div class="mt-4 space-y-4">
+                                    <div>
+                                        <label for="numero_recibo" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Número de Recibo (Opcional)</label>
+                                        <input type="text" name="numero_recibo" id="numero_recibo" 
+                                               class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md" 
+                                               placeholder="Ej. 0001-00001234">
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="fecha_cobro" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Fecha de Cobro</label>
+                                        <input type="date" name="fecha_cobro" id="fecha_cobro" required
+                                               value="{{ date('Y-m-d') }}"
+                                               class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm transition">
+                            Confirmar Cobro
+                        </button>
+                        <button type="button" @click="showPayModal = false" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 transition">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 @endsection

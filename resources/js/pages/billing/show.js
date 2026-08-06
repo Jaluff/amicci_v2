@@ -2,6 +2,7 @@ import $ from "jquery";
 import "datatables.net-dt";
 import "datatables.net-buttons-dt";
 import "datatables.net-buttons/js/buttons.html5.mjs";
+import "datatables.net-buttons/js/buttons.colVis.mjs";
 
 document.addEventListener("DOMContentLoaded", function () {
     const tableEl = document.getElementById("invoice-shipments-table");
@@ -23,10 +24,16 @@ document.addEventListener("DOMContentLoaded", function () {
         dom: "Brt",
         buttons: [
             {
+                extend: "colvis",
+                text: "👁️ Columnas",
+                className: "inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 transition mr-2"
+            },
+            {
                 extend: "excelHtml5",
                 text: "📊 Exportar a Excel",
                 title: "Factura_" + invoiceNum,
                 footer: true,
+                exportOptions: { columns: ":visible" },
                 className: "inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 transition mr-2"
             },
             {
@@ -36,6 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 orientation: "landscape",
                 pageSize: "A4",
                 footer: true,
+                exportOptions: { columns: ":visible" },
                 className: "inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 transition"
             }
         ],

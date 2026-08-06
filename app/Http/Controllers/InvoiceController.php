@@ -206,6 +206,25 @@ class InvoiceController extends Controller
                 $html .= '<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>';
                 $html .= '</a>';
 
+                // Cobrar / Revertir Cobro
+                if (! $row->cobrada) {
+                    $payUrl = route('billing.pay', $row->id);
+                    $html .= '<button type="button" title="Cobrar Factura" class="btn-pay-invoice inline-flex items-center justify-center p-1.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors" data-id="'.$row->id.'" data-numero="'.$row->numero.'" data-url="'.$payUrl.'">';
+                    $html .= '<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+                    $html .= '</button>';
+                } else {
+                    $unpayUrl = route('billing.unpay', $row->id);
+                    $csrf = csrf_token();
+                    $confirmUnpay = "return confirm('¿Confirmar la reversión del cobro de la factura #{$row->numero}? Esto limpiará los datos de recibo y marcará las guías como pendientes.')";
+                    $html .= "
+                    <form action='{$unpayUrl}' method='POST' onsubmit=\"{$confirmUnpay}\" class='inline m-0'>
+                        <input type='hidden' name='_token' value='{$csrf}'>
+                        <button type='submit' title='Revertir Cobro' class='inline-flex items-center justify-center p-1.5 rounded-md bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition-colors'>
+                            <svg xmlns='http://www.w3.org/2000/svg' class='w-3.5 h-3.5' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8'></path><path d='M3 3v5h5'></path></svg>
+                        </button>
+                    </form>";
+                }
+
                 // Eliminar (solo si no está cobrada y tiene 0 guías)
                 $user = auth()->user();
                 $isAllowed = $user && $user->hasAnyRole(['admin', 'supervisor']);
@@ -379,11 +398,27 @@ class InvoiceController extends Controller
     // Cobro
     // -------------------------------------------------------------------------
 
-    public function markAsPaid(Invoice $invoice): RedirectResponse
+    public function markAsPaid(Request $request, Invoice $invoice): RedirectResponse
     {
-        $this->invoiceService->markAsPaid($invoice);
+        $validated = $request->validate([
+            'numero_recibo' => 'nullable|string|max:255',
+            'fecha_cobro' => 'nullable|date',
+        ]);
 
-        return redirect()->route('billing.index')->with('success', "Factura #{$invoice->numero} marcada como cobrada. Todas las guias asociadas fueron actualizadas.");
+        $this->invoiceService->markAsPaid(
+            $invoice, 
+            $validated['numero_recibo'] ?? null, 
+            $validated['fecha_cobro'] ?? null
+        );
+
+        return back()->with('success', "Factura #{$invoice->numero} marcada como cobrada. Todas las guias asociadas fueron actualizadas.");
+    }
+
+    public function unpay(Invoice $invoice): RedirectResponse
+    {
+        $this->invoiceService->unpay($invoice);
+
+        return back()->with('success', "Cobro de factura #{$invoice->numero} revertido con éxito.");
     }
 
     // -------------------------------------------------------------------------

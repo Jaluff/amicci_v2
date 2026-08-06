@@ -39,8 +39,9 @@ document.addEventListener("DOMContentLoaded", function () {
         },
         dom: "<'dt-controls'lBf>rtip",
         buttons: [
+            { extend: "colvis",    text: "Columnas" },
             { extend: "excelHtml5", text: "Exportar Excel", exportOptions: { columns: ":visible" } },
-            { extend: "pdfHtml5",  text: "Exportar PDF", orientation: "landscape", pageSize: "LEGAL" },
+            { extend: "pdfHtml5",  text: "Exportar PDF", orientation: "landscape", pageSize: "LEGAL", exportOptions: { columns: ":visible" } },
         ],
         columns: [
             { data: "fecha_factura",  name: "fecha_factura", className: "dt-left dt-head-left dt-body-left text-left whitespace-nowrap" },
@@ -63,4 +64,19 @@ document.addEventListener("DOMContentLoaded", function () {
     $("input[id^='filter_']").on("keypress", function (e) { if (e.which === 13) table.ajax.reload(); });
     $("#filter_company_id, #filter_cobrada").on("change", function () { table.ajax.reload(); });
     $("#filter_party_id").on("change", function () { table.ajax.reload(); });
+
+    // Modal de Cobro desde la tabla
+    $(document).on("click", ".btn-pay-invoice", function () {
+        const url = $(this).data("url");
+        const numero = $(this).data("numero");
+
+        $("#form-pay-invoice").attr("action", url);
+        $("#modal-invoice-numero").text(numero);
+        $("#modal_numero_recibo").val("");
+        $("#modal-pay-invoice").removeClass("hidden");
+    });
+
+    $("#btn-cancel-pay-modal, #modal-pay-overlay").on("click", function () {
+        $("#modal-pay-invoice").addClass("hidden");
+    });
 });
