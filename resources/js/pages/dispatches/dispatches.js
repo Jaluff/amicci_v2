@@ -40,7 +40,7 @@ const DispatchModule = (function ($) {
                 { data: 'fecha', name: 'created_at' },
                 { data: 'dispatch_number', name: 'dispatch_number' },
                 {
-                    data: 'driver.name',
+                    data: 'driver_info',
                     name: 'driver.name',
                     defaultContent: 'No asignado'
                 },

@@ -13,12 +13,21 @@
             required>
             <option value="">Seleccione un conductor</option>
             @foreach($drivers as $driver)
-            <option value="{{ $driver->id }}" {{ old('driver_id', $dispatch->driver_id) == $driver->id ? 'selected' : '' }}>
-                {{ $driver->name }} (DNI: {{ $driver->dni }})
+            <option value="{{ $driver->id }}" 
+                    data-phone="{{ $driver->phone ?? '' }}"
+                    {{ old('driver_id', $dispatch->driver_id ?? null) == $driver->id ? 'selected' : '' }}>
+                {{ $driver->name }} (DNI: {{ $driver->dni }}){{ $driver->phone ? ' - Tel: '.$driver->phone : '' }}
             </option>
             @endforeach
         </select>
         @error('driver_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+        
+        <div id="driver-phone-display" class="mt-1 text-xs text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1 {{ ($dispatch->driver->phone ?? null) ? '' : 'hidden' }}">
+            <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+            </svg>
+            <span id="driver-phone-text">{{ $dispatch->driver->phone ?? '' }}</span>
+        </div>
     </div>
 </div>
 
@@ -337,6 +346,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 errorDiv.classList.remove('hidden');
             });
         });
+    }
+
+    const driverSelect = document.getElementById('driver_id');
+    if (driverSelect) {
+        function updateDriverPhone() {
+            const selectedOpt = driverSelect.options[driverSelect.selectedIndex];
+            const phone = selectedOpt ? (selectedOpt.getAttribute('data-phone') || '') : '';
+            const phoneDisplay = document.getElementById('driver-phone-display');
+            const phoneText = document.getElementById('driver-phone-text');
+
+            if (phone && phone.trim() !== '') {
+                phoneText.innerText = phone;
+                phoneDisplay.classList.remove('hidden');
+            } else {
+                phoneText.innerText = '';
+                phoneDisplay.classList.add('hidden');
+            }
+        }
+
+        driverSelect.addEventListener('change', updateDriverPhone);
+        updateDriverPhone();
     }
 });
 </script>

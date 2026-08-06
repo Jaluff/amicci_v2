@@ -159,7 +159,20 @@ class DispatchController extends Controller
                     </div>
                 </div>";
             })
-            ->rawColumns(['acciones', 'dispatch_number', 'ruta_corta'])
+            ->addColumn('driver_info', function ($row) {
+                if (! $row->driver) {
+                    return '<span class="text-gray-400 italic text-sm">No asignado</span>';
+                }
+                $html = '<div class="flex flex-col">';
+                $html .= '<span class="font-medium text-gray-900 dark:text-gray-100">'.e($row->driver->name).'</span>';
+                if (! empty($row->driver->phone)) {
+                    $html .= '<span class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5"><svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>'.e($row->driver->phone).'</span>';
+                }
+                $html .= '</div>';
+
+                return $html;
+            })
+            ->rawColumns(['acciones', 'dispatch_number', 'ruta_corta', 'driver_info'])
             ->make(true);
     }
 
@@ -209,7 +222,7 @@ class DispatchController extends Controller
 
     public function create(Request $request): View
     {
-        $drivers = Driver::all(['id', 'name', 'dni']);
+        $drivers = Driver::all(['id', 'name', 'dni', 'phone']);
         $branches = Branch::where('active', true)
             ->orderBy('code')
             ->get();
@@ -235,7 +248,7 @@ class DispatchController extends Controller
 
     public function edit(Dispatch $dispatch): View
     {
-        $drivers = Driver::all(['id', 'name', 'dni']);
+        $drivers = Driver::all(['id', 'name', 'dni', 'phone']);
         $branches = Branch::where('active', true)
             ->orderBy('code')
             ->get();
