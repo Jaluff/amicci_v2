@@ -117,6 +117,7 @@
                         <th class="p-1.5 whitespace-nowrap">Remito</th>
                         <th class="p-1.5 whitespace-nowrap">Remitente</th>
                         <th class="p-1.5 whitespace-nowrap">Destinatario</th>
+                        <th class="p-1.5 whitespace-nowrap">Ubicación</th>
                         <th class="p-1.5 whitespace-nowrap">Flete</th>
                         <th class="p-1.5 whitespace-nowrap">Seguro</th>
                         <th class="p-1.5 whitespace-nowrap">Com. Contr.</th>
@@ -162,6 +163,7 @@
                                 {{ $shipment->recipient?->name ?? '-' }}
                             @endif
                         </td>
+                        <td class="p-1.5 whitespace-nowrap text-gray-700">{{ $shipment->ubicacion_actual ?? '-' }}</td>
                         <td class="p-1.5 text-left text-gray-700 whitespace-nowrap">$ {{ number_format($shipment->flete, 2, ',', '.') }}</td>
                         <td class="p-1.5 text-left text-gray-700 whitespace-nowrap">$ {{ number_format($shipment->seguro, 2, ',', '.') }}</td>
                         <td class="p-1.5 text-left text-gray-700 whitespace-nowrap">$ {{ number_format($shipment->monto_contra_reembolso, 2, ',', '.') }}</td>
@@ -173,7 +175,7 @@
                 </tbody>
                 <tfoot>
                     <tr class="font-bold bg-gray-100 text-gray-900">
-                        <td colspan="7" class="p-2 text-right uppercase">Totales:</td>
+                        <td colspan="8" class="p-2 text-right uppercase">Totales:</td>
                         <td class="p-2 text-left whitespace-nowrap">$ {{ number_format($totalFlete, 2, ',', '.') }}</td>
                         <td class="p-2 text-left whitespace-nowrap">$ {{ number_format($totalSeguro, 2, ',', '.') }}</td>
                         <td class="p-2 text-left whitespace-nowrap">$ {{ number_format($totalComision, 2, ',', '.') }}</td>
