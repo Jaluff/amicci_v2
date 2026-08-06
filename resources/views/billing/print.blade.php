@@ -31,6 +31,11 @@
         table { width: 100%; border-spacing: 0; }
         th, td { border: 0.5px solid #e5e7eb; padding: 4px 6px !important; }
         table.dataTable { margin: 0 !important; width: 100% !important; border-collapse: collapse !important; }
+        .dt-buttons { display: inline-flex !important; gap: 8px; }
+        .buttons-colvis { background: #4b5563 !important; color: white !important; font-weight: bold; border-radius: 4px; padding: 4px 12px !important; border: none !important; font-size: 12px !important; }
+        @media print {
+            .dt-buttons { display: none !important; }
+        }
     </style>
     <!-- DataTables CDN dependencies for exports -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
@@ -42,6 +47,7 @@
         <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-500 px-4 py-1.5 rounded text-white font-bold transition flex items-center gap-1.5">🖨️ Imprimir / Guardar PDF</button>
         <button id="btn-export-excel" class="bg-green-600 hover:bg-green-500 px-4 py-1.5 rounded text-white font-bold transition flex items-center gap-1.5">📊 Exportar a Excel</button>
         <button id="btn-export-pdf" class="bg-red-600 hover:bg-red-500 px-4 py-1.5 rounded text-white font-bold transition flex items-center gap-1.5">📄 Exportar a PDF (Horizontal)</button>
+        <div id="colvis-container" class="inline-block"></div>
         <button onclick="window.close()" class="bg-gray-600 hover:bg-gray-500 px-4 py-1.5 rounded text-white font-bold transition ml-4">Cerrar</button>
     </div>
 
@@ -104,8 +110,8 @@
             <table id="invoice-print-table" class="w-full text-[8.5px] border-collapse">
                 <thead>
                     <tr class="bg-gray-950 text-white uppercase font-bold text-left">
-                        <th class="p-1.5 whitespace-nowrap">Fecha</th>
-                        <th class="p-1.5 whitespace-nowrap">F.Entrega</th>
+                        <th class="p-1 text-center whitespace-nowrap w-14">Fecha</th>
+                        <th class="p-1 text-center whitespace-nowrap w-14">F.Entrega</th>
                         <th class="p-1.5 whitespace-nowrap"># Guía</th>
                         <th class="p-1.5 text-center whitespace-nowrap">Bultos</th>
                         <th class="p-1.5 whitespace-nowrap">Remito</th>
@@ -122,13 +128,40 @@
                 <tbody class="divide-y divide-gray-200">
                     @foreach($invoice->shipments as $shipment)
                     <tr class="hover:bg-gray-50">
-                        <td class="p-1.5 whitespace-nowrap text-gray-700">{{ $shipment->fecha?->format('d/m/Y') ?? '-' }}</td>
-                        <td class="p-1.5 whitespace-nowrap text-gray-700">{{ $shipment->fecha_entrega?->format('d/m/Y') ?? '—' }}</td>
+                        <td class="p-1 text-center whitespace-nowrap text-gray-700 w-14">{{ $shipment->fecha?->format('d/m/y') ?? '-' }}</td>
+                        <td class="p-1 text-center whitespace-nowrap text-gray-700 w-14">{{ $shipment->fecha_entrega?->format('d/m/y') ?? '—' }}</td>
                         <td class="p-1.5 font-bold text-blue-600 whitespace-nowrap">{{ $shipment->numero }}</td>
                         <td class="p-1.5 text-center text-gray-700 whitespace-nowrap">{{ $shipment->items->sum('cantidad') }}</td>
-                        <td class="p-1.5 text-gray-700 whitespace-nowrap">{{ $shipment->items->pluck('numero_remito')->filter()->join(', ') ?: '-' }}</td>
-                        <td class="p-1.5 uppercase text-gray-700 max-w-[120px] break-words" style="white-space: normal !important;">{{ $shipment->sender?->name ?? '-' }}</td>
-                        <td class="p-1.5 uppercase text-gray-700 max-w-[120px] break-words" style="white-space: normal !important;">{{ $shipment->recipient?->name ?? '-' }}</td>
+                        <td class="p-1.5 text-gray-700 max-w-[150px]">
+                            @php
+                                $remitos = $shipment->items->pluck('numero_remito')->filter()->values();
+                            @endphp
+                            @if($remitos->isNotEmpty())
+                                {!! $remitos->chunk(3)->map(fn($chunk) => $chunk->join(', '))->join('<br>') !!}
+                            @else
+                                -
+                            @endif
+                        </td>
+                        <td class="p-1.5 uppercase text-gray-700 max-w-[120px] leading-tight">
+                            @php
+                                $senderWords = explode(' ', $shipment->sender?->name ?? '-');
+                            @endphp
+                            @if(count($senderWords) > 2)
+                                {!! implode(' ', array_slice($senderWords, 0, (int) ceil(count($senderWords) / 2))) !!}<br>{!! implode(' ', array_slice($senderWords, (int) ceil(count($senderWords) / 2))) !!}
+                            @else
+                                {{ $shipment->sender?->name ?? '-' }}
+                            @endif
+                        </td>
+                        <td class="p-1.5 uppercase text-gray-700 max-w-[120px] leading-tight">
+                            @php
+                                $recipientWords = explode(' ', $shipment->recipient?->name ?? '-');
+                            @endphp
+                            @if(count($recipientWords) > 2)
+                                {!! implode(' ', array_slice($recipientWords, 0, (int) ceil(count($recipientWords) / 2))) !!}<br>{!! implode(' ', array_slice($recipientWords, (int) ceil(count($recipientWords) / 2))) !!}
+                            @else
+                                {{ $shipment->recipient?->name ?? '-' }}
+                            @endif
+                        </td>
                         <td class="p-1.5 text-left text-gray-700 whitespace-nowrap">$ {{ number_format($shipment->flete, 2, ',', '.') }}</td>
                         <td class="p-1.5 text-left text-gray-700 whitespace-nowrap">$ {{ number_format($shipment->seguro, 2, ',', '.') }}</td>
                         <td class="p-1.5 text-left text-gray-700 whitespace-nowrap">$ {{ number_format($shipment->monto_contra_reembolso, 2, ',', '.') }}</td>
@@ -168,6 +201,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.colVis.min.js"></script>
 
     <script>
         $(document).ready(function() {
@@ -179,16 +213,23 @@
                 dom: 'Brt',
                 buttons: [
                     {
+                        extend: 'colvis',
+                        text: '👁️ Columnas',
+                        className: 'btn-colvis-custom'
+                    },
+                    {
                         extend: 'excelHtml5',
                         title: 'Factura_{{ $invoice->numero }}',
-                        footer: true
+                        footer: true,
+                        exportOptions: { columns: ':visible' }
                     },
                     {
                         extend: 'pdfHtml5',
                         title: 'Factura_{{ $invoice->numero }}',
                         orientation: 'landscape',
                         pageSize: 'A4',
-                        footer: true
+                        footer: true,
+                        exportOptions: { columns: ':visible' }
                     }
                 ],
                 language: {
@@ -196,8 +237,9 @@
                 }
             });
 
-            // Ocultar botones nativos
-            $('.dt-buttons').hide();
+            // Mover el botón colvis a la barra superior y ocultar los demás botones nativos
+            $('.buttons-excel, .buttons-pdf').hide();
+            $('.buttons-colvis').appendTo('#colvis-container');
 
             // Enlazar botones personalizados
             $('#btn-export-excel').on('click', function() {

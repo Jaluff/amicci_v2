@@ -109,8 +109,8 @@
                 <table id="invoice-shipments-table" data-invoice-number="{{ $invoice->numero }}" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
                     <thead class="bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300">
                         <tr>
-                            <th class="p-2 border-b text-left whitespace-nowrap">Fecha</th>
-                            <th class="p-2 border-b text-left whitespace-nowrap">F. Entrega</th>
+                            <th class="p-1 border-b text-center whitespace-nowrap w-16">Fecha</th>
+                            <th class="p-1 border-b text-center whitespace-nowrap w-16">F. Entrega</th>
                             <th class="p-2 border-b text-left whitespace-nowrap"># Guía</th>
                             <th class="p-2 border-b text-center whitespace-nowrap">Bultos</th>
                             <th class="p-2 border-b text-left whitespace-nowrap">Remito</th>
@@ -131,13 +131,40 @@
                     <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         @forelse($invoice->shipments as $shipment)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
-                            <td class="p-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $shipment->fecha?->format('d/m/Y') ?? '-' }}</td>
-                            <td class="p-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $shipment->fecha_entrega?->format('d/m/Y') ?? '—' }}</td>
+                            <td class="p-1 text-center text-gray-700 dark:text-gray-300 whitespace-nowrap text-xs w-16">{{ $shipment->fecha?->format('d/m/y') ?? '-' }}</td>
+                            <td class="p-1 text-center text-gray-700 dark:text-gray-300 whitespace-nowrap text-xs w-16">{{ $shipment->fecha_entrega?->format('d/m/y') ?? '—' }}</td>
                             <td class="p-2 font-mono font-semibold text-gray-800 dark:text-gray-200 whitespace-nowrap">{{ $shipment->numero }}</td>
                             <td class="p-2 text-center text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $shipment->items->sum('cantidad') }}</td>
-                            <td class="p-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $shipment->items->pluck('numero_remito')->filter()->join(', ') ?: '-' }}</td>
-                            <td class="p-2 text-gray-700 dark:text-gray-300 max-w-[150px] break-words">{{ $shipment->sender?->name ?? '-' }}</td>
-                            <td class="p-2 text-gray-700 dark:text-gray-300 max-w-[150px] break-words">{{ $shipment->recipient?->name ?? '-' }}</td>
+                            <td class="p-2 text-gray-700 dark:text-gray-300 max-w-[160px]">
+                                @php
+                                    $remitos = $shipment->items->pluck('numero_remito')->filter()->values();
+                                @endphp
+                                @if($remitos->isNotEmpty())
+                                    {!! $remitos->chunk(3)->map(fn($chunk) => $chunk->join(', '))->join('<br>') !!}
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td class="p-2 text-gray-700 dark:text-gray-300 max-w-[130px] leading-tight" title="{{ $shipment->sender?->name ?? '-' }}">
+                                @php
+                                    $senderWords = explode(' ', $shipment->sender?->name ?? '-');
+                                @endphp
+                                @if(count($senderWords) > 2)
+                                    {!! implode(' ', array_slice($senderWords, 0, (int) ceil(count($senderWords) / 2))) !!}<br>{!! implode(' ', array_slice($senderWords, (int) ceil(count($senderWords) / 2))) !!}
+                                @else
+                                    {{ $shipment->sender?->name ?? '-' }}
+                                @endif
+                            </td>
+                            <td class="p-2 text-gray-700 dark:text-gray-300 max-w-[130px] leading-tight" title="{{ $shipment->recipient?->name ?? '-' }}">
+                                @php
+                                    $recipientWords = explode(' ', $shipment->recipient?->name ?? '-');
+                                @endphp
+                                @if(count($recipientWords) > 2)
+                                    {!! implode(' ', array_slice($recipientWords, 0, (int) ceil(count($recipientWords) / 2))) !!}<br>{!! implode(' ', array_slice($recipientWords, (int) ceil(count($recipientWords) / 2))) !!}
+                                @else
+                                    {{ $shipment->recipient?->name ?? '-' }}
+                                @endif
+                            </td>
                             <td class="p-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $shipment->ubicacion_actual ?? '-' }}</td>
                             <td class="p-2 text-left text-gray-700 dark:text-gray-300 whitespace-nowrap">$ {{ number_format($shipment->flete, 2, ',', '.') }}</td>
                             <td class="p-2 text-left text-gray-700 dark:text-gray-300 whitespace-nowrap">$ {{ number_format($shipment->seguro, 2, ',', '.') }}</td>
